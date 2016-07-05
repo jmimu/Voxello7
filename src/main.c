@@ -12,9 +12,7 @@ int main(int argc, char *argv[])
     (void) argc;
     (void) argv;
 	bool result;
-	
-	printf("%d\n",sizeof(struct RLE_block));
-	
+		
     //inputs
     bool key_r=false;
     bool key_f=false;
@@ -45,9 +43,12 @@ int main(int argc, char *argv[])
 
     int frame_couter=0;
 
+	struct VoxWorld * world;
 
     result=graph_init(800/2,600/2,800/2,600/2,"Voxello");
     check_debug(result,"Unable to open window...");
+    
+    world = voxworld_create(5,2,4);
     
     last_time = SDL_GetTicks();
     current_time = last_time;
@@ -221,6 +222,7 @@ int main(int argc, char *argv[])
     }
 
 error:
+    voxworld_delete(world);
 	graph_close();
 
 }

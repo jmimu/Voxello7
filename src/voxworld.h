@@ -3,29 +3,36 @@
 
 #include <stdint.h>
 
-#define EMPTY 0xFF
+const uint8_t EMPTY=0xFF;
 
 
 /*******
  * Voxels are saved as RLE pairs : (number,value)
- *
+ * data[y][x] is a RLE_block*
  *******/
 
 struct RLE_block
 {
-	unsigned char n; 
-	unsigned char v; 
+	uint8_t n; 
+	uint8_t v; 
 };
 
 struct VoxWorld
 {
-    long szX,szY,szZ,hz_Size;
+    long szX,szY,szZ;
     struct RLE_block *** data;
-    uint32_t mColorMap[256];//argb
+    uint32_t mColorMap[255];//argb
+    
+    //working columns, allocated 1 time
+    uint8_t * curr_exp_col;//size=szZ
+    struct RLE_block *curr_compr_col;//size=szZ
+    long curr_compr_col_size;//number of RLE_block
 };
 
-struct VoxWorld * voxworld_create(long _SzX,long _SzY,long _SzZ);
+struct VoxWorld * voxworld_create(long _szX,long _szY,long _szZ);
 void voxworld_delete(struct VoxWorld * world);
-
+void voxworld_expand_col(struct VoxWorld * world,long x, long y);
+void voxworld_compr_col(struct VoxWorld * world);
+bool voxworld_write_compr_col(struct VoxWorld * world,long x, long y);
 
 #endif // VOXWORLD_H
