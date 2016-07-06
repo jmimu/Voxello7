@@ -15,8 +15,8 @@ bool graph_init(int _window_w,int _window_h,
   graph.render_h=_render_h;
   if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
   {
-    printf("SDL2 could not initialize! SDL2_Error: %s\n",SDL_GetError());
-    return false;
+	printf("SDL2 could not initialize! SDL2_Error: %s\n",SDL_GetError());
+	return false;
   }
   graph.window = SDL_CreateWindow(title,SDL_WINDOWPOS_CENTERED,
 				SDL_WINDOWPOS_CENTERED,graph.window_w,graph.window_h,
@@ -29,9 +29,9 @@ bool graph_init(int _window_w,int _window_h,
 
  
   graph.texture = SDL_CreateTexture(graph.renderer,
-                               SDL_PIXELFORMAT_ARGB8888,
-                               SDL_TEXTUREACCESS_STREAMING,
-                               graph.render_w, graph.render_h);
+							   SDL_PIXELFORMAT_ARGB8888,
+							   SDL_TEXTUREACCESS_STREAMING,
+							   graph.render_w, graph.render_h);
   graph.myPixels=(uint32_t*) malloc (graph.render_w*graph.render_h*sizeof(uint32_t));
   return true;
 }
@@ -41,7 +41,7 @@ bool graph_init(int _window_w,int _window_h,
 void graph_start_frame()
 {
   for (long i=0;i<graph.render_w*graph.render_h;i++)
-    graph.myPixels[i]=0xFF000000;
+	graph.myPixels[i]=0xFF000000;
 }
 
 void graph_end_frame()
@@ -55,31 +55,31 @@ void graph_end_frame()
 
 void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b)
 {
-    graph.myPixels[x+y*graph.render_w]=(r<<16)+(g<<8)+(b)+0xFF000000;
+	graph.myPixels[x+y*graph.render_w]=(r<<16)+(g<<8)+(b)+0xFF000000;
 }
 
 void graph_putpixel(int x,int y,uint32_t rgba)
 {
-    graph.myPixels[x+y*graph.render_w]=rgba;
+	graph.myPixels[x+y*graph.render_w]=rgba;
 }
 
 void graph_vline(int x,int y1,int y2,uint32_t rgba)
 {
-    int ymin=y1;
-    int ymax=y2;
-    if (y1>y2)
-    {
-        ymin=y2;
-        ymax=y1;
-    }
-    if (ymin<0) ymin=0;
-    if (ymax>=graph.render_h) ymax=graph.render_h-1;
-    unsigned long i=x+ymin*graph.render_w;
-    for (int y=ymin;y<=ymax;y++)
-    {
-        graph.myPixels[i]=rgba;
-        i+=graph.render_w;
-    }
+	int ymin=y1;
+	int ymax=y2;
+	if (y1>y2)
+	{
+		ymin=y2;
+		ymax=y1;
+	}
+	if (ymin<0) ymin=0;
+	if (ymax>=graph.render_h) ymax=graph.render_h-1;
+	unsigned long i=x+ymin*graph.render_w;
+	for (int y=ymin;y<=ymax;y++)
+	{
+		graph.myPixels[i]=rgba;
+		i+=graph.render_w;
+	}
 }
 
 

@@ -28,8 +28,8 @@
 
 double _sin(double x);
 double _cos(double x);
-double inv_sin(double x);
-double inv_cos(double x);
+double abs_inv_sin(double x);
+double abs_inv_cos(double x);
 double _atan(double x);
 
 

@@ -35,17 +35,17 @@ double _cos(double x)
 	return cos(x);
 }
 
-double inv_sin(double x)
+double abs_inv_sin(double x)
 {
-	double s=sin(x);
-	if (fabs(s)<0.0001) return 10000000;
+	double s=fabs(sin(x));
+	if (s<0.0001) return 10000000;
 	return 1/s;
 }
 
-double inv_cos(double x)
+double abs_inv_cos(double x)
 {
-	double c=cos(x);
-	if (fabs(c)<0.0001) return 10000000;
+	double c=fabs(cos(x));
+	if (c<0.0001) return 10000000;
 	return 1/c;
 }
 

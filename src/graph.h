@@ -5,20 +5,20 @@
 #include <stdbool.h>
 
 /***
-    Generic functions to handle :
-     - window opening
-     - primitive drawing
-     - FPS calculating & managing (later...)
-     - TODO: zbuffer
+	Generic functions to handle :
+	 - window opening
+	 - primitive drawing
+	 - FPS calculating & managing (later...)
+	 - TODO: zbuffer
 */
 
 struct Graph{
-        int window_w,window_h;
-        int render_w,render_h;
-        SDL_Window* window;
-        SDL_Renderer *renderer;
-        SDL_Texture *texture;        
-        uint32_t *myPixels;
+		int window_w,window_h;
+		int render_w,render_h;
+		SDL_Window* window;
+		SDL_Renderer *renderer;
+		SDL_Texture *texture;		
+		uint32_t *myPixels;
 };
 
 extern struct Graph graph;

@@ -1,67 +1,269 @@
 #include "voxrender.h"
 #include "graph.h"
+#include "trigo.h"
+#include <assert.h>
 
 int zen2line(struct VoxRender * render,double zen);
+struct VoxVInterval * VoxVInterval_delete(struct VoxVInterval * interval);//return next interval
+
+//return next interval
+struct VoxVInterval * VoxVInterval_delete(struct VoxVInterval * interval,struct VoxRay * ray)
+{
+	assert(interval!=NULL);
+	
+	struct VoxVInterval * next_interval=interval->next;
+	if (interval->previous)
+		interval->previous->next=interval->next;
+	else
+		ray->first_VInterval=interval->next;//save the new first interval
+	if (interval->next) interval->next->previous=interval->previous;
+	free(interval);
+	return next_interval;
+}
+
+void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
+				double ang_zen_min, double ang_zen_max)
+{
+	ray->ang_hz=ang_hz;//horizontal angle of the plane
+	ray->cam=cam;
+	double cosAngHz=_cos(ray->ang_hz);
+	double sinAngHz=_sin(ray->ang_hz);
+
+	ray->dirX=0;
+	if (cosAngHz>0) ray->dirX=+1;
+	if (cosAngHz<0) ray->dirX=-1;
+	ray->dirY=0;
+	if (sinAngHz>0) ray->dirY=+1;
+	if (sinAngHz<0) ray->dirY=-1;
+
+	ray->incX=abs_inv_cos(ray->ang_hz);//how much to increment for 1 step in x or y
+	ray->incY=abs_inv_sin(ray->ang_hz);
+	ray->currentLambda=0;//where we are on the ray
+
+	double offsetX,offsetY;
+	if (cosAngHz>0)
+	{
+		offsetX=(floor(ray->cam->x+1)-ray->cam->x)*ray->incX;
+		ray->currentX=floor(ray->cam->x);
+	}
+	else
+	{
+		offsetX=(ray->cam->x-floor(ray->cam->x))*ray->incX;
+		ray->currentX=floor(ray->cam->x);
+	}
+
+	if (sinAngHz>0)
+	{
+		offsetY=(floor(ray->cam->y+1)-ray->cam->y)*ray->incY;
+		ray->currentY=floor(ray->cam->y);
+	}
+	else
+	{
+		offsetY=(ray->cam->y-floor(ray->cam->y))*ray->incY;
+		ray->currentY=floor(ray->cam->y);
+	}
+
+	ray->nextXLambda=offsetX;
+	ray->nextYLambda=offsetY;
+
+	//TODO: make it in one pass
+	while (ray->currentLambda < ray->render->clip_min)
+		VoxRay_findNextIntersection(ray);
+
+	ray->lastIntersectionWasX=false;//has no sens for now
+
+	ray->first_VInterval=(struct VoxVInterval*)malloc(sizeof(struct VoxVInterval));
+	ray->first_VInterval->zenMin=ang_zen_min;
+	ray->first_VInterval->zenMax=ang_zen_max;
+	ray->first_VInterval->previous=NULL;
+	ray->first_VInterval->next=NULL;
+}
+
+//returns false if out of bounds
+bool VoxRay_findNextIntersection(struct VoxRay * ray)
+{
+	if (ray->nextXLambda<ray->nextYLambda)
+	{
+		ray->currentX+=ray->dirX;
+		ray->currentLambda=ray->nextXLambda;
+		//std::cout<<"intersection: X   "<<ray->nextXLambda<<std::endl;
+		ray->nextXLambda+=ray->incX;
+		ray->lastIntersectionWasX=true;
+	}else{
+		ray->currentY+=ray->dirY;
+		ray->currentLambda=ray->nextYLambda;
+		//std::cout<<"intersection: Y   "<<ray->nextYLambda<<std::endl;
+		ray->nextYLambda+=ray->incY;
+		ray->lastIntersectionWasX=false;
+	}
+	//std::cout<<"Next: "<<ray->nextXLambda<<" "<<ray->nextYLambda<<std::endl;
+
+	//test if out of bounds
+	if ((ray->dirX>0)&&(ray->currentX>ray->world->szX)) return false;
+	if ((ray->dirX<0)&&(ray->currentX<0)) return false;
+	if ((ray->dirY>0)&&(ray->currentY>ray->world->szY)) return false;
+	if ((ray->dirY<0)&&(ray->currentY<0)) return false;
+	if (ray->currentLambda > ray->render->clip_max) return false;
+	return true;
+}
+
+void VoxRay_draw(struct VoxRay * ray,int screen_col)
+{
+	//prepare next and previous hz
+	long previousX;
+	long previousY;
+	long nextX;
+	long nextY;
+	struct RLE_block * currentCol;
+	double zMin,zMax;
+	
+	while ((ray->first_VInterval)&&(VoxRay_findNextIntersection(ray)))
+	{
+		previousX=ray->currentX;
+		previousY=ray->currentY;
+		nextX=ray->currentX;
+		nextY=ray->currentY;
+		if ((ray->lastIntersectionWasX))
+			previousX=ray->currentX-ray->dirX;
+
+		if (!ray->lastIntersectionWasX)
+			previousY=ray->currentY-ray->dirY;
+
+		
+		if ((nextX>=0)&&(nextX<ray->world->szX)
+				&&(nextY>=0)&&(nextY<ray->world->szY))
+		{
+			currentCol=ray->world->data[nextX][nextY];
+			struct VoxVInterval * interval=ray->first_VInterval;
+			
+			while (interval)
+			{
+				//compute z range of intersection
+				zMin=ray->cam->z+ray->currentLambda*_sin(interval->zenMin);
+				zMax=ray->cam->z+ray->currentLambda*_sin(interval->zenMax);
+				if (zMin<0) zMin=0;
+				if (zMax>ray->world->szZ-0.001)
+					zMax=ray->world->szZ-0.001;
+
+				if (zMin>zMax)
+				{
+					interval=VoxVInterval_delete(interval,ray);
+					continue;
+				}
+
+				//get voxel at zMin
+				int voxIndex=0;
+				int voxZ=0;
+				Uint32 color;
+				while (voxZ<floor(zMin))
+				{
+					//color=ray->world->colorMap[currentCol[voxIndex].v];
+					voxZ+=currentCol[voxIndex].n;
+					voxIndex++;
+				}
+
+				//test: draw whole voxel space
+				double zen0=_atan((zMin-ray->cam->z)/ray->currentLambda);
+				double zen1;
+				uint8_t v;
+
+				while (voxZ<zMax)
+				{
+					v=currentCol[voxIndex].v;
+					voxZ+=currentCol[voxIndex].n;
+					voxIndex++;
+					
+					if (v==EMPTY)
+					{
+						//TODO
+					}else{
+						color=ray->world->colorMap[v];
+						if (ray->lastIntersectionWasX) color/=2;
+						zen1=_atan((voxZ-ray->cam->z)/ray->currentLambda);
+						graph_vline(screen_col,zen2line(ray->render,zen0),
+								zen2line(ray->render,zen1),color);
+					}
+					zen0=zen1;
+				}
+				interval=VoxVInterval_delete(interval,ray);
+			}
+		}
+
+		//next intersection
+	}
+
+	//test: draw whole voxel space
+
+	//std::cout<<"Ray: "<<mScreenCol<<" "<<mRender->zen2line(mAllIntervals[0].zenMin)
+	//		<<" "<<mRender->zen2line(mAllIntervals[0].zenMax)<<" "<<0xFF000000+mScreenCol<<std::endl;
+	//test: draw full colomn
+	//mGraph.vline(mScreenCol,mRender->zen2line(mAllIntervals[0].zenMin),
+	//		mRender->zen2line(mAllIntervals[0].zenMax),0xFF000000+mScreenCol);
+
+}
+
+void Voxray_show_info(struct VoxRay * ray)
+{
+	if (ray->lastIntersectionWasX)
+		printf("intersection: X\n");
+	else
+		printf("intersection: Y\n");
+	printf("At (%ld,%ld) %f\n",ray->currentX,ray->currentY,ray->currentLambda);
+}
+
+
 
 struct VoxRender * VoxRender_create(struct VoxWorld *_world,double _fov_hz)
 {
 	struct VoxRender *render = (struct VoxRender *) malloc(sizeof(struct VoxRender));
-    render->world=_world;
-    render->fov_hz=_fov_hz;
-    render->fov_vert=_fov_hz*graph.render_h/graph.render_w;
-    
-    //create rays for every display column
-    /*for (int i=0;i<mGraph.get_render_w();i++)
-    {
-        mRays.push_back(VoxRay(mWorld,mGraph,this));
-    }*/
-    
-    return render;
+	render->world=_world;
+	render->fov_hz=_fov_hz;
+	render->fov_vert=_fov_hz*graph.render_h/graph.render_w;
+	
+	render->ray.render=render;
+	render->ray.world=render->world;
+
+	render->clip_min=5;
+	render->clip_max=50;
+	return render;
 }
 
 void VoxRender_setCam(struct VoxRender * render,Pt3d _cam,double _center_ang_hz,double _center_ang_vert)
 {
-    render->cam=_cam;
-    render->center_ang_hz=_center_ang_hz;
-    render->center_ang_vert=_center_ang_vert;
+	render->cam=_cam;
+	render->center_ang_hz=_center_ang_hz;
+	render->center_ang_vert=_center_ang_vert;
 
-    //compute agular steps
-    double current_hz_angle=render->center_ang_hz-render->fov_hz/2;
-    double step_hz_angle=render->fov_hz/graph.render_w;
-    double start_vert_angle=render->center_ang_vert-render->fov_vert/2;
-    double stop_vert_angle=render->center_ang_vert+render->fov_vert/2;
+	//compute agular steps
+	render->current_hz_angle=render->center_ang_hz-render->fov_hz/2;
+	render->step_hz_angle=render->fov_hz/graph.render_w;
+	render->start_vert_angle=render->center_ang_vert-render->fov_vert/2;
+	render->stop_vert_angle=render->center_ang_vert+render->fov_vert/2;
 
-    //zen2line formula is:
-    //l(zen)=H-H*(zen-start_vert_angle)/(stop_vert_angle-start_vert_angle)
-    //=zen*(-H/(stop_vert_angle-start_vert_angle))+H(1+start_vert_angle/(stop_vert_angle-start_vert_angle))
-    //=zen*zen2line_factor+zen2line_offset
-    render->zen2line_factor=(-graph.render_h/(stop_vert_angle-start_vert_angle));
-    render->zen2line_offset=graph.render_h*(1+start_vert_angle/(stop_vert_angle-start_vert_angle));
+	//zen2line formula is:
+	//l(zen)=H-H*(zen-start_vert_angle)/(stop_vert_angle-start_vert_angle)
+	//=zen*(-H/(stop_vert_angle-start_vert_angle))+H(1+start_vert_angle/(stop_vert_angle-start_vert_angle))
+	//=zen*zen2line_factor+zen2line_offset
+	render->zen2line_factor=(-graph.render_h/(render->stop_vert_angle-render->start_vert_angle));
+	render->zen2line_offset=graph.render_h*(1+render->start_vert_angle/(render->stop_vert_angle-render->start_vert_angle));
 
-
-    /*int currentColumn=0;
-
-    for (auto &ray:mRays)
-    {
-        ray.reinit(mCam, current_hz_angle,start_vert_angle,stop_vert_angle, currentColumn);
-        current_hz_angle+=step_hz_angle;
-        currentColumn++;
-    }*/
 }
 
 
 void VoxRender_render(struct VoxRender * render)
 {
-    //mRays[5].draw();
-    /*for (auto &ray:mRays)
-    {
-        ray.draw();
-    }*/
-
+	for (int currentCol=0;currentCol<graph.render_w;currentCol++)
+	{
+		VoxRay_reinit(&render->ray,&render->cam,render->current_hz_angle,
+			render->start_vert_angle,render->stop_vert_angle);
+		render->current_hz_angle+=render->step_hz_angle;
+		currentCol++;
+		VoxRay_draw(&render->ray,currentCol);
+	}
 }
 
 
 int zen2line(struct VoxRender * render,double zen)
 {
-    return zen*render->zen2line_factor+render->zen2line_offset;
+	return zen*render->zen2line_factor+render->zen2line_offset;
 }
