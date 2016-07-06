@@ -48,7 +48,10 @@ int main(int argc, char *argv[])
     result=graph_init(800/2,600/2,800/2,600/2,"Voxello");
     check_debug(result,"Unable to open window...");
     
-    world = voxworld_create(5,2,4);
+    world = voxworld_create(5,3,4);
+    check_debug(world,"Unable to create world...");
+
+    voxworld_init_empty_cube(world,1);
     
     last_time = SDL_GetTicks();
     current_time = last_time;

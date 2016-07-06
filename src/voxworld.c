@@ -137,3 +137,44 @@ bool voxworld_write_compr_col(struct VoxWorld * world,long x, long y)
 error:
 	return false;
 }
+
+//empty cube : only edges are put to v
+void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
+{
+	long x,y,z;
+	
+	//full col for corners
+	for (z=0;z<world->szZ;z++)
+		world->curr_exp_col[z]=v;
+	voxworld_compr_col(world);
+	voxworld_write_compr_col(world,0,0);
+	voxworld_write_compr_col(world,world->szX-1,0);
+	voxworld_write_compr_col(world,0,world->szY-1);
+	voxworld_write_compr_col(world,world->szX-1,world->szY-1);
+	
+	//just first and last for vertical faces
+	for (z=1;z<world->szZ-1;z++)
+		world->curr_exp_col[z]=EMPTY;
+	voxworld_compr_col(world);
+	for (x=1;x<world->szX-1;x++)
+	{
+		voxworld_write_compr_col(world,x,0);
+		voxworld_write_compr_col(world,x,world->szY-1);
+	}
+	for (y=1;y<world->szY-1;y++)
+	{
+		voxworld_write_compr_col(world,0,y);
+		voxworld_write_compr_col(world,world->szX-1,y);
+	}
+	
+	//empty for center
+	world->curr_exp_col[0]=EMPTY;
+	world->curr_exp_col[world->szZ-1]=EMPTY;
+	voxworld_compr_col(world);
+	for (x=1;x<world->szX-1;x++)
+		for (y=1;y<world->szY-1;y++)
+		{
+			voxworld_write_compr_col(world,x,y);
+		}
+	
+}
