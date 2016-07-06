@@ -54,6 +54,7 @@ clean:
 	rm -f tests/tests.log
 	find . -name "*.gc*" -exec rm {} \;
 	rm -rf `find . -name "*.dSYM" -print`
+	rm -f $(TARGET) 
 
 # The Install
 install: all

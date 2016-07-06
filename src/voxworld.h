@@ -23,7 +23,7 @@ struct VoxWorld
 {
     long szX,szY,szZ;
     struct RLE_block *** data;
-    uint32_t mColorMap[255];//argb
+    uint32_t colorMap[255];//argb
     
     //working columns, allocated 1 time
     uint8_t * curr_exp_col;//size=szZ

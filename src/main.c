@@ -6,6 +6,7 @@
 #include "pt3d.h"
 #include "dbg.h"
 #include "voxworld.h"
+#include "voxrender.h"
 
 int main(int argc, char *argv[])
 {
@@ -44,6 +45,7 @@ int main(int argc, char *argv[])
     int frame_couter=0;
 
 	struct VoxWorld * world;
+	struct VoxRender * render;
 
     result=graph_init(800/2,600/2,800/2,600/2,"Voxello");
     check_debug(result,"Unable to open window...");
@@ -51,7 +53,9 @@ int main(int argc, char *argv[])
     world = voxworld_create(5,3,4);
     check_debug(world,"Unable to create world...");
 
-    voxworld_init_empty_cube(world,1);
+    voxworld_init_empty_cube(world,2);
+    
+    render=VoxRender_create(world,2);
     
     last_time = SDL_GetTicks();
     current_time = last_time;

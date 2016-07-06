@@ -38,6 +38,16 @@ struct VoxWorld * voxworld_create(long _szX,long _szY,long _szZ)
 	world->curr_exp_col=(uint8_t *) malloc(world->szZ*sizeof(uint8_t));
 	world->curr_compr_col=(struct RLE_block *) malloc(world->szZ*sizeof(struct RLE_block));
 	world->curr_compr_col_size=0;
+
+	//init colormap
+	world->colorMap[0]=0x000000;//black
+	world->colorMap[1]=0xFFFFFF;//white
+	world->colorMap[2]=0xFF0000;//red
+	world->colorMap[3]=0x00FF00;//green
+	world->colorMap[4]=0x0000FF;//blue
+	world->colorMap[5]=0x00FFFF;//yellow
+	world->colorMap[6]=0xFFFF00;//cyan
+	world->colorMap[7]=0xFF00FF;//violet
 	
 	return world;
 error:
