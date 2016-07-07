@@ -22,7 +22,7 @@ bool graph_init(int _window_w,int _window_h,
 				SDL_WINDOWPOS_CENTERED,graph.window_w,graph.window_h,
 				SDL_WINDOW_SHOWN);//SDL_WINDOW_FULLSCREEN_DESKTOP
   //if SDL_WINDOW_FULLSCREEN_DESKTOP
-  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
+  //~ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
   //SDL_RenderSetLogicalSize(sdlRenderer, 640, 480);
 
   graph.renderer = SDL_CreateRenderer(graph.window, -1, 0);
@@ -40,8 +40,11 @@ bool graph_init(int _window_w,int _window_h,
 
 void graph_start_frame()
 {
-  for (long i=0;i<graph.render_w*graph.render_h;i++)
+  for (int i=0;i<graph.render_w*graph.render_h;i++)
 	graph.myPixels[i]=0xFF001020;
+#ifdef DBG_GRAPH
+	graph_vline(graph.render_w/2,0,graph.render_h,0xFF00B040);
+#endif
 }
 
 void graph_end_frame()
@@ -74,7 +77,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 	}
 	if (ymin<0) ymin=0;
 	if (ymax>=graph.render_h) ymax=graph.render_h-1;
-	unsigned long i=x+ymin*graph.render_w;
+	unsigned int i=x+ymin*graph.render_w;
 	for (int y=ymin;y<=ymax;y++)
 	{
 		graph.myPixels[i]=rgba;

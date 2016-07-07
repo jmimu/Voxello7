@@ -32,7 +32,7 @@ struct VoxRay
 	double nextXLambda;//next X intersection
 	double nextYLambda;//next Y intersection
 
-	long currentX,currentY;
+	int currentX,currentY;
 	bool lastIntersectionWasX;
 
 	int dirX,dirY;//-1, 0 or 1
@@ -64,15 +64,15 @@ struct VoxRender
 
 
 void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
-				double ang_zen_min, double ang_zen_max);
-bool VoxRay_findNextIntersection(struct VoxRay * ray);//returns false if out of bounds
-void VoxRay_draw(struct VoxRay * ray,int screen_col);
+				double ang_zen_min, double ang_zen_max, bool trace);
+bool VoxRay_findNextIntersection(struct VoxRay * ray,bool trace);//returns false if out of bounds
+void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace);
 void Voxray_show_info(struct VoxRay * ray);
 
 
 struct VoxRender * VoxRender_create(struct VoxWorld *_world,double _fov_hz);
 void VoxRender_setCam(struct VoxRender * render,struct Pt3d _cam,double _center_ang_hz,double _center_ang_vert);
-void VoxRender_render(struct VoxRender * render);
+void VoxRender_render(struct VoxRender * render,bool trace);
 
 
 #endif // VOXRENDER_H

@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	double angleX = 0.0000;
 	double speed=0.01;
 
-	struct Pt3d cam={0.0001,-10.001,0.5001};
+	struct Pt3d cam={2.50001,-10.001,0.5001};
 	double focale=300;
 
 	bool run=true;
@@ -44,17 +44,19 @@ int main(int argc, char *argv[])
 
 	int frame_couter=0;
 
+	bool trace=false;
+	
 	struct VoxWorld * world=0;
 	struct VoxRender * render=0;
 
 	result=graph_init(800/2,600/2,800/2,600/2,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(5,3,4);
+	world = voxworld_create(5,5,4);
 	check_debug(world,"Unable to create world...");
 
 	voxworld_init_empty_cube(world,2);
-	voxworld_printf(world);
+	//voxworld_printf(world);
 	
 	render=VoxRender_create(world,2);
 	
@@ -91,23 +93,26 @@ int main(int argc, char *argv[])
 						case SDLK_ESCAPE:
 							run=false;
 							break;
+						case SDLK_w:
+							trace=true;
+							break;
 						case SDLK_r:
-				key_r=true;
+							key_r=true;
 							break;
 						case SDLK_f:
-				key_f=true;
+							key_f=true;
 							break;
 						case SDLK_d:
-				key_d=true;
+							key_d=true;
 							break;
 						case SDLK_g:
-				key_g=true;
+							key_g=true;
 							break;
 						case SDLK_e:
-				key_e=true;
+							key_e=true;
 							break;
 						case SDLK_t:
-				key_t=true;
+							key_t=true;
 							break;
 						default:
 							break;
@@ -117,22 +122,22 @@ int main(int argc, char *argv[])
 					switch(event.key.keysym.sym)
 					{
 						case SDLK_r:
-				key_r=false;
+							key_r=false;
 							break;
 						case SDLK_f:
-				key_f=false;
+							key_f=false;
 							break;
 						case SDLK_d:
-				key_d=false;
+							key_d=false;
 							break;
 						case SDLK_g:
-				key_g=false;
+							key_g=false;
 							break;
 						case SDLK_e:
-				key_e=false;
+							key_e=false;
 							break;
 						case SDLK_t:
-				key_t=false;
+							key_t=false;
 							break;
 						default:
 							break;
@@ -192,7 +197,8 @@ int main(int argc, char *argv[])
 		graph_start_frame();
 
 		VoxRender_setCam(render,cam,angleZ,angleX);
-		VoxRender_render(render);
+		VoxRender_render(render,trace);
+		if (trace) trace=false;
 
 		//graph_test();
 
@@ -203,7 +209,7 @@ int main(int argc, char *argv[])
 		//----- timing -----
 		if (previous_fps_time!=current_time/1000)
 		{
-			printf("FPS: %d\n",fps);
+			//~ printf("FPS: %d\n",fps);
 			previous_fps_time=current_time/1000;
 			fps=0;
 		}

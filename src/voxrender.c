@@ -42,7 +42,7 @@ struct VoxVInterval * VoxVInterval_add(struct VoxVInterval * interval,double zen
 
 
 void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
-				double ang_zen_min, double ang_zen_max)
+				double ang_zen_min, double ang_zen_max, bool trace)
 {
 	ray->ang_hz=ang_hz;//horizontal angle of the plane
 	ray->cam=cam;
@@ -69,7 +69,7 @@ void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 	else
 	{
 		offsetX=(ray->cam->x-floor(ray->cam->x))*ray->incX;
-		ray->currentX=ceil(ray->cam->x);
+		ray->currentX=floor(ray->cam->x);
 	}
 
 	if (cosAngHz>0)
@@ -80,17 +80,27 @@ void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 	else
 	{
 		offsetY=(ray->cam->y-floor(ray->cam->y))*ray->incY;
-		ray->currentY=ceil(ray->cam->y);
+		ray->currentY=floor(ray->cam->y);
 	}
 
 	ray->nextXLambda=offsetX;
 	ray->nextYLambda=offsetY;
 	ray->lastIntersectionWasX=false;//has no sens for now
 
+	if (trace)
+		printf("Cam:  ang: %f   pos: %f %f %f\n",ang_hz,cam->x,cam->y,cam->z);
+	if (trace)
+		printf("Ray:   incX: %f, incY: %f, offX: %f, offY: %f\n",ray->incX,ray->incY,offsetX,offsetY);
+	if (trace)
+		printf("Ray:   currentX: %d, currentY: %d\n",ray->currentX,ray->currentY);
+
+
 	//TODO: make it in one pass
 	while (ray->currentLambda < ray->render->clip_min)
-		VoxRay_findNextIntersection(ray);
+		VoxRay_findNextIntersection(ray,trace);
 
+	if (trace)
+		printf("currentLambda: %f,  nextXLambda: %f,  nextYLambda: %f\n",ray->currentLambda,ray->nextXLambda,ray->nextYLambda);
 
 	ray->first_VInterval=(struct VoxVInterval*)malloc(sizeof(struct VoxVInterval));
 	ray->first_VInterval->zenMin=ang_zen_min;
@@ -100,23 +110,27 @@ void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 }
 
 //returns false if out of bounds
-bool VoxRay_findNextIntersection(struct VoxRay * ray)
+bool VoxRay_findNextIntersection(struct VoxRay * ray,bool trace)
 {
 	if (ray->nextXLambda<ray->nextYLambda)
 	{
 		ray->currentX+=ray->dirX;
 		ray->currentLambda=ray->nextXLambda;
-		//std::cout<<"intersection: X   "<<ray->nextXLambda<<std::endl;
+		if (trace)
+			printf("intersection X  %f",ray->nextXLambda);
 		ray->nextXLambda+=ray->incX;
 		ray->lastIntersectionWasX=true;
 	}else{
 		ray->currentY+=ray->dirY;
 		ray->currentLambda=ray->nextYLambda;
-		//std::cout<<"intersection: Y   "<<ray->nextYLambda<<std::endl;
+		if (trace)
+			printf("intersection Y  %f",ray->nextYLambda);
 		ray->nextYLambda+=ray->incY;
 		ray->lastIntersectionWasX=false;
 	}
 	//std::cout<<"Next: "<<ray->nextXLambda<<" "<<ray->nextYLambda<<std::endl;
+	if (trace)
+		printf(" current %d %d\n",ray->currentX,ray->currentY);
 
 	//test if out of bounds
 	if ((ray->dirX>0)&&(ray->currentX>ray->world->szX)) return false;
@@ -127,17 +141,17 @@ bool VoxRay_findNextIntersection(struct VoxRay * ray)
 	return true;
 }
 
-void VoxRay_draw(struct VoxRay * ray,int screen_col)
+void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 {
 	//prepare next and previous hz
-	long previousX;
-	long previousY;
-	long nextX;
-	long nextY;
+	int previousX;
+	int previousY;
+	int nextX;
+	int nextY;
 	struct RLE_block * currentCol;
 	double zMin,zMax;
 	
-	while ((ray->first_VInterval)&&(VoxRay_findNextIntersection(ray)))
+	while ((ray->first_VInterval)&&(VoxRay_findNextIntersection(ray,trace)))
 	{
 		previousX=ray->currentX;
 		previousY=ray->currentY;
@@ -149,6 +163,8 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col)
 		if (!ray->lastIntersectionWasX)
 			previousY=ray->currentY-ray->dirY;
 
+		if (trace)
+			printf("nextX: %d  nextY: %d\n",nextX,nextY);
 		
 		if ((nextX>=0)&&(nextX<ray->world->szX)
 				&&(nextY>=0)&&(nextY<ray->world->szY))
@@ -165,6 +181,9 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col)
 				if (zMin<0) zMin=0;
 				if (zMax>ray->world->szZ-0.001)
 					zMax=ray->world->szZ-0.001;
+				
+				if (trace)
+					printf("interval: %f %f =>  Z: %f %f\n",interval->zenMin,interval->zenMax,zMin,zMax);
 
 				if (zMin>zMax)
 				{
@@ -176,12 +195,15 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col)
 				int voxIndex=0;
 				int voxZ=0;
 				Uint32 color;
-				while (voxZ<floor(zMin))
+				while (voxZ+currentCol[voxIndex].n<floor(zMin))
 				{
 					//color=ray->world->colorMap[currentCol[voxIndex].v];
 					voxZ+=currentCol[voxIndex].n;
 					voxIndex++;
 				}
+
+				if (trace)
+					printf("start at voxIndex: %d, voxZ: %d\n",voxIndex, voxZ);
 
 				//test: draw whole voxel space
 				double zen0=_atan((zMin-ray->cam->z)/ray->currentLambda);
@@ -194,6 +216,8 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col)
 					voxZ+=currentCol[voxIndex].n;
 					voxIndex++;
 					zen1=_atan((voxZ-ray->cam->z)/ray->currentLambda);
+					if (trace)
+						printf("value:%d for zen in %f %f\n",v,zen0,zen1);
 					
 					if (v==EMPTY)
 					{
@@ -204,11 +228,15 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col)
 						}else{
 							next_current_VInterval=VoxVInterval_add(next_current_VInterval,zen0,zen1);
 						}
+						
 					}else{
 						color=ray->world->colorMap[v];
 						if (ray->lastIntersectionWasX) color=color_bright(color,0.8);
 						graph_vline(screen_col,zen2line(ray->render,zen0),
 								zen2line(ray->render,zen1),color);
+						if (trace)
+							printf("draw %d %d : %x\n",zen2line(ray->render,zen0),zen2line(ray->render,zen1),color);
+
 					}
 					zen0=zen1;
 				}
@@ -219,14 +247,9 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col)
 
 		//next intersection
 	}
+	if (trace)
+		printf("\n");
 
-	//test: draw whole voxel space
-
-	//std::cout<<"Ray: "<<mScreenCol<<" "<<mRender->zen2line(mAllIntervals[0].zenMin)
-	//		<<" "<<mRender->zen2line(mAllIntervals[0].zenMax)<<" "<<0xFF000000+mScreenCol<<std::endl;
-	//test: draw full colomn
-	//mGraph.vline(mScreenCol,mRender->zen2line(mAllIntervals[0].zenMin),
-	//		mRender->zen2line(mAllIntervals[0].zenMax),0xFF000000+mScreenCol);
 
 }
 
@@ -236,7 +259,7 @@ void Voxray_show_info(struct VoxRay * ray)
 		printf("intersection: X\n");
 	else
 		printf("intersection: Y\n");
-	printf("At (%ld,%ld) %f\n",ray->currentX,ray->currentY,ray->currentLambda);
+	printf("At (%d,%d) %f\n",ray->currentX,ray->currentY,ray->currentLambda);
 }
 
 
@@ -251,7 +274,7 @@ struct VoxRender * VoxRender_create(struct VoxWorld *_world,double _fov_hz)
 	render->ray.render=render;
 	render->ray.world=render->world;
 
-	render->clip_min=5;
+	render->clip_min=2;
 	render->clip_max=50;
 	return render;
 }
@@ -278,15 +301,15 @@ void VoxRender_setCam(struct VoxRender * render,struct Pt3d _cam,double _center_
 }
 
 
-void VoxRender_render(struct VoxRender * render)
+void VoxRender_render(struct VoxRender * render,bool trace)
 {
 	for (int currentCol=0;currentCol<graph.render_w;currentCol++)
 	{
 		//if (currentCol==200)
 		{
 			VoxRay_reinit(&render->ray,&render->cam,render->current_hz_angle,
-				render->start_vert_angle,render->stop_vert_angle);
-			VoxRay_draw(&render->ray,currentCol);
+				render->start_vert_angle,render->stop_vert_angle, (trace&&(currentCol==graph.render_w/2)));
+			VoxRay_draw(&render->ray,currentCol, (trace&&(currentCol==graph.render_w/2)) );
 		}
 		render->current_hz_angle+=render->step_hz_angle;
 	}

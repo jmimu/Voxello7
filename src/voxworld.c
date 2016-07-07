@@ -8,7 +8,7 @@ const uint8_t EMPTY=0xFF;
 
 
 //TODO: add check & clear
-struct VoxWorld * voxworld_create(long _szX,long _szY,long _szZ)
+struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 {
 	struct VoxWorld *world = (struct VoxWorld *) malloc(sizeof(struct VoxWorld));
 	world->szX=_szX;
@@ -22,15 +22,15 @@ struct VoxWorld * voxworld_create(long _szX,long _szY,long _szZ)
 	//data[y][x] is a RLE_block
 	world->data = (struct RLE_block***) malloc(world->szY*sizeof(struct RLE_block**));
 	check_mem(world->data);
-	for (long y=0;y<world->szY;y++)
+	for (int y=0;y<world->szY;y++)
 	{
 		world->data[y] = (struct RLE_block**)  malloc(world->szX*sizeof(struct RLE_block*));
 		check_mem(world->data[y]);
-		for (long x=0;x<world->szX;x++)
+		for (int x=0;x<world->szX;x++)
 		{
 			world->data[y][x] = (struct RLE_block*) malloc(nbr_RLE_block*sizeof(struct RLE_block));
 			check_mem(world->data[y][x]);
-			for (long z=0;z<nbr_RLE_block-1;z++)
+			for (int z=0;z<nbr_RLE_block-1;z++)
 			{
 				world->data[y][x][z]=(struct RLE_block){.n=255,.v=EMPTY};
 			}
@@ -64,9 +64,9 @@ void voxworld_delete(struct VoxWorld * world)
 	free(world->curr_exp_col);
 	free(world->curr_compr_col);
 	
-	for (long y=0;y<world->szY;y++)
+	for (int y=0;y<world->szY;y++)
 	{
-		for (long x=0;x<world->szX;x++)
+		for (int x=0;x<world->szX;x++)
 		{
 			if (world->data[y][x]) free(world->data[y][x]);
 		}
@@ -78,12 +78,12 @@ void voxworld_delete(struct VoxWorld * world)
 
 void voxworld_printf(struct VoxWorld * world)
 {
-	long i,z;
+	int i,z;
 	printf("====== VoxWorld ======\n");
-	for (long y=0;y<world->szY;y++)
+	for (int y=0;y<world->szY;y++)
 	{
 		printf("---- y=%d\n",y);
-		for (long x=0;x<world->szX;x++)
+		for (int x=0;x<world->szX;x++)
 		{
 			printf("  ---- x=%d\n    ",x);
 			z=0;
@@ -101,7 +101,7 @@ void voxworld_printf(struct VoxWorld * world)
 }
 
 //expand one compressed column into curr_exp_col
-void voxworld_expand_col(struct VoxWorld * world,long x, long y)
+void voxworld_expand_col(struct VoxWorld * world,int x, int y)
 {
 	int i=0;
 	int k=0;
@@ -161,7 +161,7 @@ void voxworld_compr_col(struct VoxWorld * world)
 }
 
 //write curr_compr_col into data
-bool voxworld_write_compr_col(struct VoxWorld * world,long x, long y)
+bool voxworld_write_compr_col(struct VoxWorld * world,int x, int y)
 {
 	if (world->data[y][x]) free(world->data[y][x]);
 	world->data[y][x] = (struct RLE_block*) malloc(
@@ -186,7 +186,7 @@ error:
 //empty cube : only edges are put to v
 void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
 {
-	long x,y,z;
+	int x,y,z;
 	
 	//full col for corners
 	for (z=0;z<world->szZ;z++)
@@ -221,5 +221,11 @@ void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
 		{
 			voxworld_write_compr_col(world,x,y);
 		}
+
+
+	for (z=0;z<world->szZ;z++)
+		world->curr_exp_col[z]=v;
+	voxworld_compr_col(world);
+	voxworld_write_compr_col(world,2,2);
 	
 }

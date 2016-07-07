@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
+#define DBG_GRAPH
+
 /***
 	Generic functions to handle :
 	 - window opening
