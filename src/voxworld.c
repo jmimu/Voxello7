@@ -222,10 +222,17 @@ void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
 			voxworld_write_compr_col(world,x,y);
 		}
 
-
+//tests
 	for (z=0;z<world->szZ;z++)
-		world->curr_exp_col[z]=v;
+		world->curr_exp_col[z]=v+1;
 	voxworld_compr_col(world);
 	voxworld_write_compr_col(world,2,2);
-	
+	for (z=1;z<world->szZ-1;z++)
+		world->curr_exp_col[z]=EMPTY;
+	voxworld_compr_col(world);
+	for (x=1;x<world->szX-1;x++)
+	{
+		voxworld_write_compr_col(world,x,0);
+	}
+
 }

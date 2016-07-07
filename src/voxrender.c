@@ -176,11 +176,11 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 			while (interval)
 			{
 				//compute z range of intersection
-				zMin=ray->cam->z+ray->currentLambda*_sin(interval->zenMin);
-				zMax=ray->cam->z+ray->currentLambda*_sin(interval->zenMax);
+				zMin=ray->cam->z+ray->currentLambda*_tan(interval->zenMin);
+				zMax=ray->cam->z+ray->currentLambda*_tan(interval->zenMax)+1;
 				if (zMin<0) zMin=0;
-				if (zMax>ray->world->szZ-0.001)
-					zMax=ray->world->szZ-0.001;
+				if (zMax>ray->world->szZ-0.00001)
+					zMax=ray->world->szZ-0.00001;
 				
 				if (trace)
 					printf("interval: %f %f =>  Z: %f %f\n",interval->zenMin,interval->zenMax,zMin,zMax);
@@ -207,6 +207,8 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 
 				//test: draw whole voxel space
 				double zen0=_atan((zMin-ray->cam->z)/ray->currentLambda);
+				if (zen0<interval->zenMin)
+					zen0=interval->zenMin;
 				double zen1;
 				uint8_t v;
 
@@ -216,6 +218,8 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 					voxZ+=currentCol[voxIndex].n;
 					voxIndex++;
 					zen1=_atan((voxZ-ray->cam->z)/ray->currentLambda);
+					if (zen1>interval->zenMax)
+						zen1=interval->zenMax;
 					if (trace)
 						printf("value:%d for zen in %f %f\n",v,zen0,zen1);
 					
@@ -231,7 +235,8 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 						
 					}else{
 						color=ray->world->colorMap[v];
-						if (ray->lastIntersectionWasX) color=color_bright(color,0.8);
+						if (ray->lastIntersectionWasX)
+							color=color_bright(color,0.8);
 						graph_vline(screen_col,zen2line(ray->render,zen0),
 								zen2line(ray->render,zen1),color);
 						if (trace)
@@ -319,4 +324,12 @@ void VoxRender_render(struct VoxRender * render,bool trace)
 int zen2line(struct VoxRender * render,double zen)
 {
 	return zen*render->zen2line_factor+render->zen2line_offset;
+}
+
+void VoxRender_limit_tilt(struct VoxRender *render, double * angle_vert)
+{
+	if ((*angle_vert)-render->fov_vert/2<-PI/2)
+		(*angle_vert)=render->fov_vert/2-PI/2;
+	if ((*angle_vert)+render->fov_vert/2>PI/2)
+		(*angle_vert)=-render->fov_vert/2+PI/2;
 }

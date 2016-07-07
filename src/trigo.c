@@ -35,6 +35,11 @@ double _cos(double x)
 	return cos(x);
 }
 
+double _tan(double x)
+{
+	return tan(x);
+}
+
 double abs_inv_sin(double x)
 {
 	double s=fabs(sin(x));

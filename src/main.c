@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	double angleX = 0.0000;
 	double speed=0.01;
 
-	struct Pt3d cam={2.50001,-10.001,0.5001};
+	struct Pt3d cam={2.50001,-10.001,2.001};
 	double focale=300;
 
 	bool run=true;
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 		t+=0.05;
 
 		graph_start_frame();
-
+		VoxRender_limit_tilt(render,&angleX);
 		VoxRender_setCam(render,cam,angleZ,angleX);
 		VoxRender_render(render,trace);
 		if (trace) trace=false;
