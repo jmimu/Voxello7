@@ -41,7 +41,7 @@ bool graph_init(int _window_w,int _window_h,
 void graph_start_frame()
 {
   for (long i=0;i<graph.render_w*graph.render_h;i++)
-	graph.myPixels[i]=0xFF000000;
+	graph.myPixels[i]=0xFF001020;
 }
 
 void graph_end_frame()
@@ -100,4 +100,20 @@ void graph_test()
 	{
 		graph_vline(x,0,graph.render_h,x);
 	}
+}
+
+
+
+uint32_t color_bright(uint32_t color,float factor)
+{
+	int r=color>>16;
+	int g=(color&0xFF00)>>8;
+	int b=color&0xFF;
+	r*=factor;
+	g*=factor;
+	b*=factor;
+	if (r>255) r=255;
+	if (g>255) g=255;
+	if (b>255) b=255;
+	return (r<<16)+(g<<8)+(b)+0xFF000000;
 }

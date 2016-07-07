@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include "dbg.h"
 
+const uint8_t EMPTY=0xFF;
+
+
+
 //TODO: add check & clear
 struct VoxWorld * voxworld_create(long _szX,long _szY,long _szZ)
 {
@@ -72,13 +76,37 @@ void voxworld_delete(struct VoxWorld * world)
 	free(world);
 }
 
+void voxworld_printf(struct VoxWorld * world)
+{
+	long i,z;
+	printf("====== VoxWorld ======\n");
+	for (long y=0;y<world->szY;y++)
+	{
+		printf("---- y=%d\n",y);
+		for (long x=0;x<world->szX;x++)
+		{
+			printf("  ---- x=%d\n    ",x);
+			z=0;
+			i=0;
+			while (z<world->szZ)
+			{
+				z+=world->data[y][x][i].n;
+				printf("%d*[%d] ",world->data[y][x][i].n,world->data[y][x][i].v);
+				i++;
+			}
+			printf("\n");
+		}
+	}
+	printf("==== VoxWorld end ====\n");
+}
+
 //expand one compressed column into curr_exp_col
 void voxworld_expand_col(struct VoxWorld * world,long x, long y)
 {
 	int i=0;
 	int k=0;
 	int z=0;
-	RLE_block rle;
+	struct RLE_block rle;
 	
 	while (z<world->szZ)
 	{
@@ -104,29 +132,29 @@ void voxworld_expand_col(struct VoxWorld * world,long x, long y)
 //compress curr_exp_col into curr_compr_col
 void voxworld_compr_col(struct VoxWorld * world)
 {
-	int curr_compr_col_size=0;
+	world->curr_compr_col_size=0;
 	int z=0;
-	RLE_block rle={.n=0,.v=world->curr_exp_col[0]};
+	struct RLE_block rle={.n=0,.v=world->curr_exp_col[0]};
 	for (z=0;z<world->szZ;z++)
 	{
 		if (rle.v==world->curr_exp_col[z])
 		{
 			rle.n++;
 		}else{
-			world->curr_compr_col[curr_compr_col_size]=rle;
+			world->curr_compr_col[world->curr_compr_col_size]=rle;
 			rle.n=1;
 			rle.v=world->curr_exp_col[z];
-			curr_compr_col_size++;
+			world->curr_compr_col_size++;
 		}
 	}
-	world->curr_compr_col[curr_compr_col_size]=rle;
-	curr_compr_col_size++;
+	world->curr_compr_col[world->curr_compr_col_size]=rle;
+	world->curr_compr_col_size++;
 
 #ifdef DBG_VOX
 	printf("Compression results: ");
-	for (int i=0;i<curr_compr_col_size; i++)
+	for (int i=0;i<world->curr_compr_col_size; i++)
 	{
-		printf("(%d %d) ",world->curr_compr_col[i].n,world->curr_compr_col[i].v);
+		printf("%d*[%d] ",world->curr_compr_col[i].n,world->curr_compr_col[i].v);
 	}
 	printf("end\n");
 #endif
@@ -142,7 +170,14 @@ bool voxworld_write_compr_col(struct VoxWorld * world,long x, long y)
 
 	memcpy(world->data[y][x],world->curr_compr_col,
 			world->curr_compr_col_size*sizeof(struct RLE_block));
-
+#ifdef DBG_VOX
+	printf("Copy results: ");
+	for (int i=0;i<world->curr_compr_col_size; i++)
+	{
+		printf("%d*[%d] ",world->data[y][x][i].n,world->data[y][x][i].v);
+	}
+	printf("end\n");
+#endif
 	return true;
 error:
 	return false;

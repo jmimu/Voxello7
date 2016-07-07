@@ -35,4 +35,7 @@ void graph_end_frame();
 
 void graph_test();
 
+uint32_t color_bright(uint32_t color,float factor);
+
+
 #endif // GRAPH_H

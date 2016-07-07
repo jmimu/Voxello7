@@ -1,25 +1,45 @@
 #include "voxrender.h"
 #include "graph.h"
 #include "trigo.h"
+#include "voxworld.h"
 #include <assert.h>
 
 int zen2line(struct VoxRender * render,double zen);
 struct VoxVInterval * VoxVInterval_delete(struct VoxVInterval * interval);//return next interval
+struct VoxVInterval * VoxVInterval_add(struct VoxVInterval * interval,double zen0,double zen1);//return new interval
 
 //return next interval
-struct VoxVInterval * VoxVInterval_delete(struct VoxVInterval * interval,struct VoxRay * ray)
+struct VoxVInterval * VoxVInterval_delete(struct VoxVInterval * interval)
 {
 	assert(interval!=NULL);
 	
 	struct VoxVInterval * next_interval=interval->next;
 	if (interval->previous)
 		interval->previous->next=interval->next;
-	else
-		ray->first_VInterval=interval->next;//save the new first interval
 	if (interval->next) interval->next->previous=interval->previous;
 	free(interval);
 	return next_interval;
 }
+
+//return new interval
+struct VoxVInterval * VoxVInterval_add(struct VoxVInterval * interval,double zen0,double zen1)
+{
+	struct VoxVInterval * new_interval=(struct VoxVInterval*)malloc(sizeof(struct VoxVInterval));
+	new_interval->zenMin=zen0;
+	new_interval->zenMax=zen1;
+	new_interval->previous=interval;
+	if (interval)
+	{
+		new_interval->next=interval->next;
+		if (interval->next) interval->next->previous=new_interval;
+		interval->next=new_interval;
+	}else{
+		new_interval->next=NULL;
+	}
+	return new_interval;
+}
+
+
 
 void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 				double ang_zen_min, double ang_zen_max)
@@ -30,18 +50,18 @@ void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 	double sinAngHz=_sin(ray->ang_hz);
 
 	ray->dirX=0;
-	if (cosAngHz>0) ray->dirX=+1;
-	if (cosAngHz<0) ray->dirX=-1;
+	if (sinAngHz>0) ray->dirX=+1;
+	if (sinAngHz<0) ray->dirX=-1;
 	ray->dirY=0;
-	if (sinAngHz>0) ray->dirY=+1;
-	if (sinAngHz<0) ray->dirY=-1;
+	if (cosAngHz>0) ray->dirY=+1;
+	if (cosAngHz<0) ray->dirY=-1;
 
-	ray->incX=abs_inv_cos(ray->ang_hz);//how much to increment for 1 step in x or y
-	ray->incY=abs_inv_sin(ray->ang_hz);
+	ray->incX=abs_inv_sin(ray->ang_hz);//how much to increment for 1 step in x or y
+	ray->incY=abs_inv_cos(ray->ang_hz);
 	ray->currentLambda=0;//where we are on the ray
 
 	double offsetX,offsetY;
-	if (cosAngHz>0)
+	if (sinAngHz>0)
 	{
 		offsetX=(floor(ray->cam->x+1)-ray->cam->x)*ray->incX;
 		ray->currentX=floor(ray->cam->x);
@@ -49,10 +69,10 @@ void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 	else
 	{
 		offsetX=(ray->cam->x-floor(ray->cam->x))*ray->incX;
-		ray->currentX=floor(ray->cam->x);
+		ray->currentX=ceil(ray->cam->x);
 	}
 
-	if (sinAngHz>0)
+	if (cosAngHz>0)
 	{
 		offsetY=(floor(ray->cam->y+1)-ray->cam->y)*ray->incY;
 		ray->currentY=floor(ray->cam->y);
@@ -60,17 +80,17 @@ void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 	else
 	{
 		offsetY=(ray->cam->y-floor(ray->cam->y))*ray->incY;
-		ray->currentY=floor(ray->cam->y);
+		ray->currentY=ceil(ray->cam->y);
 	}
 
 	ray->nextXLambda=offsetX;
 	ray->nextYLambda=offsetY;
+	ray->lastIntersectionWasX=false;//has no sens for now
 
 	//TODO: make it in one pass
 	while (ray->currentLambda < ray->render->clip_min)
 		VoxRay_findNextIntersection(ray);
 
-	ray->lastIntersectionWasX=false;//has no sens for now
 
 	ray->first_VInterval=(struct VoxVInterval*)malloc(sizeof(struct VoxVInterval));
 	ray->first_VInterval->zenMin=ang_zen_min;
@@ -133,9 +153,10 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col)
 		if ((nextX>=0)&&(nextX<ray->world->szX)
 				&&(nextY>=0)&&(nextY<ray->world->szY))
 		{
-			currentCol=ray->world->data[nextX][nextY];
+			currentCol=ray->world->data[nextY][nextX];
 			struct VoxVInterval * interval=ray->first_VInterval;
-			
+			struct VoxVInterval *next_first_VInterval=NULL;
+			struct VoxVInterval *next_current_VInterval=NULL;
 			while (interval)
 			{
 				//compute z range of intersection
@@ -147,7 +168,7 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col)
 
 				if (zMin>zMax)
 				{
-					interval=VoxVInterval_delete(interval,ray);
+					interval=VoxVInterval_delete(interval);
 					continue;
 				}
 
@@ -172,21 +193,28 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col)
 					v=currentCol[voxIndex].v;
 					voxZ+=currentCol[voxIndex].n;
 					voxIndex++;
+					zen1=_atan((voxZ-ray->cam->z)/ray->currentLambda);
 					
 					if (v==EMPTY)
 					{
-						//TODO
+						if (!next_first_VInterval)
+						{
+							next_first_VInterval=VoxVInterval_add(NULL,zen0,zen1);
+							next_current_VInterval=next_first_VInterval;
+						}else{
+							next_current_VInterval=VoxVInterval_add(next_current_VInterval,zen0,zen1);
+						}
 					}else{
 						color=ray->world->colorMap[v];
-						if (ray->lastIntersectionWasX) color/=2;
-						zen1=_atan((voxZ-ray->cam->z)/ray->currentLambda);
+						if (ray->lastIntersectionWasX) color=color_bright(color,0.8);
 						graph_vline(screen_col,zen2line(ray->render,zen0),
 								zen2line(ray->render,zen1),color);
 					}
 					zen0=zen1;
 				}
-				interval=VoxVInterval_delete(interval,ray);
+				interval=VoxVInterval_delete(interval);
 			}
+			ray->first_VInterval=next_first_VInterval;
 		}
 
 		//next intersection
@@ -228,7 +256,7 @@ struct VoxRender * VoxRender_create(struct VoxWorld *_world,double _fov_hz)
 	return render;
 }
 
-void VoxRender_setCam(struct VoxRender * render,Pt3d _cam,double _center_ang_hz,double _center_ang_vert)
+void VoxRender_setCam(struct VoxRender * render,struct Pt3d _cam,double _center_ang_hz,double _center_ang_vert)
 {
 	render->cam=_cam;
 	render->center_ang_hz=_center_ang_hz;
@@ -254,11 +282,13 @@ void VoxRender_render(struct VoxRender * render)
 {
 	for (int currentCol=0;currentCol<graph.render_w;currentCol++)
 	{
-		VoxRay_reinit(&render->ray,&render->cam,render->current_hz_angle,
-			render->start_vert_angle,render->stop_vert_angle);
+		//if (currentCol==200)
+		{
+			VoxRay_reinit(&render->ray,&render->cam,render->current_hz_angle,
+				render->start_vert_angle,render->stop_vert_angle);
+			VoxRay_draw(&render->ray,currentCol);
+		}
 		render->current_hz_angle+=render->step_hz_angle;
-		currentCol++;
-		VoxRay_draw(&render->ray,currentCol);
 	}
 }
 

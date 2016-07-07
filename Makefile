@@ -1,4 +1,4 @@
-CFLAGS=-g -O2 -Wall -Wextra -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
+CFLAGS= -O2 -Wall -Wextra -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
 LIBS=-lm -lSDL2 $(OPTLIBS)
 PREFIX?=/usr/local
 
@@ -36,7 +36,7 @@ build:
 # the same name as the .o file.
 build/%.o : src/%.c
 	mkdir -p $(@D)
-	$(CXX) $(CXX_FLAGS) -MMD -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -c $< -o $@
 
 
 # The Unit Tests

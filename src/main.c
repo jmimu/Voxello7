@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	double angleX = 0.0000;
 	double speed=0.01;
 
-	struct Pt3d cam={-10.0001,0.5001,0.5001};
+	struct Pt3d cam={0.0001,-10.001,0.5001};
 	double focale=300;
 
 	bool run=true;
@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
 
 	int frame_couter=0;
 
-	struct VoxWorld * world;
-	struct VoxRender * render;
+	struct VoxWorld * world=0;
+	struct VoxRender * render=0;
 
 	result=graph_init(800/2,600/2,800/2,600/2,"Voxello");
 	check_debug(result,"Unable to open window...");
@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
 	check_debug(world,"Unable to create world...");
 
 	voxworld_init_empty_cube(world,2);
+	voxworld_printf(world);
 	
 	render=VoxRender_create(world,2);
 	
@@ -155,25 +156,25 @@ int main(int argc, char *argv[])
 		//SDL_WarpMouseInWindow(graph->get_window(),graph->get_window_w()/2,graph->get_window_h()/2);
 		//while (SDL_PollEvent(&event)) ;
 
-		if (key_r)
+		if (key_g)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){speed*cos(angleZ),speed*sin(angleZ),0});
-		}
-		if (key_f)
-		{
-			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){-speed*cos(angleZ),-speed*sin(angleZ),0});
+			add(&cam,(struct Pt3d){speed*cos(angleZ),-speed*sin(angleZ),0});
 		}
 		if (key_d)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){speed*cos(angleZ-M_PI/2),speed*sin(angleZ-M_PI/2),0});
+			add(&cam,(struct Pt3d){-speed*cos(angleZ),speed*sin(angleZ),0});
 		}
-		if (key_g)
+		if (key_f)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){-speed*cos(angleZ-M_PI/2),-speed*sin(angleZ-M_PI/2),0});
+			add(&cam,(struct Pt3d){-speed*sin(angleZ),-speed*cos(angleZ),0});
+		}
+		if (key_r)
+		{
+			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
+			add(&cam,(struct Pt3d){speed*sin(angleZ),speed*cos(angleZ),0});
 		}
 		if (key_e)
 		{
@@ -183,7 +184,7 @@ int main(int argc, char *argv[])
 		if (key_t)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){0,0,speed});
+			add(&cam,(struct Pt3d){0,0,-speed});
 		}
 
 		t+=0.05;
@@ -218,7 +219,7 @@ int main(int argc, char *argv[])
 	}
 
 error:
-	voxworld_delete(world);
+	if (world) voxworld_delete(world);
 	graph_close();
 
 }

@@ -3,6 +3,7 @@
 
 #include "pt3d.h"
 #include "voxworld.h"
+#include <stdbool.h>
 
 /*****************
  * One ray of raycasting
@@ -70,7 +71,7 @@ void Voxray_show_info(struct VoxRay * ray);
 
 
 struct VoxRender * VoxRender_create(struct VoxWorld *_world,double _fov_hz);
-void VoxRender_setCam(struct VoxRender * render,Pt3d _cam,double _center_ang_hz,double _center_ang_vert);
+void VoxRender_setCam(struct VoxRender * render,struct Pt3d _cam,double _center_ang_hz,double _center_ang_vert);
 void VoxRender_render(struct VoxRender * render);
 
 

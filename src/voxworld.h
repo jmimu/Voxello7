@@ -2,8 +2,9 @@
 #define VOXWORLD_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
-const uint8_t EMPTY=0xFF;
+extern const uint8_t EMPTY;
 
 
 /*******
@@ -37,4 +38,7 @@ void voxworld_expand_col(struct VoxWorld * world,long x, long y);
 void voxworld_compr_col(struct VoxWorld * world);
 bool voxworld_write_compr_col(struct VoxWorld * world,long x, long y);
 void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v);
+
+void voxworld_printf(struct VoxWorld * world);
+
 #endif // VOXWORLD_H
