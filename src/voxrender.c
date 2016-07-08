@@ -235,6 +235,8 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 					zen1=_atan((voxZ-ray->cam->z)/ray->currentLambda);
 					if (zen1>interval->zenMax)
 						zen1=interval->zenMax;
+					if (zen1<zen0) //TODO: understand why it occurs...
+						continue;
 					if (trace)
 						printf("value:%d for zen in %f %f\n",v,zen0,zen1);
 					
