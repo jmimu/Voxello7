@@ -78,7 +78,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 	if (ymin<0) ymin=0;
 	if (ymax>=graph.render_h) ymax=graph.render_h-1;
 	unsigned int i=x+ymin*graph.render_w;
-	for (int y=ymin;y<=ymax;y++)
+	for (int y=ymin+1;y<=ymax;y++)
 	{
 		graph.myPixels[i]=rgba;
 		i+=graph.render_w;

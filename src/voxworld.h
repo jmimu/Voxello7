@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 extern const uint8_t EMPTY;
+extern const int UNINIT;
 
 
 /*******

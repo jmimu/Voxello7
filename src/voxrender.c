@@ -152,25 +152,21 @@ bool VoxRay_findNextIntersection(struct VoxRay * ray,bool trace)
 
 void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 {
-	//prepare next and previous hz
-	int previousX;
-	int previousY;
 	int nextX;
 	int nextY;
 	struct RLE_block * currentCol;
 	double zMin,zMax;
+	int voxIndex=0;
+	int voxZ=0;
+	int previous_voxZ=0;
+	int previous_v=UNINIT;
+	uint8_t v;
+	Uint32 color;
 	
 	while ((ray->first_VInterval)&&(VoxRay_findNextIntersection(ray,trace)))
 	{
-		previousX=ray->currentX;
-		previousY=ray->currentY;
 		nextX=ray->currentX;
 		nextY=ray->currentY;
-		if ((ray->lastIntersectionWasX))
-			previousX=ray->currentX-ray->dirX;
-
-		if (!ray->lastIntersectionWasX)
-			previousY=ray->currentY-ray->dirY;
 
 		if (trace)
 			printf("nextX: %d  nextY: %d\n",nextX,nextY);
@@ -201,29 +197,39 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 				}
 
 				//get voxel at zMin
-				int voxIndex=0;
-				int voxZ=0;
-				Uint32 color;
+				voxIndex=0;
+				voxZ=0;
+				previous_voxZ=0;
+				previous_v=UNINIT;
+				v=EMPTY;
+				
 				while (voxZ+currentCol[voxIndex].n<floor(zMin))
 				{
-					//color=ray->world->colorMap[currentCol[voxIndex].v];
+					v=currentCol[voxIndex].v;
 					voxZ+=currentCol[voxIndex].n;
 					voxIndex++;
 				}
 
 				if (trace)
-					printf("start at voxIndex: %d, voxZ: %d\n",voxIndex, voxZ);
+					printf("start at voxIndex: %d, voxZ: %d, v=%d\n",voxIndex, voxZ, v);
 
 				//test: draw whole voxel space
 				double zen0=_atan((zMin-ray->cam->z)/ray->currentLambda);
 				if (zen0<interval->zenMin)
 					zen0=interval->zenMin;
 				double zen1;
-				uint8_t v;
 
 				while (voxZ<zMax)
 				{
-					v=currentCol[voxIndex].v;
+					if (previous_v==UNINIT)
+					{
+						v=currentCol[voxIndex].v;
+						previous_v=v;
+					}else{
+						previous_v=v;
+						v=currentCol[voxIndex].v;
+					}
+					previous_voxZ=voxZ;
 					voxZ+=currentCol[voxIndex].n;
 					voxIndex++;
 					zen1=_atan((voxZ-ray->cam->z)/ray->currentLambda);
@@ -234,6 +240,21 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 					
 					if (v==EMPTY)
 					{
+						//test if need to draw top of vox below
+						if ((previous_v!=EMPTY)&&(zen0<0))
+						{
+							double next_lambda=VoxRay_lambdaNextIntersection(ray);
+							double zen_tmp=_atan((previous_voxZ-ray->cam->z)/next_lambda);
+							color=ray->world->colorMap[previous_v];
+							color=color_bright(color,0.6);
+							graph_vline(screen_col,zen2line(ray->render,zen0),
+									zen2line(ray->render,zen_tmp),color);
+							if (trace)
+								printf("draw top %d %d : %x (zen_tmp=%f)\n",zen2line(ray->render,zen0),zen2line(ray->render,zen_tmp),color,zen_tmp);
+							zen0=zen_tmp;
+						}
+						
+						//create a new interval for next vox column 
 						if (!next_first_VInterval)
 						{
 							next_first_VInterval=VoxVInterval_add(NULL,zen0,zen1);
@@ -241,8 +262,26 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 						}else{
 							next_current_VInterval=VoxVInterval_add(next_current_VInterval,zen0,zen1);
 						}
+						if (trace)
+							printf("save for next interval %f %f\n",zen0,zen1);
 						
 					}else{
+						//test if need to draw bottom of vox
+						if ((previous_v==EMPTY)&&(zen1>0))
+						{
+							double next_lambda=VoxRay_lambdaNextIntersection(ray);
+							double zen_tmp=_atan((previous_voxZ-ray->cam->z)/next_lambda);
+							color=ray->world->colorMap[v];
+							color=color_bright(color,0.6);
+							graph_vline(screen_col,zen2line(ray->render,zen_tmp),
+									zen2line(ray->render,zen0),color);
+							if (trace)
+								printf("draw bottom %d %d : %x, (zen_tmp=%f)\n",zen2line(ray->render,zen_tmp),zen2line(ray->render,zen0),color,zen_tmp);
+							//remove this interval to last next_current_VInterval:
+							if (next_current_VInterval)
+								next_current_VInterval->zenMax=zen_tmp;
+						}
+
 						color=ray->world->colorMap[v];
 						if (ray->lastIntersectionWasX)
 							color=color_bright(color,0.8);

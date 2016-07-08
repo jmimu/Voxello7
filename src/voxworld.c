@@ -4,6 +4,7 @@
 #include "dbg.h"
 
 const uint8_t EMPTY=0xFF;
+const int UNINIT=-1;
 
 
 
@@ -111,7 +112,7 @@ void voxworld_expand_col(struct VoxWorld * world,int x, int y)
 	while (z<world->szZ)
 	{
 		rle=world->data[y][x][i];
-		for (int k=0;k<rle.n;k++)
+		for (k=0;k<rle.n;k++)
 		{
 			world->curr_exp_col[z]=rle.v;
 			z++;
