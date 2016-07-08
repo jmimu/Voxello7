@@ -269,7 +269,7 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 						
 					}else{
 						//test if need to draw bottom of vox
-						if ((previous_v==EMPTY)&&(zen1>0))
+						if ((previous_v==EMPTY)&&(zen0>0))
 						{
 							double next_lambda=VoxRay_lambdaNextIntersection(ray);
 							double zen_tmp=_atan((previous_voxZ-ray->cam->z)/next_lambda);
