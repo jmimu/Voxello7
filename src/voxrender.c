@@ -96,7 +96,7 @@ void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 
 
 	//TODO: make it in one pass
-	while (ray->currentLambda < ray->render->clip_min)
+	while (VoxRay_lambdaNextIntersection(ray) < ray->render->clip_min)
 		VoxRay_findNextIntersection(ray,trace);
 
 	if (trace)
@@ -108,6 +108,15 @@ void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 	ray->first_VInterval->previous=NULL;
 	ray->first_VInterval->next=NULL;
 }
+
+double VoxRay_lambdaNextIntersection(struct VoxRay * ray)
+{
+	if (ray->nextXLambda<ray->nextYLambda)
+		return ray->nextXLambda;
+	else
+		return ray->nextYLambda;
+}
+
 
 //returns false if out of bounds
 bool VoxRay_findNextIntersection(struct VoxRay * ray,bool trace)

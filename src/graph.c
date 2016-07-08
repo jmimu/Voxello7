@@ -22,7 +22,7 @@ bool graph_init(int _window_w,int _window_h,
 				SDL_WINDOWPOS_CENTERED,graph.window_w,graph.window_h,
 				SDL_WINDOW_SHOWN);//SDL_WINDOW_FULLSCREEN_DESKTOP
   //if SDL_WINDOW_FULLSCREEN_DESKTOP
-  //~ SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
   //SDL_RenderSetLogicalSize(sdlRenderer, 640, 480);
 
   graph.renderer = SDL_CreateRenderer(graph.window, -1, 0);

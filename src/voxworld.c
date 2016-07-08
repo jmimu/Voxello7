@@ -226,7 +226,7 @@ void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
 	for (z=0;z<world->szZ;z++)
 		world->curr_exp_col[z]=v+1;
 	voxworld_compr_col(world);
-	voxworld_write_compr_col(world,2,2);
+	voxworld_write_compr_col(world,world->szX/2,world->szY/2);
 	for (z=1;z<world->szZ-1;z++)
 		world->curr_exp_col[z]=EMPTY;
 	voxworld_compr_col(world);

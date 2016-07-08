@@ -49,10 +49,10 @@ int main(int argc, char *argv[])
 	struct VoxWorld * world=0;
 	struct VoxRender * render=0;
 
-	result=graph_init(800/2,600/2,800/2,600/2,"Voxello");
+	result=graph_init(800/1.5,600/1.5,800/3,600/3,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(5,5,4);
+	world = voxworld_create(7,7,5);
 	check_debug(world,"Unable to create world...");
 
 	voxworld_init_empty_cube(world,2);
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
 		//----- timing -----
 		if (previous_fps_time!=current_time/1000)
 		{
-			//~ printf("FPS: %d\n",fps);
+			printf("FPS: %d\n",fps);
 			previous_fps_time=current_time/1000;
 			fps=0;
 		}

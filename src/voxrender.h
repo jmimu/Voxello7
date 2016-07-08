@@ -65,6 +65,7 @@ struct VoxRender
 
 void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
 				double ang_zen_min, double ang_zen_max, bool trace);
+double VoxRay_lambdaNextIntersection(struct VoxRay * ray);
 bool VoxRay_findNextIntersection(struct VoxRay * ray,bool trace);//returns false if out of bounds
 void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace);
 void Voxray_show_info(struct VoxRay * ray);
