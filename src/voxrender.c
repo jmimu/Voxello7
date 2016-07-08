@@ -232,6 +232,10 @@ void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace)
 					previous_voxZ=voxZ;
 					voxZ+=currentCol[voxIndex].n;
 					voxIndex++;
+
+					if (trace)
+						printf("v: %d (%d), voxZ: %d (%d)\n",v, previous_v, voxZ, previous_voxZ);
+
 					zen1=_atan((voxZ-ray->cam->z)/ray->currentLambda);
 					if (zen1>interval->zenMax)
 						zen1=interval->zenMax;
@@ -330,7 +334,7 @@ struct VoxRender * VoxRender_create(struct VoxWorld *_world,double _fov_hz)
 	render->ray.world=render->world;
 
 	render->clip_min=2;
-	render->clip_max=50;
+	render->clip_max=500;
 	return render;
 }
 

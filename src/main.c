@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
 	double angleZ = 0.0000;
 	double angleX = 0.0000;
-	double speed=0.01;
+	double speed=0.1;
 
 	struct Pt3d cam={2.50001,-10.001,2.001};
 	double focale=300;
@@ -49,16 +49,20 @@ int main(int argc, char *argv[])
 	struct VoxWorld * world=0;
 	struct VoxRender * render=0;
 
-	result=graph_init(800/1.5,600/1.5,800/3,600/3,"Voxello");
+	result=graph_init(800/2,600/2,800/4,600/4,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(7,7,5);
+	world = voxworld_create(100,100,30);
 	check_debug(world,"Unable to create world...");
+	cam.x=world->szX/2+0.001;
+	//cam.y=world->szY/2+0.001;
+	cam.z=world->szZ/2+0.001;
 
-	voxworld_init_empty_cube(world,2);
+	//voxworld_init_empty_cube(world,2);
+	voxworld_init_land(world);
 	//voxworld_printf(world);
 	
-	render=VoxRender_create(world,2);
+	render=VoxRender_create(world,1);
 	
 	last_time = SDL_GetTicks();
 	current_time = last_time;

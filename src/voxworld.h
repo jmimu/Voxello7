@@ -35,10 +35,12 @@ struct VoxWorld
 
 struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ);
 void voxworld_delete(struct VoxWorld * world);
+void voxworld_empty_curr_exp_col(struct VoxWorld * world);
 void voxworld_expand_col(struct VoxWorld * world,int x, int y);
 void voxworld_compr_col(struct VoxWorld * world);
 bool voxworld_write_compr_col(struct VoxWorld * world,int x, int y);
 void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v);
+void voxworld_init_land(struct VoxWorld * world);
 
 void voxworld_printf(struct VoxWorld * world);
 

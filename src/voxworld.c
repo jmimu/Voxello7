@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include "dbg.h"
+#include "trigo.h"
 
 const uint8_t EMPTY=0xFF;
 const int UNINIT=-1;
@@ -86,7 +87,7 @@ void voxworld_printf(struct VoxWorld * world)
 		printf("---- y=%d\n",y);
 		for (int x=0;x<world->szX;x++)
 		{
-			printf("  ---- x=%d\n    ",x);
+			printf("  ---- x=%d\n	",x);
 			z=0;
 			i=0;
 			while (z<world->szZ)
@@ -100,6 +101,12 @@ void voxworld_printf(struct VoxWorld * world)
 	}
 	printf("==== VoxWorld end ====\n");
 }
+
+void voxworld_empty_curr_exp_col(struct VoxWorld * world)
+{
+	memset(world->curr_exp_col,EMPTY,world->szZ);
+}
+
 
 //expand one compressed column into curr_exp_col
 void voxworld_expand_col(struct VoxWorld * world,int x, int y)
@@ -236,4 +243,81 @@ void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
 		voxworld_write_compr_col(world,x,0);
 	}
 
+}
+
+
+void voxworld_init_land(struct VoxWorld * world)
+{
+	long z_start;
+	int SNOW_START=28;
+	int SNOW_END=32;
+	
+	for (int i=0;i<255;i++)
+	{
+		world->colorMap[i]=(((i*34)%256)<<16)+(((i*34+85)%256)<<8)+(i*34+190)%256;
+	}
+	
+	for (long x=0;x<world->szX;x++)
+		for (long y=0;y<world->szY;y++)
+		{
+			z_start=_cos(x/(world->szX/4.0))*world->szZ/10+_sin(y/(world->szY/5.2)+1)*world->szZ/8+world->szZ/7;
+			if (z_start<=0) z_start=1; 
+			voxworld_empty_curr_exp_col(world);
+			for (long z=0;z<world->szZ/2;z++)
+			{
+				if (z<z_start)
+					world->curr_exp_col[z]=z_start/2;//0x50;
+				else if (z<z_start+1)//for snow
+					world->curr_exp_col[z]=rand()%(SNOW_END-SNOW_START)+SNOW_START;//0x50;
+				else
+					world->curr_exp_col[z]=EMPTY;
+			}
+			voxworld_compr_col(world);
+			voxworld_write_compr_col(world,x,y);
+		}
+	//add a wall
+	
+	//colors: 20 and 150
+	//structure:
+	//   ***************
+	//   *   *   *   *  
+	//   *   *   *   *  
+	//   ***************
+	//	 *   *   *   *
+	//	 *   *   *   *
+	/*unsigned char v=0;
+	for (long x=65;x<68;x++)
+	{
+		for (long y=6;y<30;y++)
+		{
+			voxworld_empty_curr_exp_col(world);
+			for (long z=0;z<world->szZ-10;z++)
+			{
+				v=150;
+				if (z%3==0) v=20;
+				if ((y+3*((z/3)%2))%5==0) v=20;
+				world->curr_exp_col[z]=v;
+			}
+			voxworld_compr_col(world);
+			voxworld_write_compr_col(world,x,y);
+		}
+	}
+	
+	//other
+	v=0;
+	for (long x=100;x<102;x++)
+	{
+		for (long y=80;y<82;y++)
+		{
+			voxworld_empty_curr_exp_col(world);
+			for (long z=0;z<world->szZ;z++)
+			{
+				v=201;
+				if (z%2==0) v=78;
+				world->curr_exp_col[z]=v;
+			}
+			voxworld_compr_col(world);
+			voxworld_write_compr_col(world,x,y);
+		}
+	}*/
 }
