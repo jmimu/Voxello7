@@ -68,12 +68,15 @@ void graph_putpixel(int x,int y,uint32_t rgba)
 
 void graph_vline(int x,int y1,int y2,uint32_t rgba)
 {
-	int ymin=y1;
-	int ymax=y2;
+	int ymin;
+	int ymax;
 	if (y1>y2)
 	{
-		ymin=y2;
-		ymax=y1;
+		ymin=graph.render_h-1-y1;
+		ymax=graph.render_h-1-y2;
+	}else{
+		ymin=graph.render_h-1-y2;
+		ymax=graph.render_h-1-y1;
 	}
 	if (ymin<0) ymin=0;
 	if (ymax>=graph.render_h) ymax=graph.render_h-1;

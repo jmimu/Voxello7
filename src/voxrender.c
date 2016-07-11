@@ -217,7 +217,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 
 				if (zMin>zMax)
 				{
-					//printf("ERROR: zMin>zMax\n");
+					printf("ERROR: zMin>zMax\n");
 					interval=VoxVInterval_delete(interval);
 					continue;
 				}
@@ -239,13 +239,12 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				if (trace)
 					printf("start at voxIndex: %d, voxZ: %d, v=%d\n",voxIndex, voxZ, v);
 
-				//test: draw whole voxel spac;
 				int l0=z_to_l(zMin, ray->cam->z, ray->currentLambda, fc);
 				if (l0<interval->l_min)
 					l0=interval->l_min;
 				int l1;
 
-				while (voxZ<zMax)
+				while (voxZ<=zMax)
 				{
 					if (previous_v==UNINIT)
 					{
@@ -260,7 +259,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 					voxIndex++;
 
 					if (trace)
-						printf("v: %d (%d), voxZ: %d (%d)\n",v, previous_v, voxZ, previous_voxZ);
+						printf("v: %d (%d), voxZ: %d (%d) voxIndex: %d\n",v, previous_v, voxZ, previous_voxZ,voxIndex);
 
 					l1=z_to_l(voxZ, ray->cam->z, ray->currentLambda, fc);
 					if (l1>interval->l_max)

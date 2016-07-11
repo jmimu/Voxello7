@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	double angleX = 0.0000;
 	double speed=0.01;
 
-	struct Pt3d cam={2.50001,-10.001,2.001};
+	struct Pt3d cam={2.50001,-5.001,2.001};
 	double focale=300;
 
 	bool run=true;
