@@ -13,10 +13,11 @@
 
 
 //VoxVInterval are arranged in growing order
+//interval between line min and line max
 struct VoxVInterval
 {
-	double zenMin;
-	double zenMax;
+	int l_min;
+	int l_max;
 	struct VoxVInterval * next;
 	struct VoxVInterval * previous;
 };
@@ -26,7 +27,6 @@ struct VoxRay
 	struct VoxRender *render;
 	struct VoxWorld *world;
 	struct Pt3d * cam;
-	double ang_hz;//horizontal angle of the plane
 	double incX,incY;//how much to increment for 1 step in x or y
 	double currentLambda;//where we are on the ray
 	double nextXLambda;//next X intersection
@@ -41,39 +41,38 @@ struct VoxRay
 };
 
 
-
+/*
+ * Projection on a plan, nodal point = cam,
+ * focal=f, plan size=graph render size
+ * */
 struct VoxRender
 {	
 	struct VoxWorld *world;
 	struct Pt3d cam;
-	double center_ang_hz;
-	double center_ang_vert;
-	double fov_hz;//field of view hz
-	double fov_vert;//field of view hz
+	double ang_hz;
+	double ang_hz_cos,ang_hz_sin;
 	struct VoxRay ray;
-	double zen2line_factor,zen2line_offset;
-	double current_hz_angle;
-	double step_hz_angle;
-	double start_vert_angle;
-	double stop_vert_angle;
 
 	double clip_min;//min dist for intersection
 	double clip_max;//max dist for intersection
+
+	double f;//focal (in pixels)
+	double * fc;//distance from screen column to nodal point
+	
 };
 
 
 
-void VoxRay_reinit(struct VoxRay * ray,struct Pt3d *cam, double ang_hz,
-				double ang_zen_min, double ang_zen_max, bool trace);
-double VoxRay_lambdaNextIntersection(struct VoxRay * ray);
-bool VoxRay_findNextIntersection(struct VoxRay * ray,bool trace);//returns false if out of bounds
-void VoxRay_draw(struct VoxRay * ray,int screen_col,bool trace);
+void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace);
+double voxray_lambdaNextIntersection(struct VoxRay * ray);
+bool voxray_findNextIntersection(struct VoxRay * ray,bool trace);//returns false if out of bounds
+void voxray_draw(struct VoxRay * ray,int c,bool trace);
 void Voxray_show_info(struct VoxRay * ray);
 
 
-struct VoxRender * VoxRender_create(struct VoxWorld *_world,double _fov_hz);
-void VoxRender_setCam(struct VoxRender * render,struct Pt3d _cam,double _center_ang_hz,double _center_ang_vert);
-void VoxRender_render(struct VoxRender * render,bool trace);
-void VoxRender_limit_tilt(struct VoxRender *render, double * angleZ);
+struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm);
+void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz);
+void voxrender_render(struct VoxRender * render,bool trace);
+void voxrender_delete(struct VoxRender * render);
 
 #endif // VOXRENDER_H

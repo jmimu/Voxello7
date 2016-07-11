@@ -40,20 +40,6 @@ double _tan(double x)
 	return tan(x);
 }
 
-double abs_inv_sin(double x)
-{
-	double s=fabs(sin(x));
-	if (s<0.0001) return 10000000;
-	return 1/s;
-}
-
-double abs_inv_cos(double x)
-{
-	double c=fabs(cos(x));
-	if (c<0.0001) return 10000000;
-	return 1/c;
-}
-
 double _atan(double x)
 {
 	return atan(x);

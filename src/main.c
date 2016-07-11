@@ -4,6 +4,7 @@
 
 #include "graph.h"
 #include "pt3d.h"
+#include "trigo.h"
 #include "dbg.h"
 #include "voxworld.h"
 #include "voxrender.h"
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
 
 	double angleZ = 0.0000;
 	double angleX = 0.0000;
-	double speed=0.1;
+	double speed=0.01;
 
 	struct Pt3d cam={2.50001,-10.001,2.001};
 	double focale=300;
@@ -52,17 +53,17 @@ int main(int argc, char *argv[])
 	result=graph_init(800/2,600/2,800/4,600/4,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(100,100,30);
+	world = voxworld_create(5,5,4);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/2+0.001;
 	//cam.y=world->szY/2+0.001;
 	cam.z=world->szZ/2+0.001;
 
-	//voxworld_init_empty_cube(world,2);
-	voxworld_init_land(world);
+	voxworld_init_empty_cube(world,2);
+	//voxworld_init_land(world);
 	//voxworld_printf(world);
 	
-	render=VoxRender_create(world,1);
+	render=voxrender_create(world,20);
 	
 	last_time = SDL_GetTicks();
 	current_time = last_time;
@@ -168,22 +169,22 @@ int main(int argc, char *argv[])
 		if (key_g)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){speed*cos(angleZ),-speed*sin(angleZ),0});
+			add(&cam,(struct Pt3d){speed*_cos(angleZ),-speed*_sin(angleZ),0});
 		}
 		if (key_d)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){-speed*cos(angleZ),speed*sin(angleZ),0});
+			add(&cam,(struct Pt3d){-speed*_cos(angleZ),speed*_sin(angleZ),0});
 		}
 		if (key_f)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){-speed*sin(angleZ),-speed*cos(angleZ),0});
+			add(&cam,(struct Pt3d){-speed*_sin(angleZ),-speed*_cos(angleZ),0});
 		}
 		if (key_r)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){speed*sin(angleZ),speed*cos(angleZ),0});
+			add(&cam,(struct Pt3d){speed*_sin(angleZ),speed*_cos(angleZ),0});
 		}
 		if (key_e)
 		{
@@ -199,9 +200,8 @@ int main(int argc, char *argv[])
 		t+=0.05;
 
 		graph_start_frame();
-		VoxRender_limit_tilt(render,&angleX);
-		VoxRender_setCam(render,cam,angleZ,angleX);
-		VoxRender_render(render,trace);
+		voxrender_setCam(render,cam,angleZ);
+		voxrender_render(render,trace);
 		if (trace) trace=false;
 
 		//graph_test();
@@ -229,6 +229,7 @@ int main(int argc, char *argv[])
 	}
 
 error:
+	if (render) voxrender_delete(render);
 	if (world) voxworld_delete(world);
 	graph_close();
 

@@ -30,8 +30,6 @@
 double _sin(double x);
 double _cos(double x);
 double _tan(double x);
-double abs_inv_sin(double x);
-double abs_inv_cos(double x);
 double _atan(double x);
 
 
