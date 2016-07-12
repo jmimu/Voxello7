@@ -207,7 +207,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 			{
 				//compute z range of intersection
 				zMin=l_to_z(interval->l_min, ray->cam->z, ray->currentLambda, fc);
-				zMax=l_to_z(interval->l_max, ray->cam->z, ray->currentLambda, fc);
+				zMax=l_to_z(interval->l_max, ray->cam->z, ray->currentLambda, fc)+1;
 				if (zMin<0) zMin=0;
 				if (zMax>ray->world->szZ-1)
 					zMax=ray->world->szZ-1;
@@ -272,7 +272,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 					if (v==EMPTY)
 					{
 						//test if need to draw top of vox below
-						if ((previous_v!=EMPTY)&&(l0<0))
+						if ((previous_v!=EMPTY)&&(l0-graph.render_h/2<0))
 						{
 							double next_lambda=voxray_lambdaNextIntersection(ray);
 							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
@@ -297,7 +297,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						
 					}else{
 						//test if need to draw bottom of vox
-						if ((previous_v==EMPTY)&&(l0>0))
+						if ((previous_v==EMPTY)&&(l0-graph.render_h/2>0))
 						{
 							double next_lambda=voxray_lambdaNextIntersection(ray);
 							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
@@ -320,6 +320,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 
 					}
 					l0=l1;
+					if (trace)
+						printf("end of z: %d/%d\n",voxZ,zMax);
 				}
 				interval=VoxVInterval_delete(interval);
 			}

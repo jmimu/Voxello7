@@ -34,6 +34,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba);
 void graph_close();
 void graph_start_frame();
 void graph_end_frame();
+void ScreenshotBMP(const char * filename);
 
 void graph_test();
 

@@ -46,14 +46,14 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 	world->curr_compr_col_size=0;
 
 	//init colormap
-	world->colorMap[0]=0x000000;//black
-	world->colorMap[1]=0xFFFFFF;//white
-	world->colorMap[2]=0xFF0000;//red
-	world->colorMap[3]=0x00FF00;//green
-	world->colorMap[4]=0x0000FF;//blue
-	world->colorMap[5]=0x00FFFF;//yellow
-	world->colorMap[6]=0xFFFF00;//cyan
-	world->colorMap[7]=0xFF00FF;//violet
+	world->colorMap[0]=0xFF000000;//black
+	world->colorMap[1]=0xFFFFFFFF;//white
+	world->colorMap[2]=0xFFFF0000;//red
+	world->colorMap[3]=0xFF00FF00;//green
+	world->colorMap[4]=0xFF0000FF;//blue
+	world->colorMap[5]=0xFF00FFFF;//yellow
+	world->colorMap[6]=0xFFFFFF00;//cyan
+	world->colorMap[7]=0xFFFF00FF;//violet
 	
 	return world;
 error:

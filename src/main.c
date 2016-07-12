@@ -202,13 +202,17 @@ int main(int argc, char *argv[])
 		graph_start_frame();
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
-		if (trace) trace=false;
 
 		//graph_test();
 
 		graph_end_frame();
 		//run=false;
 
+		if (trace)
+		{
+			ScreenshotBMP("out.bmp");
+			trace=false;
+		}
 
 		//----- timing -----
 		if (previous_fps_time!=current_time/1000)

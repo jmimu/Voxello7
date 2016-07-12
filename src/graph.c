@@ -112,7 +112,7 @@ void graph_test()
 
 uint32_t color_bright(uint32_t color,float factor)
 {
-	int r=color>>16;
+	int r=(color&0xFF0000)>>16;
 	int g=(color&0xFF00)>>8;
 	int b=color&0xFF;
 	r*=factor;
@@ -122,4 +122,14 @@ uint32_t color_bright(uint32_t color,float factor)
 	if (g>255) g=255;
 	if (b>255) b=255;
 	return (r<<16)+(g<<8)+(b)+0xFF000000;
+}
+
+
+void ScreenshotBMP(const char * filename)
+{
+    SDL_Surface * surf = SDL_CreateRGBSurfaceFrom(graph.myPixels,
+			graph.render_w, graph.render_h, 8*4, graph.render_w*4, 0,0,0,0);
+    SDL_SaveBMP(surf, filename);
+
+    SDL_FreeSurface(surf);
 }
