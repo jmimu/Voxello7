@@ -260,7 +260,7 @@ void voxworld_init_land(struct VoxWorld * world)
 	for (long x=0;x<world->szX;x++)
 		for (long y=0;y<world->szY;y++)
 		{
-			z_start=_cos(x/(world->szX/4.0))*world->szZ/10+_sin(y/(world->szY/5.2)+1)*world->szZ/8+world->szZ/7;
+			z_start=_cos(x/(world->szX/6.0))*world->szZ/3+_sin(y/(world->szY/5)+1)*world->szZ/4+world->szZ/2;
 			if (z_start<=0) z_start=1; 
 			voxworld_empty_curr_exp_col(world);
 			for (long z=0;z<world->szZ/2;z++)
@@ -285,7 +285,7 @@ void voxworld_init_land(struct VoxWorld * world)
 	//   ***************
 	//	 *   *   *   *
 	//	 *   *   *   *
-	/*unsigned char v=0;
+	unsigned char v=0;
 	for (long x=65;x<68;x++)
 	{
 		for (long y=6;y<30;y++)
@@ -319,5 +319,5 @@ void voxworld_init_land(struct VoxWorld * world)
 			voxworld_compr_col(world);
 			voxworld_write_compr_col(world,x,y);
 		}
-	}*/
+	}
 }

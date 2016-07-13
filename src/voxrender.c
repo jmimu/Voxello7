@@ -187,6 +187,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	int previous_v=UNINIT;
 	uint8_t v;
 	Uint32 color;
+	graph_vline(screen_col,0,graph.render_h,0);
 	
 	while ((ray->first_VInterval)&&(voxray_findNextIntersection(ray,trace)))
 	{
@@ -372,8 +373,8 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	render->ray.world=render->world;
 
 	render->clip_min=2;
-	render->clip_dark=30;
-	render->clip_max=35;
+	render->clip_dark=80;
+	render->clip_max=90;
 	return render;
 }
 
@@ -388,11 +389,15 @@ void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz)
 
 void voxrender_render(struct VoxRender * render,bool trace)
 {
-	for (int c=0;c<graph.render_w;c++)
+	static int part=0;
+	int nb_parts=4;
+	for (int c=part;c<graph.render_w;c+=nb_parts)
 	{
 		voxray_reinit(&render->ray,&render->cam,c,(trace&&(c==graph.render_w/2)));
 		voxray_draw(&render->ray,c,(trace&&(c==graph.render_w/2)) );
 	}
+	part++;
+	part%=nb_parts;
 }
 
 
