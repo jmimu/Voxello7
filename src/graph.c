@@ -41,7 +41,7 @@ bool graph_init(int _window_w,int _window_h,
 void graph_start_frame()
 {
   for (int i=0;i<graph.render_w*graph.render_h;i++)
-	graph.myPixels[i]=0xFF001020;
+	graph.myPixels[i]=0x00;
 #ifdef DBG_GRAPH
 	graph_vline(graph.render_w/2,0,graph.render_h,0xFF00B040);
 #endif
