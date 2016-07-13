@@ -278,7 +278,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
 							color=ray->world->colorMap[previous_v];
 							color=color_bright(color,0.6);
-							color=color_bright(color,1-ray->currentLambda/ray->render->clip_max);//clipping
+							if (ray->currentLambda>ray->render->clip_dark)
+								color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
+									(ray->render->clip_max-ray->render->clip_dark));//clipping
 							graph_vline(screen_col,l0,l_tmp,color);
 							if (trace)
 								printf("draw top %d %d : %x\n",l0,l_tmp,color);
@@ -304,7 +306,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
 							color=ray->world->colorMap[v];
 							color=color_bright(color,0.6);
-							color=color_bright(color,1-ray->currentLambda/ray->render->clip_max);//clipping
+							if (ray->currentLambda>ray->render->clip_dark)
+								color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
+									(ray->render->clip_max-ray->render->clip_dark));//clipping
 							graph_vline(screen_col,l_tmp,l0,color);
 							if (trace)
 								printf("draw bottom %d %d : %x\n",l_tmp,l0,color);
@@ -316,7 +320,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						color=ray->world->colorMap[v];
 						if (ray->lastIntersectionWasX)
 							color=color_bright(color,0.8);
-						color=color_bright(color,1-ray->currentLambda/ray->render->clip_max);//clipping
+						if (ray->currentLambda>ray->render->clip_dark)
+							color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
+								(ray->render->clip_max-ray->render->clip_dark));//clipping
 						graph_vline(screen_col,l0,l1,color);
 						if (trace)
 							printf("draw %d %d : %x\n",l0,l1,color);
@@ -366,7 +372,8 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	render->ray.world=render->world;
 
 	render->clip_min=2;
-	render->clip_max=30;
+	render->clip_dark=30;
+	render->clip_max=35;
 	return render;
 }
 

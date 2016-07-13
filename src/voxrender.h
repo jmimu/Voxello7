@@ -54,6 +54,7 @@ struct VoxRender
 	struct VoxRay ray;
 
 	double clip_min;//min dist for intersection
+	double clip_dark;//startx dist for darkness
 	double clip_max;//max dist for intersection
 
 	double f;//focal (in pixels)

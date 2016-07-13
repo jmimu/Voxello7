@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	struct VoxWorld * world=0;
 	struct VoxRender * render=0;
 
-	result=graph_init(800,600,800/4,600/4,"Voxello");
+	result=graph_init(640,480,640/2,480/2,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
 	world = voxworld_create(200,200,50);
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	voxworld_init_land(world);
 	//voxworld_printf(world);
 	
-	render=voxrender_create(world,20);
+	render=voxrender_create(world,30);
 	
 	last_time = SDL_GetTicks();
 	current_time = last_time;
