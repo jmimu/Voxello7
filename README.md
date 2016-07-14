@@ -3,6 +3,10 @@ Voxello 7
 
 dbg.h from http://c.learncodethehardway.org
 
+Choosing number of threads:
+---------------------------
+    export OMP_NUM_THREADS=4
+
 
 Optimizations :
 ---------------

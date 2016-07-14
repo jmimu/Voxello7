@@ -38,6 +38,7 @@ struct VoxRay
 	int dirX,dirY;//-1, 0 or 1
 
 	struct VoxVInterval *first_VInterval;
+	//char fill[52];
 };
 
 
@@ -51,7 +52,7 @@ struct VoxRender
 	struct Pt3d cam;
 	double ang_hz;
 	double ang_hz_cos,ang_hz_sin;
-	struct VoxRay ray;
+	struct VoxRay *ray;//one per thread
 
 	double clip_min;//min dist for intersection
 	double clip_dark;//startx dist for darkness

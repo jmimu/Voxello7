@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	(void) argc;
 	(void) argv;
 	bool result;
-		
+
 	//inputs
 	bool key_r=false;
 	bool key_f=false;
@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
 	//voxworld_printf(world);
 	
 	render=voxrender_create(world,30);
+	printf("Sizeof VoxRay: %d\n",sizeof(struct VoxRay));
 	
 	last_time = SDL_GetTicks();
 	current_time = last_time;

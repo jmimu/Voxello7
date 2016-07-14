@@ -3,6 +3,7 @@
 #include "trigo.h"
 #include "voxworld.h"
 #include <assert.h>
+#include <omp.h>
 
 struct VoxVInterval * VoxVInterval_delete(struct VoxVInterval * interval);//return next interval
 struct VoxVInterval * VoxVInterval_add(struct VoxVInterval * interval,int _l_min,int _l_max);//return new interval
@@ -369,10 +370,16 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 		//printf("render->fc[%d]=%f\n",c,render->fc[c]);
 	}
 	
-	render->ray.render=render;
-	render->ray.world=render->world;
+	printf("Num of threads: %d\n",omp_get_max_threads());
 
-	render->clip_min=2;
+	render->ray=(struct VoxRay*)malloc(omp_get_max_threads()*sizeof(struct VoxRay));
+	for (int i=0;i<omp_get_max_threads();i++)//TODO: nb thread!!!
+	{
+		render->ray[i].render=render;
+		render->ray[i].world=render->world;
+	}
+
+	render->clip_min=5;
 	render->clip_dark=80;
 	render->clip_max=90;
 	return render;
@@ -390,11 +397,18 @@ void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz)
 void voxrender_render(struct VoxRender * render,bool trace)
 {
 	static int part=0;
-	int nb_parts=4;
-	for (int c=part;c<graph.render_w;c+=nb_parts)
+	int nb_parts=2;
+
+	int th_id, nthreads;
+	#pragma omp parallel private(th_id)
 	{
-		voxray_reinit(&render->ray,&render->cam,c,(trace&&(c==graph.render_w/2)));
-		voxray_draw(&render->ray,c,(trace&&(c==graph.render_w/2)) );
+		th_id = omp_get_thread_num();
+		nthreads=omp_get_num_threads();
+		for (int c=th_id*nb_parts+part;c<graph.render_w;c+=nthreads*nb_parts)
+		{
+			voxray_reinit(&render->ray[th_id],&render->cam,c,(trace&&(c==graph.render_w/2)));
+			voxray_draw(&render->ray[th_id],c,(trace&&(c==graph.render_w/2)) );
+		}
 	}
 	part++;
 	part%=nb_parts;
@@ -405,4 +419,5 @@ void voxrender_render(struct VoxRender * render,bool trace)
 void voxrender_delete(struct VoxRender * render)
 {
 	free(render->fc);
+	free(render->ray);
 }
