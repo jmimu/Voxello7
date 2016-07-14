@@ -25,6 +25,7 @@ struct VoxWorld
 {
 	int szX,szY,szZ;
 	struct RLE_block *** data;
+	unsigned short ** col_size;//in bytes
 	uint32_t colorMap[255];//argb
 	
 	//working columns, allocated 1 time
@@ -43,5 +44,7 @@ void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v);
 void voxworld_init_land(struct VoxWorld * world);
 
 void voxworld_printf(struct VoxWorld * world);
+unsigned long voxworld_getsize(struct VoxWorld * world);
+struct VoxWorld * voxworld_copy(struct VoxWorld * world);
 
 #endif // VOXWORLD_H

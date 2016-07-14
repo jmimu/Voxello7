@@ -10,6 +10,7 @@ Choosing number of threads:
 
 Optimizations :
 ---------------
+  * make one world for each thread? (cam and fc too?)
   * z_to_l and l_to_z
   * no more malloc and free for vinterval
   * vox column from top to down? (sky first)

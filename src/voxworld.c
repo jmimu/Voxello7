@@ -24,13 +24,18 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 	//data[y][x] is a RLE_block
 	world->data = (struct RLE_block***) malloc(world->szY*sizeof(struct RLE_block**));
 	check_mem(world->data);
+	world->col_size = (unsigned short **) malloc(world->szY*sizeof(unsigned short*));
+	check_mem(world->col_size);
 	for (int y=0;y<world->szY;y++)
 	{
 		world->data[y] = (struct RLE_block**)  malloc(world->szX*sizeof(struct RLE_block*));
 		check_mem(world->data[y]);
+		world->col_size[y] = (unsigned short*)  malloc(world->szX*sizeof(unsigned short));
+		check_mem(world->col_size[y]);
 		for (int x=0;x<world->szX;x++)
 		{
 			world->data[y][x] = (struct RLE_block*) malloc(nbr_RLE_block*sizeof(struct RLE_block));
+			world->col_size[y][x] = nbr_RLE_block*sizeof(struct RLE_block);
 			check_mem(world->data[y][x]);
 			for (int z=0;z<nbr_RLE_block-1;z++)
 			{
@@ -73,8 +78,10 @@ void voxworld_delete(struct VoxWorld * world)
 			if (world->data[y][x]) free(world->data[y][x]);
 		}
 		if (world->data[y]) free(world->data[y]);
+		if (world->col_size[y]) free(world->col_size[y]);
 	}
 	if (world->data) free(world->data);
+	if (world->col_size) free(world->col_size);
 	free(world);
 }
 
@@ -175,6 +182,8 @@ bool voxworld_write_compr_col(struct VoxWorld * world,int x, int y)
 	world->data[y][x] = (struct RLE_block*) malloc(
 					world->curr_compr_col_size*sizeof(struct RLE_block));
 	check_mem(world->data[y][x]);
+
+	world->col_size[y][x] = world->curr_compr_col_size*sizeof(struct RLE_block);
 
 	memcpy(world->data[y][x],world->curr_compr_col,
 			world->curr_compr_col_size*sizeof(struct RLE_block));
@@ -321,3 +330,40 @@ void voxworld_init_land(struct VoxWorld * world)
 		}
 	}
 }
+
+
+
+unsigned long voxworld_getsize(struct VoxWorld * world)
+{
+	unsigned long size=0;
+	for (long x=0;x<world->szX;x++)
+		for (long y=0;y<world->szY;y++)
+			size+=world->col_size[y][x];
+	return size;
+}
+
+struct VoxWorld * voxworld_copy(struct VoxWorld * world)
+{
+
+	struct VoxWorld *new_world = voxworld_create(world->szX,world->szY,world->szZ);
+	
+	for (int i=0;i<255;i++)
+		new_world->colorMap[i]=world->colorMap[i];
+	
+	for (long x=0;x<world->szX;x++)
+		for (long y=0;y<world->szY;y++)
+		{
+			if (new_world->data[y][x]) free(new_world->data[y][x]);
+			new_world->col_size[y][x] = world->col_size[y][x];
+			new_world->data[y][x] = (struct RLE_block*) malloc(new_world->col_size[y][x]);
+			check_mem(new_world->data[y][x]);
+			memcpy(new_world->data[y][x],world->data[y][x],new_world->col_size[y][x]);
+		}
+
+	return new_world;
+error:
+	voxworld_delete(new_world);
+	return NULL;
+}
+
+
