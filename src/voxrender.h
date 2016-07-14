@@ -57,7 +57,7 @@ struct VoxRay
  * */
 struct VoxRender
 {	
-	struct VoxWorld *world;
+	struct VoxWorld **worlds;
 	struct Pt3d cam;
 	double ang_hz;
 	double ang_hz_cos,ang_hz_sin;
@@ -83,7 +83,7 @@ void voxray_draw(struct VoxRay * ray,int c,bool trace);
 void Voxray_show_info(struct VoxRay * ray);
 
 
-struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm);
+struct VoxRender * voxrender_create(struct VoxWorld **_worlds,double f_eq35mm);
 void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz);
 void voxrender_render(struct VoxRender * render,bool trace);
 void voxrender_delete(struct VoxRender * render);

@@ -357,10 +357,10 @@ void Voxray_show_info(struct VoxRay * ray)
 
 
 
-struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
+struct VoxRender * voxrender_create(struct VoxWorld **_worlds,double f_eq35mm)
 {
 	struct VoxRender *render = (struct VoxRender *) malloc(sizeof(struct VoxRender));
-	render->world=_world;
+	render->worlds=_worlds;
 	render->f=graph.render_w*f_eq35mm/35.0;
 	render->fc=(double*)malloc(graph.render_w*sizeof(double));
 	for (int c=0;c<graph.render_w;c++)
@@ -376,7 +376,7 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	{
 		render->ray[i].thread=i;
 		render->ray[i].render=render;
-		render->ray[i].world=render->world;
+		render->ray[i].world=render->worlds[i];
 		render->ray[i].max_VIntervals_num=graph.render_h/4;//chang this limit if needed
 		render->ray[i].current_VIntervals_num=0;
 		render->ray[i].VIntervals_A=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));

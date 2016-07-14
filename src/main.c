@@ -47,22 +47,27 @@ int main(int argc, char *argv[])
 
 	bool trace=false;
 	
-	struct VoxWorld * world=0;
+	struct VoxWorld * world[4];
 	struct VoxRender * render=0;
 
 	result=graph_init(640,480,640/2,480/2,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(300,300,50);
-	check_debug(world,"Unable to create world...");
-	cam.x=world->szX/3+0.001;
-	//cam.y=world->szY/2+0.001;
-	cam.z=1.5*world->szZ/2+0.001;
+	world[0] = voxworld_create(300,300,50);
+	check_debug(world[0],"Unable to create world...");
+	cam.x=world[0]->szX/3+0.001;
+	//cam.y=world[0]->szY/2+0.001;
+	cam.z=1.5*world[0]->szZ/2+0.001;
 
-	//voxworld_init_empty_cube(world,2);
-	voxworld_init_land(world);
+	//voxworld_init_empty_cube(world[0],2);
+	voxworld_init_land(world[0]);
 	//voxworld_init_stairs(world);
-	//voxworld_printf(world);
+	//voxworld_printf(world[0]);
+	
+	printf("World size: %ld bytes\n",voxworld_getsize(world[0]));
+
+	for (int i=1;i<4;i++)
+		world[i]=voxworld_copy(world[0]);
 	
 	render=voxrender_create(world,30);
 	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));
@@ -240,7 +245,7 @@ int main(int argc, char *argv[])
 
 error:
 	if (render) voxrender_delete(render);
-	if (world) voxworld_delete(world);
+	if (world[0]) voxworld_delete(world[0]);
 	graph_close();
 
 }
