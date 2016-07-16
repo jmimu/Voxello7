@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <math.h>
+#include <omp.h>
 
 #include "graph.h"
 #include "pt3d.h"
@@ -47,12 +48,15 @@ int main(int argc, char *argv[])
 
 	bool trace=false;
 	
-	struct VoxWorld * world[4];
+	struct VoxWorld ** world=0;
 	struct VoxRender * render=0;
 
 	result=graph_init(640,480,640/2,480/2,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
+	world=(struct VoxWorld**)malloc(omp_get_max_threads()*sizeof(struct VoxWorld*));
+	check_debug(world,"Unable to create worlds array...");
+
 	world[0] = voxworld_create(300,300,50);
 	check_debug(world[0],"Unable to create world...");
 	cam.x=world[0]->szX/3+0.001;
@@ -66,7 +70,7 @@ int main(int argc, char *argv[])
 	
 	printf("World size: %ld bytes\n",voxworld_getsize(world[0]));
 
-	for (int i=1;i<4;i++)
+	for (int i=1;i<omp_get_max_threads();i++)
 		world[i]=voxworld_copy(world[0]);
 	
 	render=voxrender_create(world,30);
@@ -245,8 +249,9 @@ int main(int argc, char *argv[])
 
 error:
 	if (render) voxrender_delete(render);
-	for (int i=0;i<4;i++)
-		if (world[i]) voxworld_delete(world[i]);
+	if (world)
+		for (int i=0;i<omp_get_max_threads();i++)
+			if (world[i]) voxworld_delete(world[i]);
 	graph_close();
 
 }
