@@ -73,10 +73,9 @@ void voxworld_delete(struct VoxWorld * world)
 	
 	for (int y=0;y<world->szY;y++)
 	{
-		for (int x=0;x<world->szX;x++)
-		{
-			if (world->data[y][x]) free(world->data[y][x]);
-		}
+		if (world->data[y])
+			for (int x=0;x<world->szX;x++)
+				if (world->data[y][x]) free(world->data[y][x]);
 		if (world->data[y]) free(world->data[y]);
 		if (world->col_size[y]) free(world->col_size[y]);
 	}

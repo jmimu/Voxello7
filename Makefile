@@ -1,4 +1,4 @@
-CFLAGS= -g -O2 -Wall -Wextra -fopenmp -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
+CFLAGS= -g -O2 -std=c99 -Wall -Wextra -fopenmp -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
 LIBS=-lm -lSDL2 $(OPTLIBS)
 PREFIX?=/usr/local
 
@@ -16,7 +16,7 @@ TARGET=bin/voxello7
 # The Target Build
 all: $(TARGET) tests
 
-dev: CFLAGS=-g -Wall -Isrc -Wall -Wextra $(OPTFLAGS)
+dev: CFLAGS=-g -std=c99 -Wall -Isrc -Wall -Wextra -fopenmp $(OPTFLAGS)
 dev: all
 
 $(TARGET): CFLAGS += -fPIC
