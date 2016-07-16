@@ -24,6 +24,7 @@ struct VoxVInterval
 
 struct VoxRay
 {
+	int thread;
 	struct VoxRender *render;
 	struct VoxWorld *world;
 	struct Pt3d * cam;
