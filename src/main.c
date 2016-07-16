@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
 	double angleZ = 0.0000;
 	double angleX = 0.0000;
-	double speed=0.1;
+	double speed=0;//calculated with last frame duration
 
 	struct Pt3d cam={2.50001,-5.001,2.001};
 	double focale=300;
@@ -224,6 +224,7 @@ int main(int argc, char *argv[])
 		}
 		current_time = SDL_GetTicks();
 		ellapsed_time = current_time - last_time;
+		speed=ellapsed_time/100.0;
 		last_time = current_time;
 		ellapsed_time = SDL_GetTicks() - start_time;
 		if (ellapsed_time < 20)
