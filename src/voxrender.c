@@ -46,12 +46,12 @@ void voxray_reinit(struct VoxRay * ray,struct Pt3d cam, int c, bool trace)
 	if (fabs(t_x)<0.0001)
 		ray->incX=100000;
 	else
-		ray->incX=fabs(ray->render->fc[c]/t_x);//how much to increment for 1 step in x or y
+		ray->incX=fabs(ray->fc[c]/t_x);//how much to increment for 1 step in x or y
 
 	if (fabs(t_y)<0.0001)
 		ray->incY=100000;
 	else
-		ray->incY=fabs(ray->render->fc[c]/t_y);
+		ray->incY=fabs(ray->fc[c]/t_y);
 	
 	ray->currentLambda=0;//where we are on the ray
 
@@ -140,7 +140,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	int y;
 	struct RLE_block * currentCol;
 	int zMin,zMax;
-	double fc=ray->render->fc[screen_col];
+	double fc=ray->fc[screen_col];
 	int voxIndex=0;
 	int voxZ=0;
 	int previous_voxZ=0;
@@ -352,11 +352,15 @@ struct VoxRender * voxrender_create(struct VoxWorld **_worlds,double f_eq35mm)
 	struct VoxRender *render = (struct VoxRender *) malloc(sizeof(struct VoxRender));
 	render->worlds=_worlds;
 	render->f=graph.render_w*f_eq35mm/35.0;
-	render->fc=(double*)malloc(graph.render_w*sizeof(double));
+	render->fc=(double**)malloc(omp_get_max_threads()*sizeof(double*));
+	for (int i=0;i<omp_get_max_threads();i++)
+		render->fc[i]=(double*)malloc(graph.render_w*sizeof(double));
+	double tmp;
 	for (int c=0;c<graph.render_w;c++)
 	{
-		render->fc[c]=sqrt(render->f*render->f+(c+0.5-graph.render_w/2)*(c+0.5-graph.render_w/2));
-		//printf("render->fc[%d]=%f\n",c,render->fc[c]);
+		tmp=sqrt(render->f*render->f+(c+0.5-graph.render_w/2)*(c+0.5-graph.render_w/2));
+		for (int i=0;i<omp_get_max_threads();i++)
+			render->fc[i][c]=tmp;
 	}
 	
 	printf("Num of threads: %d\n",omp_get_max_threads());
@@ -374,6 +378,7 @@ struct VoxRender * voxrender_create(struct VoxWorld **_worlds,double f_eq35mm)
 		render->ray[i].next_VIntervals_num=0;
 		render->ray[i].VIntervals_B=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
 		render->ray[i].next_VIntervals=&(render->ray[i].VIntervals_B);
+		render->ray[i].fc=render->fc[i];
 	}
 
 	render->clip_min=1;
@@ -420,6 +425,8 @@ void voxrender_render(struct VoxRender * render,bool trace)
 
 void voxrender_delete(struct VoxRender * render)
 {
+	for (int i=0;i<omp_get_max_threads();i++)
+		free(render->fc[i]);
 	free(render->fc);
 	for (int i=0;i<omp_get_max_threads();i++)
 		voxray_delete(&(render->ray[i]));

@@ -26,6 +26,7 @@ struct VoxRay
 	struct VoxRender *render;
 	struct VoxWorld *world;
 	struct Pt3d cam;
+	double * fc;//distance from screen column to nodal point
 	double incX,incY;//how much to increment for 1 step in x or y
 	double currentLambda;//where we are on the ray
 	double nextXLambda;//next X intersection
@@ -68,7 +69,7 @@ struct VoxRender
 	double clip_max;//max dist for intersection
 
 	double f;//focal (in pixels)
-	double * fc;//distance from screen column to nodal point
+	double ** fc;//distance from screen column to nodal point, one per thread
 	
 };
 
