@@ -35,8 +35,9 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 		for (int x=0;x<world->szX;x++)
 		{
 			world->data[y][x] = (struct RLE_block*) malloc(nbr_RLE_block*sizeof(struct RLE_block));
-			world->col_size[y][x] = nbr_RLE_block*sizeof(struct RLE_block);
 			check_mem(world->data[y][x]);
+			world->col_size[y][x] = nbr_RLE_block*sizeof(struct RLE_block);
+			check_mem(world->col_size[y][x]);
 			for (int z=0;z<nbr_RLE_block-1;z++)
 			{
 				world->data[y][x][z]=(struct RLE_block){.n=255,.v=EMPTY};

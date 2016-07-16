@@ -201,6 +201,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 		if ((x>=0)&&(x<ray->world->szX)
 				&&(y>=0)&&(y<ray->world->szY))
 		{
+			//printf("x: %d  y: %d\n",x,y);
 			currentCol=ray->world->data[y][x];
 			struct VoxVInterval * interval=ray->first_VInterval;
 			struct VoxVInterval *next_first_VInterval=NULL;
@@ -425,4 +426,5 @@ void voxrender_delete(struct VoxRender * render)
 {
 	free(render->fc);
 	free(render->ray);
+    free(render);
 }

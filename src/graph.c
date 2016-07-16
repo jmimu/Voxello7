@@ -122,7 +122,7 @@ void graph_clear_threadCol(int thread)
 void graph_write_threadCol(int thread, int x)
 {
 	unsigned int i=x;
-	for (int y=0;y<=graph.render_h;y++)
+	for (int y=0;y<graph.render_h;y++)
 	{
 		graph.myPixels[i]=graph.threadColPixels[thread][y];
 		i+=graph.render_w;
