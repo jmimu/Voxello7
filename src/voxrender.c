@@ -27,7 +27,7 @@ void voxray_delete(struct VoxRay * ray)
 }
 
 
-void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace)
+void voxray_reinit(struct VoxRay * ray,struct Pt3d cam, int c, bool trace)
 {
 	ray->cam=cam;
 	//t (tx,ty) is the hz vector of the ray in world frame
@@ -57,33 +57,23 @@ void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace)
 
 	double offsetX,offsetY;
 	if (t_x>0)
-	{
-		offsetX=(floor(ray->cam->x+1)-ray->cam->x)*ray->incX;
-		ray->currentX=floor(ray->cam->x);
-	}
+		offsetX=(floor(ray->cam.x+1)-ray->cam.x)*ray->incX;
 	else
-	{
-		offsetX=(ray->cam->x-floor(ray->cam->x))*ray->incX;
-		ray->currentX=floor(ray->cam->x);
-	}
+		offsetX=(ray->cam.x-floor(ray->cam.x))*ray->incX;
+	ray->currentX=floor(ray->cam.x);
 
 	if (t_y>0)
-	{
-		offsetY=(floor(ray->cam->y+1)-ray->cam->y)*ray->incY;
-		ray->currentY=floor(ray->cam->y);
-	}
+		offsetY=(floor(ray->cam.y+1)-ray->cam.y)*ray->incY;
 	else
-	{
-		offsetY=(ray->cam->y-floor(ray->cam->y))*ray->incY;
-		ray->currentY=floor(ray->cam->y);
-	}
+		offsetY=(ray->cam.y-floor(ray->cam.y))*ray->incY;
+	ray->currentY=floor(ray->cam.y);
 
 	ray->nextXLambda=offsetX;
 	ray->nextYLambda=offsetY;
 	ray->lastIntersectionWasX=false;//has no sens for now
 
 	if (trace)
-		printf("Cam:  pos: %f %f %f\n",cam->x,cam->y,cam->z);
+		printf("Cam:  pos: %f %f %f\n",cam.x,cam.y,cam.z);
 	if (trace)
 		printf("Ray:   incX: %f, incY: %f, offX: %f, offY: %f\n",ray->incX,ray->incY,offsetX,offsetY);
 	if (trace)
@@ -183,8 +173,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 			{
 				interval=&((*ray->current_VIntervals)[current_VInterval_i]);
 				//compute z range of intersection
-				zMin=l_to_z(interval->l_min, ray->cam->z, ray->currentLambda, fc);
-				zMax=l_to_z(interval->l_max, ray->cam->z, ray->currentLambda, fc)+1;//+1 to look for bottom of vox above
+				zMin=l_to_z(interval->l_min, ray->cam.z, ray->currentLambda, fc);
+				zMax=l_to_z(interval->l_max, ray->cam.z, ray->currentLambda, fc)+1;//+1 to look for bottom of vox above
 				if (zMin<0) zMin=0;
 				if (zMax<0) zMax=0;
 				if (zMin>ray->world->szZ-1)
@@ -219,7 +209,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				if (trace)
 					printf("start at voxIndex: %d, voxZ: %d, v=%d\n",voxIndex, voxZ, v);
 
-				int l0=z_to_l(zMin, ray->cam->z, ray->currentLambda, fc);
+				int l0=z_to_l(zMin, ray->cam.z, ray->currentLambda, fc);
 				if (l0<interval->l_min)
 					l0=interval->l_min;
 				int l1;
@@ -241,7 +231,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 					if (trace)
 						printf("v: %d (%d), voxZ: %d (%d) voxIndex: %d\n",v, previous_v, voxZ, previous_voxZ,voxIndex);
 
-					l1=z_to_l(voxZ, ray->cam->z, ray->currentLambda, fc);
+					l1=z_to_l(voxZ, ray->cam.z, ray->currentLambda, fc);
 					if (l1>interval->l_max)
 						l1=interval->l_max;
 					if (l1<l0) //TODO: understand why it occurs...
@@ -287,7 +277,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						if ((previous_v==EMPTY)&&(l0-graph.render_h/2>0))
 						{
 							double next_lambda=voxray_lambdaNextIntersection(ray);
-							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
+							int l_tmp=z_to_l(previous_voxZ, ray->cam.z, next_lambda, fc);
 							color=ray->world->colorMap[v];
 							color=color_bright(color,0.6);
 							if (ray->currentLambda>ray->render->clip_dark)
@@ -418,7 +408,7 @@ void voxrender_render(struct VoxRender * render,bool trace)
 		for (int c=th_id*nb_parts+part;c<graph.render_w;c+=nthreads*nb_parts)
 		//for (int c=start+part;c<stop;c+=nb_parts)
 		{
-			voxray_reinit(&render->ray[th_id],&render->cam,c,(trace&&(c==graph.render_w/2)));
+			voxray_reinit(&render->ray[th_id],render->cam,c,(trace&&(c==graph.render_w/2)));
 			voxray_draw(&render->ray[th_id],c,(trace&&(c==graph.render_w/2)) );
 		}
 	}

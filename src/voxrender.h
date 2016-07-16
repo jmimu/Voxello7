@@ -25,7 +25,7 @@ struct VoxRay
 	int thread;
 	struct VoxRender *render;
 	struct VoxWorld *world;
-	struct Pt3d * cam;
+	struct Pt3d cam;
 	double incX,incY;//how much to increment for 1 step in x or y
 	double currentLambda;//where we are on the ray
 	double nextXLambda;//next X intersection
@@ -76,7 +76,7 @@ struct VoxRender
 void voxray_delete(struct VoxRay * ray);
 void voxray_swap_intervals(struct VoxRay * ray);
 
-void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace);
+void voxray_reinit(struct VoxRay * ray,struct Pt3d cam, int c, bool trace);
 double voxray_lambdaNextIntersection(struct VoxRay * ray);
 bool voxray_findNextIntersection(struct VoxRay * ray,bool trace);//returns false if out of bounds
 void voxray_draw(struct VoxRay * ray,int c,bool trace);

@@ -245,7 +245,8 @@ int main(int argc, char *argv[])
 
 error:
 	if (render) voxrender_delete(render);
-	if (world[0]) voxworld_delete(world[0]);
+	for (int i=0;i<4;i++)
+		if (world[i]) voxworld_delete(world[i]);
 	graph_close();
 
 }
