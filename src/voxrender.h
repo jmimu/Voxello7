@@ -16,10 +16,8 @@
 //interval between line min and line max
 struct VoxVInterval
 {
-	int l_min;
-	int l_max;
-	struct VoxVInterval * next;
-	struct VoxVInterval * previous;
+	short l_min;
+	short l_max;
 };
 
 struct VoxRay
@@ -38,7 +36,17 @@ struct VoxRay
 
 	int dirX,dirY;//-1, 0 or 1
 
-	struct VoxVInterval *first_VInterval;
+	//the list of intervals has a fixed size
+	//ray swaps between VIntervals_A/B for current/next_VIntervals
+	struct VoxVInterval **current_VIntervals;//pointers to VIntervals_A or VIntervals_B
+	unsigned short current_VIntervals_num;
+	struct VoxVInterval **next_VIntervals;
+	unsigned short next_VIntervals_num;
+
+	unsigned short max_VIntervals_num;
+
+	struct VoxVInterval *VIntervals_A;//where intervals really are
+	struct VoxVInterval *VIntervals_B;
 	//char fill[52];
 };
 
@@ -65,6 +73,8 @@ struct VoxRender
 };
 
 
+void voxray_delete(struct VoxRay * ray);
+void voxray_swap_intervals(struct VoxRay * ray);
 
 void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace);
 double voxray_lambdaNextIntersection(struct VoxRay * ray);

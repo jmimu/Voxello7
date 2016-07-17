@@ -5,9 +5,6 @@
 #include <assert.h>
 #include <omp.h>
 
-struct VoxVInterval * VoxVInterval_delete(struct VoxVInterval * interval);//return next interval
-struct VoxVInterval * VoxVInterval_add(struct VoxVInterval * interval,int _l_min,int _l_max);//return new interval
-
 //TODO: work in center-relative coords and transform only before drawing?
 int z_to_l(int z, double cam_z, double lambda, double fc);
 int l_to_z(int l, double cam_z, double lambda, double fc);
@@ -23,37 +20,11 @@ int l_to_z(int l, double cam_z, double lambda, double fc)
 }
 
 
-//return next interval
-struct VoxVInterval * VoxVInterval_delete(struct VoxVInterval * interval)
+void voxray_delete(struct VoxRay * ray)
 {
-	assert(interval!=NULL);
-	
-	struct VoxVInterval * next_interval=interval->next;
-	if (interval->previous)
-		interval->previous->next=interval->next;
-	if (interval->next) interval->next->previous=interval->previous;
-	free(interval);
-	return next_interval;
+	free(ray->VIntervals_A);
+	free(ray->VIntervals_B);
 }
-
-//return new interval
-struct VoxVInterval * VoxVInterval_add(struct VoxVInterval * interval,int _l_min,int _l_max)
-{
-	struct VoxVInterval * new_interval=(struct VoxVInterval*)malloc(sizeof(struct VoxVInterval));
-	new_interval->l_min=_l_min;
-	new_interval->l_max=_l_max;
-	new_interval->previous=interval;
-	if (interval)
-	{
-		new_interval->next=interval->next;
-		if (interval->next) interval->next->previous=new_interval;
-		interval->next=new_interval;
-	}else{
-		new_interval->next=NULL;
-	}
-	return new_interval;
-}
-
 
 
 void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace)
@@ -126,12 +97,10 @@ void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace)
 	if (trace)
 		printf("currentLambda: %f,  nextXLambda: %f,  nextYLambda: %f\n",ray->currentLambda,ray->nextXLambda,ray->nextYLambda);
 	
-	ray->first_VInterval=(struct VoxVInterval*)malloc(sizeof(struct VoxVInterval));
-	ray->first_VInterval->l_min=0;
-	ray->first_VInterval->l_max=graph.render_h;
-	ray->first_VInterval->previous=NULL;
-	ray->first_VInterval->next=NULL;
-	
+	ray->current_VIntervals_num=1;
+	(*ray->current_VIntervals)[0].l_min=0;
+	(*ray->current_VIntervals)[0].l_max=graph.render_h;
+	ray->next_VIntervals_num=0;
 }
 
 double voxray_lambdaNextIntersection(struct VoxRay * ray)
@@ -189,8 +158,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	uint8_t v;
 	Uint32 color;
 	graph_clear_threadCol(ray->thread);
+        unsigned short current_VInterval_i=0;
 		
-	while ((ray->first_VInterval)&&(voxray_findNextIntersection(ray,trace)))
+	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))
 	{
 		x=ray->currentX;
 		y=ray->currentY;
@@ -203,11 +173,12 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 		{
 			//printf("x: %d  y: %d\n",x,y);
 			currentCol=ray->world->data[y][x];
-			struct VoxVInterval * interval=ray->first_VInterval;
-			struct VoxVInterval *next_first_VInterval=NULL;
-			struct VoxVInterval *next_current_VInterval=NULL;
-			while (interval)
+			current_VInterval_i=0;
+			struct VoxVInterval * interval=0;
+			ray->next_VIntervals_num=0;
+			while (current_VInterval_i<ray->current_VIntervals_num)
 			{
+				interval=&((*ray->current_VIntervals)[current_VInterval_i]);
 				//compute z range of intersection
 				zMin=l_to_z(interval->l_min, ray->cam->z, ray->currentLambda, fc);
 				zMax=l_to_z(interval->l_max, ray->cam->z, ray->currentLambda, fc)+1;//+1 to look for bottom of vox above
@@ -221,7 +192,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				if (zMin>zMax)
 				{
 					printf("ERROR: zMin>zMax\n");
-					interval=VoxVInterval_delete(interval);
+					current_VInterval_i++;
 					continue;
 				}
 
@@ -291,12 +262,13 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						}
 						
 						//create a new interval for next vox column 
-						if (!next_first_VInterval)
+						if (ray->next_VIntervals_num<ray->max_VIntervals_num)
 						{
-							next_first_VInterval=VoxVInterval_add(NULL,l0,l1);
-							next_current_VInterval=next_first_VInterval;
+							(*ray->next_VIntervals)[ray->next_VIntervals_num].l_min=l0;
+							(*ray->next_VIntervals)[ray->next_VIntervals_num].l_max=l1;
+							ray->next_VIntervals_num++;
 						}else{
-							next_current_VInterval=VoxVInterval_add(next_current_VInterval,l0,l1);
+							printf("Error, too many VIntervals\n");
 						}
 						if (trace)
 							printf("save for next interval %d %d\n",l0,l1);
@@ -316,8 +288,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							if (trace)
 								printf("draw bottom %d %d : %x\n",l_tmp,l0,color);
 							//remove this interval to last next_current_VInterval:
-							if (next_current_VInterval)
-								next_current_VInterval->l_max=l_tmp;
+							(*ray->next_VIntervals)[ray->next_VIntervals_num-1].l_max=l_tmp;
 						}
 
 						color=ray->world->colorMap[v];
@@ -335,9 +306,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 					if (trace)
 						printf("end of z: %d/%d\n",voxZ,zMax);
 				}
-				interval=VoxVInterval_delete(interval);
+				current_VInterval_i++;
 			}
-			ray->first_VInterval=next_first_VInterval;
+			voxray_swap_intervals(ray);
 		}
 
 		//next intersection
@@ -350,6 +321,20 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 		printf("\n");
 
 
+}
+
+void voxray_swap_intervals(struct VoxRay * ray)
+{
+	if (ray->current_VIntervals==&(ray->VIntervals_A))
+	{
+		ray->current_VIntervals=&(ray->VIntervals_B);
+		ray->next_VIntervals=&(ray->VIntervals_A);
+	}else{
+		ray->current_VIntervals=&(ray->VIntervals_A);
+		ray->next_VIntervals=&(ray->VIntervals_B);
+	}
+	ray->current_VIntervals_num=ray->next_VIntervals_num;
+	ray->next_VIntervals_num=0;
 }
 
 void Voxray_show_info(struct VoxRay * ray)
@@ -378,11 +363,18 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	printf("Num of threads: %d\n",omp_get_max_threads());
 
 	render->ray=(struct VoxRay*)malloc(omp_get_max_threads()*sizeof(struct VoxRay));
-	for (int i=0;i<omp_get_max_threads();i++)//TODO: nb thread!!!
+	for (int i=0;i<omp_get_max_threads();i++)
 	{
 		render->ray[i].thread=i;
 		render->ray[i].render=render;
 		render->ray[i].world=render->world;
+		render->ray[i].max_VIntervals_num=graph.render_h/4;//chang this limit if needed
+		render->ray[i].current_VIntervals_num=0;
+		render->ray[i].VIntervals_A=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
+		render->ray[i].current_VIntervals=&(render->ray[i].VIntervals_A);
+		render->ray[i].next_VIntervals_num=0;
+		render->ray[i].VIntervals_B=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
+		render->ray[i].next_VIntervals=&(render->ray[i].VIntervals_B);
 	}
 
 	render->clip_min=5;
@@ -425,6 +417,8 @@ void voxrender_render(struct VoxRender * render,bool trace)
 void voxrender_delete(struct VoxRender * render)
 {
 	free(render->fc);
+	for (int i=0;i<omp_get_max_threads();i++)
+		voxray_delete(&(render->ray[i]));
 	free(render->ray);
-    free(render);
+	free(render);
 }
