@@ -157,7 +157,10 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	int previous_v=UNINIT;
 	uint8_t v;
 	Uint32 color;
-	graph_clear_threadCol(ray->thread);
+	if (!(screen_col==graph.render_w/2))
+		graph_clear_threadCol(ray->thread,0);
+	else
+		graph_clear_threadCol(ray->thread,0x80);
         unsigned short current_VInterval_i=0;
 		
 	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))
@@ -377,7 +380,7 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 		render->ray[i].next_VIntervals=&(render->ray[i].VIntervals_B);
 	}
 
-	render->clip_min=5;
+	render->clip_min=1;
 	render->clip_dark=80;
 	render->clip_max=90;
 	return render;

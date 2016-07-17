@@ -34,7 +34,7 @@ void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b);//todo: add z
 void graph_putpixel(int x,int y,uint32_t rgba);//todo: add z!
 void graph_vline(int x,int y1,int y2,uint32_t rgba);
 void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba);
-void graph_clear_threadCol(int thread);
+void graph_clear_threadCol(int thread,uint8_t v);
 void graph_write_threadCol(int thread, int x);
 void graph_close();
 void graph_start_frame();

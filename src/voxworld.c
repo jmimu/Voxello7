@@ -52,7 +52,7 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 	world->curr_compr_col_size=0;
 
 	//init colormap
-	world->colorMap[0]=0xFF000000;//black
+	world->colorMap[0]=0xFF0A2000;//black
 	world->colorMap[1]=0xFFFFFFFF;//white
 	world->colorMap[2]=0xFFFF0000;//red
 	world->colorMap[3]=0xFF00FF00;//green
@@ -254,6 +254,26 @@ void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
 
 }
 
+void voxworld_init_stairs(struct VoxWorld * world)
+{
+	int x,y,z;
+	
+	for (x=0;x<world->szX;x++)
+		for (y=0;y<world->szY;y++)
+		{
+			for (z=0;z<world->szZ;z++)
+			{
+				if (z<=x+y)
+					world->curr_exp_col[z]=x*2+y+1;
+				else
+					world->curr_exp_col[z]=EMPTY;
+			}
+			voxworld_compr_col(world);
+			voxworld_write_compr_col(world,x,y);
+		}
+
+}
+
 
 void voxworld_init_land(struct VoxWorld * world)
 {
@@ -263,18 +283,19 @@ void voxworld_init_land(struct VoxWorld * world)
 	
 	for (int i=0;i<255;i++)
 	{
-		world->colorMap[i]=(((i*34)%256)<<16)+(((i*34+85)%256)<<8)+(i*34+190)%256;
+		world->colorMap[i]=(((i*34+1)%256)<<16)+(((i*34+85)%256)<<8)+(i*34+190)%256;
 	}
 	
 	for (long x=0;x<world->szX;x++)
 		for (long y=0;y<world->szY;y++)
 		{
-			z_start=_cos(x/(world->szX/6.0))*world->szZ/3+_sin(y/(world->szY/5)+1)*world->szZ/4+world->szZ/2;
+			z_start=_cos(x/(world->szX/6.0+1))*world->szZ/3+_sin(y/(world->szY/5+1)+1)*(world->szZ/2+1)+world->szZ/2;
+			//z_start=x+y-1;
 			if (z_start<=0) z_start=1; 
 			voxworld_empty_curr_exp_col(world);
-			for (long z=0;z<world->szZ/2;z++)
+			for (long z=0;z<world->szZ;z++)
 			{
-				if (z<z_start)
+				if (z<z_start/2)
 					world->curr_exp_col[z]=z_start/2;//0x50;
 				else if (z<z_start+1)//for snow
 					world->curr_exp_col[z]=rand()%(SNOW_END-SNOW_START)+SNOW_START;//0x50;
@@ -294,39 +315,42 @@ void voxworld_init_land(struct VoxWorld * world)
 	//   ***************
 	//	 *   *   *   *
 	//	 *   *   *   *
-	unsigned char v=0;
-	for (long x=65;x<68;x++)
+	if ((world->szX>110)&&(world->szY>90)&&(world->szZ>10))
 	{
-		for (long y=6;y<30;y++)
+		unsigned char v=0;
+		for (long x=65;x<68;x++)
 		{
-			voxworld_empty_curr_exp_col(world);
-			for (long z=0;z<world->szZ-10;z++)
+			for (long y=6;y<30;y++)
 			{
-				v=150;
-				if (z%3==0) v=20;
-				if ((y+3*((z/3)%2))%5==0) v=20;
-				world->curr_exp_col[z]=v;
+				voxworld_empty_curr_exp_col(world);
+				for (long z=0;z<world->szZ-10;z++)
+				{
+					v=150;
+					if (z%3==0) v=20;
+					if ((y+3*((z/3)%2))%5==0) v=20;
+					world->curr_exp_col[z]=v;
+				}
+				voxworld_compr_col(world);
+				voxworld_write_compr_col(world,x,y);
 			}
-			voxworld_compr_col(world);
-			voxworld_write_compr_col(world,x,y);
 		}
-	}
-	
-	//other
-	v=0;
-	for (long x=100;x<102;x++)
-	{
-		for (long y=80;y<82;y++)
+		
+		//other
+		v=0;
+		for (long x=100;x<102;x++)
 		{
-			voxworld_empty_curr_exp_col(world);
-			for (long z=0;z<world->szZ;z++)
+			for (long y=80;y<82;y++)
 			{
-				v=201;
-				if (z%2==0) v=78;
-				world->curr_exp_col[z]=v;
+				voxworld_empty_curr_exp_col(world);
+				for (long z=0;z<world->szZ;z++)
+				{
+					v=201;
+					if (z%2==0) v=78;
+					world->curr_exp_col[z]=v;
+				}
+				voxworld_compr_col(world);
+				voxworld_write_compr_col(world,x,y);
 			}
-			voxworld_compr_col(world);
-			voxworld_write_compr_col(world,x,y);
 		}
 	}
 }

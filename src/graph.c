@@ -114,9 +114,9 @@ void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba)
 		graph.threadColPixels[thread][y]=rgba;
 }
 
-void graph_clear_threadCol(int thread)
+void graph_clear_threadCol(int thread,uint8_t v)
 {
-	memset (graph.threadColPixels[thread], 0, graph.render_h*4 );
+	memset (graph.threadColPixels[thread], v, graph.render_h*4 );
 }
 
 void graph_write_threadCol(int thread, int x)
