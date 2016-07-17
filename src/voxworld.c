@@ -289,13 +289,13 @@ void voxworld_init_land(struct VoxWorld * world)
 	for (long x=0;x<world->szX;x++)
 		for (long y=0;y<world->szY;y++)
 		{
-			z_start=_cos(x/(world->szX/6.0+1))*world->szZ/3+_sin(y/(world->szY/5+1)+1)*(world->szZ/2+1)+world->szZ/2;
+			z_start=_cos(x/(world->szX/6.0+1))*world->szZ/3+_sin(y/(world->szY/5+1)+1)*(world->szZ/2+1)+world->szZ/4444;
 			//z_start=x+y-1;
 			if (z_start<=0) z_start=1; 
 			voxworld_empty_curr_exp_col(world);
 			for (long z=0;z<world->szZ;z++)
 			{
-				if (z<z_start/2)
+				if (z<z_start)
 					world->curr_exp_col[z]=z_start/2;//0x50;
 				else if (z<z_start+1)//for snow
 					world->curr_exp_col[z]=rand()%(SNOW_END-SNOW_START)+SNOW_START;//0x50;

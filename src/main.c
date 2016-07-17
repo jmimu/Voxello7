@@ -53,16 +53,16 @@ int main(int argc, char *argv[])
 	result=graph_init(640,480,640/2,480/2,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(3,3,5);
+	world = voxworld_create(300,300,50);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/2+0.001;
 	//cam.y=world->szY/2+0.001;
 	cam.z=world->szZ/2+0.001;
 
 	//voxworld_init_empty_cube(world,2);
-	//voxworld_init_land(world);
-	voxworld_init_stairs(world);
-	voxworld_printf(world);
+	voxworld_init_land(world);
+	//voxworld_init_stairs(world);
+	//voxworld_printf(world);
 	
 	render=voxrender_create(world,30);
 	printf("Sizeof VoxRay: %d\n",sizeof(struct VoxRay));

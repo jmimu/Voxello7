@@ -253,15 +253,18 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						{
 							double next_lambda=voxray_lambdaNextIntersection(ray);
 							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
-							color=ray->world->colorMap[previous_v];
-							color=color_bright(color,0.6);
-							if (ray->currentLambda>ray->render->clip_dark)
-								color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
-									(ray->render->clip_max-ray->render->clip_dark));//clipping
-							graph_vline_threadCol(ray->thread,l0,l_tmp,color);
-							if (trace)
-								printf("draw top %d %d : %x\n",l0,l_tmp,color);
-							l0=l_tmp;
+							if (l_tmp>l0)//TODO: how l_tmp<l0 is possible?
+							{
+								color=ray->world->colorMap[previous_v];
+								color=color_bright(color,0.6);
+								if (ray->currentLambda>ray->render->clip_dark)
+									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
+										(ray->render->clip_max-ray->render->clip_dark));//clipping
+								graph_vline_threadCol(ray->thread,l0,l_tmp,color);
+								if (trace)
+									printf("draw top %d %d : %x\n",l0,l_tmp,color);
+								l0=l_tmp;
+							}
 						}
 						
 						//create a new interval for next vox column 
