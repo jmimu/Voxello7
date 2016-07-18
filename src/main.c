@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	//voxworld_printf(world);
 	
 	render=voxrender_create(world,30);
-	printf("Sizeof VoxRay: %d\n",sizeof(struct VoxRay));
+	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));
 	
 	last_time = SDL_GetTicks();
 	current_time = last_time;
@@ -198,6 +198,9 @@ int main(int argc, char *argv[])
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
 			add(&cam,(struct Pt3d){0,0,-speed});
 		}
+
+		if (cam.z<0) cam.z=0;
+		if (cam.z>world->szZ) cam.z=world->szZ;
 
 		t+=0.05;
 
