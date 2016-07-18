@@ -186,6 +186,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				zMin=l_to_z(interval->l_min, ray->cam->z, ray->currentLambda, fc);
 				zMax=l_to_z(interval->l_max, ray->cam->z, ray->currentLambda, fc)+1;//+1 to look for bottom of vox above
 				if (zMin<0) zMin=0;
+				if (zMax<0) zMax=0;
+				if (zMin>ray->world->szZ-1)
+					zMin=ray->world->szZ-1;
 				if (zMax>ray->world->szZ-1)
 					zMax=ray->world->szZ-1;
 				
