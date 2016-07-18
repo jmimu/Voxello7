@@ -384,8 +384,8 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	}
 
 	render->clip_min=1;
-	render->clip_dark=80;
-	render->clip_max=90;
+	render->clip_dark=180;
+	render->clip_max=200;
 	return render;
 }
 
@@ -408,7 +408,12 @@ void voxrender_render(struct VoxRender * render,bool trace)
 	{
 		th_id = omp_get_thread_num();
 		nthreads=omp_get_num_threads();
+		int start=th_id*graph.render_w/nthreads;
+		int stop=(th_id+1)*graph.render_w/nthreads;
+		//Choose between threads equality
+		//or threads independance
 		for (int c=th_id*nb_parts+part;c<graph.render_w;c+=nthreads*nb_parts)
+		//for (int c=start+part;c<stop;c+=nb_parts)
 		{
 			voxray_reinit(&render->ray[th_id],&render->cam,c,(trace&&(c==graph.render_w/2)));
 			voxray_draw(&render->ray[th_id],c,(trace&&(c==graph.render_w/2)) );

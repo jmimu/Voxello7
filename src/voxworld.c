@@ -289,7 +289,7 @@ void voxworld_init_land(struct VoxWorld * world)
 	for (long x=0;x<world->szX;x++)
 		for (long y=0;y<world->szY;y++)
 		{
-			z_start=_cos(x/(world->szX/6.0+1))*world->szZ/3+_sin(y/(world->szY/5+1)+1)*(world->szZ/2+1)+world->szZ/4444;
+			z_start=_cos(x/(world->szX/(PI*3)+1))*world->szZ/4+_sin(y/(world->szY/(PI*5)+1)+1)*world->szZ/5+world->szZ/2;
 			//z_start=x+y-1;
 			if (z_start<=0) z_start=1; 
 			voxworld_empty_curr_exp_col(world);
