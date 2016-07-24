@@ -55,9 +55,9 @@ int main(int argc, char *argv[])
 	
 	world = voxworld_create(300,300,50);
 	check_debug(world,"Unable to create world...");
-	cam.x=world->szX/2+0.001;
+	cam.x=world->szX/3+0.001;
 	//cam.y=world->szY/2+0.001;
-	cam.z=world->szZ/2+0.001;
+	cam.z=1.5*world->szZ/2+0.001;
 
 	//voxworld_init_empty_cube(world,2);
 	voxworld_init_land(world);
