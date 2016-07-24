@@ -1,5 +1,5 @@
 CFLAGS= -g -O3 -std=c99 -Wall -Wextra -fopenmp -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
-LIBS=-lm -lSDL2 $(OPTLIBS)
+LIBS=-lm -lSDL2 `sdl-config --libs` -lSDL_image $(OPTLIBS)
 PREFIX?=/usr/local
 
 SOURCES=$(wildcard src/**/*.c src/*.c)

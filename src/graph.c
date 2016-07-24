@@ -2,8 +2,10 @@
 
 #include <stdio.h>
 #include <omp.h>
+#include <SDL2/SDL_image.h>
 
 #include "dbg.h"
+#include "raster.h"
 
 struct Graph graph;
 int nb_threads=-1;
@@ -21,6 +23,17 @@ bool graph_init(int _window_w,int _window_h,
 		printf("SDL2 could not initialize! SDL2_Error: %s\n",SDL_GetError());
 		return false;
 	}
+	printf("SDL2 initialized.\n");
+
+	int flags=IMG_INIT_JPG|IMG_INIT_PNG;
+	int initted=IMG_Init(flags);
+	if((initted&flags) != flags) {
+		printf("IMG_Init: Failed to init required jpg and png support!\n");
+		printf("IMG_Init: %s\n", IMG_GetError());
+		return false;
+	}
+	printf("SDL2_image initialized.\n");
+
 	graph.window = SDL_CreateWindow(title,SDL_WINDOWPOS_CENTERED,
 				SDL_WINDOWPOS_CENTERED,graph.window_w,graph.window_h,
 				SDL_WINDOW_SHOWN);//SDL_WINDOW_FULLSCREEN_DESKTOP
@@ -138,6 +151,8 @@ void graph_close()
 		free(graph.threadColPixels[i]);
 	free(graph.threadColPixels);  
 	free(graph.myPixels);
+	raster_unloadall();
+	IMG_Quit();
 	SDL_Quit();
 }
 

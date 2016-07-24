@@ -8,6 +8,7 @@
 #include "dbg.h"
 #include "voxworld.h"
 #include "voxrender.h"
+#include "raster.h"
 
 int main(int argc, char *argv[])
 {
@@ -74,6 +75,9 @@ int main(int argc, char *argv[])
 	//SDL_EnableKeyRepeat(10, 10);
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
+
+	struct Raster* raster1=raster_load("/home/roa/prog/Voxello7/data/toto.jpg");
+	printf("Raster: %p\n",raster1);
 
 
 	while (run)
@@ -207,6 +211,8 @@ int main(int argc, char *argv[])
 		//graph_start_frame();
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
+
+		raster_draw(raster1,10,10);
 
 		//graph_test();
 
