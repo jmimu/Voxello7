@@ -245,7 +245,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						if ((previous_v!=EMPTY)&&(l0-graph.render_h/2<0))
 						{
 							double next_lambda=voxray_lambdaNextIntersection(ray);
-							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
+							int l_tmp=z_to_l(previous_voxZ, ray->cam.z, next_lambda, fc);
 							if (l_tmp>l0)//TODO: how l_tmp<l0 is possible?
 							{
 								color=ray->world->colorMap[previous_v];

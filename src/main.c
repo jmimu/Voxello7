@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
 		}
 
 		if (cam.z<0) cam.z=0;
-		if (cam.z>world->szZ) cam.z=world->szZ;
+		if (cam.z>world[0]->szZ) cam.z=world[0]->szZ;
 
 		t+=0.05;
 
