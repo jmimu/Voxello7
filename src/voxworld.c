@@ -283,7 +283,7 @@ void voxworld_init_land(struct VoxWorld * world)
 	
 	for (int i=0;i<255;i++)
 	{
-		world->colorMap[i]=(((i*34+1)%256)<<16)+(((i*34+85)%256)<<8)+(i*34+190)%256;
+		world->colorMap[i]=0xFF000000+(((i*34+1)%256)<<16)+(((i*34+85)%256)<<8)+(i*34+190)%256;
 	}
 	
 	for (long x=0;x<world->szX;x++)

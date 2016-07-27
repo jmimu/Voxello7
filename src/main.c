@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	struct Raster* raster1=raster_load("/home/roa/prog/Voxello7/data/toto.jpg");
+	struct Raster* raster1=raster_load("data/toto.png");
 	printf("Raster: %p\n",raster1);
 
 

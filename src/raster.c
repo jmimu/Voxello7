@@ -11,27 +11,38 @@ struct Raster* lastRaster=0;
 struct Raster* raster_load(const char* filename)
 {
 	struct Raster* raster=(struct Raster*)malloc(sizeof(struct Raster));
-	SDL_Surface* surf=IMG_Load(filename);
+	SDL_Surface* surf=0;
+	SDL_Surface* surf_conv=0;
+	raster->name=(char*)malloc(strlen(filename));
+	strcpy(raster->name,filename);
+
+	surf=IMG_Load(filename);
 	check(surf!=0,"Impossible to read image file \"%s\"",filename);
-	printf("Opened image file \"%s\"",filename);
-	check(surf->format->format==SDL_PIXELFORMAT_ARGB8888,"Bad format for image file \"%s\", must be ARGB8888",filename);
+	surf_conv=SDL_ConvertSurface(surf,graph.surface->format,0);
+	printf("Opened image file \"%s\"\n",filename);
+	//printf("File format: %d\n",surf->format->format);
+	check(surf_conv->format->format==SDL_PIXELFORMAT_ARGB8888,"Bad format for image file \"%s\", must be ARGB8888",filename);
+	printf("Image \"%s\" converted.\n",filename);
 
 	raster->pix=(uint32_t *)malloc(surf->w*surf->h*sizeof(uint32_t));
-	memcpy(raster->pix,surf->pixels,surf->w*surf->h);
+	memcpy(raster->pix,surf_conv->pixels,surf->w*surf->h);
 	raster->h=surf->h;
 	raster->w=surf->w;
 
 
 	SDL_FreeSurface(surf);
+	SDL_FreeSurface(surf_conv);
 	//update raster chain
 	raster->previous=lastRaster;
 	raster->next=0;
-	lastRaster->next=raster;
+	if (lastRaster) lastRaster->next=raster;
 	lastRaster=raster;
 	return raster;
 
 error:
 	if (surf) SDL_FreeSurface(surf);
+	if (surf_conv) SDL_FreeSurface(surf_conv);
+	free(raster->name);
 	free(raster);
 	return 0;
 }

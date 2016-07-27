@@ -19,7 +19,8 @@ struct Graph{
 		int render_w,render_h;
 		SDL_Window* window;
 		SDL_Renderer *renderer;
-		SDL_Texture *texture;		
+		SDL_Surface *surface;
+		SDL_Texture *texture;	
 		uint32_t *myPixels;
 		uint32_t **threadColPixels;//one column for one thread
 };

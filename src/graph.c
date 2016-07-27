@@ -43,11 +43,8 @@ bool graph_init(int _window_w,int _window_h,
 
 	graph.renderer = SDL_CreateRenderer(graph.window, -1, 0);
 
-
-	graph.texture = SDL_CreateTexture(graph.renderer,
-						   SDL_PIXELFORMAT_ARGB8888,
-						   SDL_TEXTUREACCESS_STREAMING,
-						   graph.render_w, graph.render_h);
+	graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+	graph.texture = SDL_CreateTextureFromSurface(graph.renderer,graph.surface);
 	graph.myPixels=(uint32_t*) malloc (graph.render_w*graph.render_h*sizeof(uint32_t));
 	graph.threadColPixels=(uint32_t**) malloc (nb_threads*sizeof(uint32_t*));
 	for (int i=0;i<nb_threads;i++)
@@ -129,7 +126,13 @@ void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba)
 
 void graph_clear_threadCol(int thread,uint8_t v)
 {
-	memset (graph.threadColPixels[thread], v, graph.render_h*4 );
+	//TODO: optimization : have a clean column, and copy it here
+	//memset (graph.threadColPixels[thread], v, graph.render_h*4 );
+	for (int y=0;y<graph.render_h;y++)
+	{
+		graph.threadColPixels[thread][y]=0xFF000000;
+	}
+
 }
 
 void graph_write_threadCol(int thread, int x)
@@ -145,12 +148,12 @@ void graph_write_threadCol(int thread, int x)
 void graph_close()
 {
 	SDL_DestroyTexture(graph.texture);
+	SDL_FreeSurface(graph.surface);
 	SDL_DestroyRenderer(graph.renderer);
 	SDL_DestroyWindow(graph.window);
 	for (int i=0;i<nb_threads;i++)
 		free(graph.threadColPixels[i]);
 	free(graph.threadColPixels);  
-	free(graph.myPixels);
 	raster_unloadall();
 	IMG_Quit();
 	SDL_Quit();
