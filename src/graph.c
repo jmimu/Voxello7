@@ -45,11 +45,14 @@ bool graph_init(int _window_w,int _window_h,
 
 	graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
 	graph.texture = SDL_CreateTextureFromSurface(graph.renderer,graph.surface);
-	graph.myPixels=(uint32_t*) malloc (graph.render_w*graph.render_h*sizeof(uint32_t));
-	graph.threadColPixels=(uint32_t**) malloc (nb_threads*sizeof(uint32_t*));
+	graph.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+	graph.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
+	graph.threadColPixels = (uint32_t**) malloc (nb_threads*sizeof(uint32_t*));
+	graph.threadColzbuf = (uint16_t**) malloc (nb_threads*sizeof(uint16_t*));
 	for (int i=0;i<nb_threads;i++)
 	{
 		graph.threadColPixels[i]=(uint32_t*) malloc (graph.render_h*sizeof(uint32_t));
+		graph.threadColzbuf[i]=(uint16_t*) malloc (graph.render_h*sizeof(uint16_t));
 	}
 	return true;
 }
@@ -58,8 +61,8 @@ bool graph_init(int _window_w,int _window_h,
 
 void graph_start_frame()
 {
-	for (int i=0;i<graph.render_w*graph.render_h;i++)
-		graph.myPixels[i]=0x00;
+	//for (int i=0;i<graph.render_w*graph.render_h;i++)
+	//	graph.pixels[i]=0x00;
 #ifdef DBG_GRAPH
 		graph_vline(graph.render_w/2,0,graph.render_h,0xFF00B040);
 #endif
@@ -67,7 +70,9 @@ void graph_start_frame()
 
 void graph_end_frame()
 {
-	SDL_UpdateTexture(graph.texture, NULL, graph.myPixels, graph.render_w * sizeof (uint32_t));
+	//for (unsigned int i=0;i<graph.render_w*graph.render_h;i++)//show zbuffer
+	//	graph.pixels[i]=0xFF000000 | (graph.zbuf[i]>>1)+10;
+	SDL_UpdateTexture(graph.texture, NULL, graph.pixels, graph.render_w * sizeof (uint32_t));
 	//SDL_RenderClear(renderer);
 	SDL_RenderCopy(graph.renderer, graph.texture, NULL, NULL);
 	SDL_RenderPresent(graph.renderer);
@@ -76,12 +81,12 @@ void graph_end_frame()
 
 void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b)
 {
-	graph.myPixels[x+y*graph.render_w]=(r<<16)+(g<<8)+(b)+0xFF000000;
+	graph.pixels[x+y*graph.render_w]=(r<<16)+(g<<8)+(b)+0xFF000000;
 }
 
 void graph_putpixel(int x,int y,uint32_t rgba)
 {
-	graph.myPixels[x+y*graph.render_w]=rgba;
+	graph.pixels[x+y*graph.render_w]=rgba;
 }
 
 void graph_vline(int x,int y1,int y2,uint32_t rgba)
@@ -101,13 +106,14 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 	unsigned int i=x+ymin*graph.render_w;
 	for (int y=ymin+1;y<=ymax;y++)
 	{
-		graph.myPixels[i]=rgba;
+		graph.pixels[i]=rgba;
 		i+=graph.render_w;
 	}
 }
 
 void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba)
-{	int ymin;
+{
+	int ymin;
 	int ymax;
 	if (y1>y2)
 	{
@@ -124,7 +130,7 @@ void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba)
 		graph.threadColPixels[thread][y]=rgba;
 }
 
-void graph_clear_threadCol(int thread,uint8_t v)
+void graph_clear_threadCol(int thread)
 {
 	//TODO: optimization : have a clean column, and copy it here
 	//memset (graph.threadColPixels[thread], v, graph.render_h*4 );
@@ -140,10 +146,52 @@ void graph_write_threadCol(int thread, int x)
 	unsigned int i=x;
 	for (int y=0;y<graph.render_h;y++)
 	{
-		graph.myPixels[i]=graph.threadColPixels[thread][y];
+		graph.pixels[i]=graph.threadColPixels[thread][y];
 		i+=graph.render_w;
 	}
 }
+
+void graph_vline_threadColZ(int thread,int y1,int y2,uint16_t z)
+{
+	int ymin;
+	int ymax;
+	if (y1>y2)
+	{
+		ymin=graph.render_h-1-y1;
+		ymax=graph.render_h-1-y2;
+	}else{
+		ymin=graph.render_h-1-y2;
+		ymax=graph.render_h-1-y1;
+	}
+	if (ymin<0) ymin=0;
+	if (ymax>=graph.render_h) ymax=graph.render_h-1;
+	
+	for (int y=ymin+1;y<=ymax;y++)
+		graph.threadColzbuf[thread][y]=z;
+
+}
+
+void graph_clear_threadColZ(int thread)
+{
+	//TODO: optimization : have a clean column, and copy it here
+	//memset (graph.threadColPixels[thread], v, graph.render_h*4 );
+	for (int y=0;y<graph.render_h;y++)
+	{
+		graph.threadColzbuf[thread][y]=0xFFFF;
+	}
+
+}
+
+void graph_write_threadColZ(int thread, int x)
+{
+	unsigned int i=x;
+	for (int y=0;y<graph.render_h;y++)
+	{
+		graph.zbuf[i]=graph.threadColzbuf[thread][y];
+		i+=graph.render_w;
+	}
+}
+
 
 void graph_close()
 {
@@ -152,8 +200,14 @@ void graph_close()
 	SDL_DestroyRenderer(graph.renderer);
 	SDL_DestroyWindow(graph.window);
 	for (int i=0;i<nb_threads;i++)
+	{
 		free(graph.threadColPixels[i]);
+		free(graph.threadColzbuf[i]);
+	}
 	free(graph.threadColPixels);  
+	free(graph.threadColzbuf);  
+	free(graph.pixels);  
+	free(graph.zbuf);  
 	raster_unloadall();
 	IMG_Quit();
 	SDL_Quit();
@@ -187,7 +241,7 @@ uint32_t color_bright(uint32_t color,float factor)
 
 void ScreenshotBMP(const char * filename)
 {
-    SDL_Surface * surf = SDL_CreateRGBSurfaceFrom(graph.myPixels,
+    SDL_Surface * surf = SDL_CreateRGBSurfaceFrom(graph.pixels,
 			graph.render_w, graph.render_h, 8*4, graph.render_w*4, 0,0,0,0);
     SDL_SaveBMP(surf, filename);
 
