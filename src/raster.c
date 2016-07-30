@@ -25,7 +25,7 @@ struct Raster* raster_load(const char* filename)
 	printf("Image \"%s\" converted.\n",filename);
 
 	raster->pix=(uint32_t *)malloc(surf->w*surf->h*sizeof(uint32_t));
-	memcpy(raster->pix,surf_conv->pixels,surf->w*surf->h);
+	memcpy(raster->pix,surf_conv->pixels,surf->w*surf->h*sizeof(uint32_t));
 	raster->h=surf->h;
 	raster->w=surf->w;
 
@@ -49,7 +49,41 @@ error:
 
 void raster_draw(struct Raster* raster, int x, int y)
 {
+	/*for (int l=0;l<raster->h;l++)
+	{
+		for (int c=0;c<raster->w;c++)
+		{
+			graph.pixels[c+l*graph.render_w]=raster->pix[c+l*raster->w];
+		}
+	}*/
+	long i=0;//raster index
+	long j=x+y*graph.render_w;//graph index
+	for (int l=0;l<raster->h;l++)
+	{
+		for (int c=0;c<raster->w;c++)
+		{
+			graph.pixels[j]=raster->pix[i];
+			i++;
+			j++;
+		}
+		j+=graph.render_w-raster->w;
+	}
+}
 
+void raster_draw_zoom(struct Raster* raster, int x, int y, int w, int h)
+{
+	long i=0;//raster index
+	long j=x+y*graph.render_w;//graph index
+	for (int l=0;l<raster->h;l++)
+	{
+		for (int c=0;c<raster->w;c++)
+		{
+			graph.pixels[j]=raster->pix[i];
+			i++;
+			j++;
+		}
+		j+=graph.render_w-raster->w;
+	}
 }
 
 void raster_unload(struct Raster* raster)
