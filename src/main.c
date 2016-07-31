@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
 
-		raster_draw(raster1,10,10);
+		raster_draw(raster1,100,50,20<<3);
 
 		//graph_test();
 

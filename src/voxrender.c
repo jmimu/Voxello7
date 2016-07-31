@@ -264,7 +264,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
 								graph_vline_threadCol(ray->thread,l0,l_tmp,color);
-								graph_vline_threadColZ(ray->thread,l0,l_tmp,ray->currentLambda+next_lambda);
+								graph_vline_threadColZ(ray->thread,l0,l_tmp,(ray->currentLambda+next_lambda)*4);
 								if (trace)
 									printf("draw top %d %d : %x\n",l0,l_tmp,color);
 								l0=l_tmp;
@@ -295,7 +295,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 									(ray->render->clip_max-ray->render->clip_dark));//clipping
 							graph_vline_threadCol(ray->thread,l_tmp,l0,color);
-							graph_vline_threadColZ(ray->thread,l_tmp,l0,ray->currentLambda+next_lambda);
+							graph_vline_threadColZ(ray->thread,l_tmp,l0,(ray->currentLambda+next_lambda)*4);
 							if (trace)
 								printf("draw bottom %d %d : %x\n",l_tmp,l0,color);
 							//remove this interval to last next_current_VInterval:
@@ -309,7 +309,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 								(ray->render->clip_max-ray->render->clip_dark));//clipping
 						graph_vline_threadCol(ray->thread,l0,l1,color);
-						graph_vline_threadColZ(ray->thread,l0,l1,ray->currentLambda*2);
+						graph_vline_threadColZ(ray->thread,l0,l1,ray->currentLambda*8);
 						if (trace)
 							printf("draw %d %d : %x\n",l0,l1,color);
 

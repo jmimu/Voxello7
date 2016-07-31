@@ -22,7 +22,7 @@ struct Graph{
 		SDL_Surface *surface;
 		SDL_Texture *texture;	
 		uint32_t *pixels;
-		uint16_t *zbuf; //zbuffer unit: lambda*2
+		uint16_t *zbuf; //zbuffer unit: voxel side*8
 		uint32_t **threadColPixels;//one column for one thread
 		uint16_t **threadColzbuf;//one column for one thread
 };

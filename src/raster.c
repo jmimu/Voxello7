@@ -47,22 +47,16 @@ error:
 	return 0;
 }
 
-void raster_draw(struct Raster* raster, int x, int y)
+void raster_draw(struct Raster* raster, int x, int y,uint16_t z)
 {
-	/*for (int l=0;l<raster->h;l++)
-	{
-		for (int c=0;c<raster->w;c++)
-		{
-			graph.pixels[c+l*graph.render_w]=raster->pix[c+l*raster->w];
-		}
-	}*/
 	long i=0;//raster index
 	long j=x+y*graph.render_w;//graph index
 	for (int l=0;l<raster->h;l++)
 	{
 		for (int c=0;c<raster->w;c++)
 		{
-			graph.pixels[j]=raster->pix[i];
+			if (graph.zbuf[j]>z)
+				graph.pixels[j]=raster->pix[i];
 			i++;
 			j++;
 		}
