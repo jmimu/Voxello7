@@ -430,7 +430,18 @@ void voxrender_render(struct VoxRender * render,bool trace)
 	part%=nb_parts;
 }
 
-
+struct Pt3d voxrender_proj(struct VoxRender * render,struct Pt3d P)
+{
+	static struct Pt3d q;
+	P.x-=render->cam.x;
+	P.y-=render->cam.y;
+	q.x=render->ang_hz_cos*P.x-render->ang_hz_sin*P.y;
+	q.y=render->ang_hz_sin*P.x+render->ang_hz_cos*P.y;
+	q.z=P.z-render->cam.z;
+	q.x=render->f*q.x/q.y+(graph.render_w>>1);
+	q.z=-render->f*q.z/q.y+(graph.render_h>>1);
+	return(q);
+}
 
 void voxrender_delete(struct VoxRender * render)
 {

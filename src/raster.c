@@ -49,6 +49,9 @@ error:
 
 void raster_draw(struct Raster* raster, int x, int y,uint16_t z)
 {
+	if ((x<0)||(x>graph.render_w-raster->w)||
+	    (y<0)||(y>graph.render_h-raster->h))
+		return; //out of screen
 	long i=0;//raster index
 	long j=x+y*graph.render_w;//graph index
 	for (int l=0;l<raster->h;l++)

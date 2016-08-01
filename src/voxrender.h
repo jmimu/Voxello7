@@ -86,6 +86,7 @@ void Voxray_show_info(struct VoxRay * ray);
 struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm);
 void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz);
 void voxrender_render(struct VoxRender * render,bool trace);
+struct Pt3d voxrender_proj(struct VoxRender * render,struct Pt3d P);
 void voxrender_delete(struct VoxRender * render);
 
 #endif // VOXRENDER_H

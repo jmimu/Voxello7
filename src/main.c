@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
 	struct Raster* raster1=raster_load("data/toto.png");
+	struct Pt3d raster1p={100,100,10};
 	printf("Raster: %p\n",raster1);
 
 
@@ -211,8 +212,8 @@ int main(int argc, char *argv[])
 		//graph_start_frame();
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
-
-		raster_draw(raster1,100,50,20<<3);
+		struct Pt3d proj=voxrender_proj(render,raster1p);
+		raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
 
 		//graph_test();
 
