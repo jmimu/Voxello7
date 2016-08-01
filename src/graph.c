@@ -36,7 +36,32 @@ bool graph_init(int _window_w,int _window_h,
 
 	graph.window = SDL_CreateWindow(title,SDL_WINDOWPOS_CENTERED,
 				SDL_WINDOWPOS_CENTERED,graph.window_w,graph.window_h,
-				SDL_WINDOW_SHOWN);//SDL_WINDOW_FULLSCREEN_DESKTOP
+				SDL_WINDOW_OPENGL);//SDL_WINDOW_FULLSCREEN_DESKTOP
+
+#ifdef OPENGL3	
+	//OGL part (from Headerphile.com OpenGL Tutorial part 1)
+	graph.context = SDL_GL_CreateContext(graph.window);
+	// Set our OpenGL version.
+	// SDL_GL_CONTEXT_CORE gives us only the newer version, deprecated functions are disabled
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	// 3.2 is part of the modern versions of OpenGL, but most video cards whould be able to run it
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	// Turn on double buffering with a 24bit Z buffer.
+	// You may need to change this to 16 or 32 for your system
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	// This makes our buffer swap syncronized with the monitor's vertical refresh
+	SDL_GL_SetSwapInterval(1);
+	//test GL context:
+	int value = 0;
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
+	printf("SDL_GL_CONTEXT_MAJOR_VERSION : %d \n",value);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
+	printf("SDL_GL_CONTEXT_MINOR_VERSION : %d \n",value);
+	//end OGL part
+#endif
+	
+	
 	//if SDL_WINDOW_FULLSCREEN_DESKTOP
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
 	//SDL_RenderSetLogicalSize(sdlRenderer, 640, 480);
@@ -195,6 +220,9 @@ void graph_write_threadColZ(int thread, int x)
 
 void graph_close()
 {
+#ifdef OPENGL3	
+	SDL_GL_DeleteContext(graph.context);
+#endif
 	SDL_DestroyTexture(graph.texture);
 	SDL_FreeSurface(graph.surface);
 	SDL_DestroyRenderer(graph.renderer);

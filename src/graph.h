@@ -6,6 +6,8 @@
 
 #define DBG_GRAPH
 
+#define OPENGL3
+
 /***
 	Generic functions to handle :
 	 - window opening
@@ -20,7 +22,10 @@ struct Graph{
 		SDL_Window* window;
 		SDL_Renderer *renderer;
 		SDL_Surface *surface;
-		SDL_Texture *texture;	
+		SDL_Texture *texture;
+#ifdef OPENGL3
+		SDL_GLContext context;	
+#endif
 		uint32_t *pixels;
 		uint16_t *zbuf; //zbuffer unit: voxel side*8
 		uint32_t **threadColPixels;//one column for one thread
