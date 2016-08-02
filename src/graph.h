@@ -4,8 +4,10 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
-#define DBG_GRAPH
+//zbuf in fix point
+#define ZBUF_FACTOR 8
 
+#define DBG_GRAPH
 #define OPENGL3
 
 /***

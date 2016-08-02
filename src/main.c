@@ -8,6 +8,7 @@
 #include "dbg.h"
 #include "voxworld.h"
 #include "voxrender.h"
+#include "sprite.h"
 #include "raster.h"
 
 int main(int argc, char *argv[])
@@ -42,7 +43,7 @@ int main(int argc, char *argv[])
 	double focale=300;
 
 	bool run=true;
-	double t=0.0;
+	long t=0;
 
 	int frame_couter=0;
 
@@ -76,9 +77,17 @@ int main(int argc, char *argv[])
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	struct Raster* raster1=raster_load("data/toto.png");
-	struct Pt3d raster1p={100,100,10};
-	printf("Raster: %p\n",raster1);
+	struct Anim* anim1=anim_create(10);
+	anim_add_raster(anim1,raster_load("data/run1.png"));
+	/*anim_add_raster(anim1,raster_load("data/run2.png"));
+	anim_add_raster(anim1,raster_load("data/run3.png"));
+	anim_add_raster(anim1,raster_load("data/run4.png"));
+	anim_add_raster(anim1,raster_load("data/run5.png"));
+	anim_add_raster(anim1,raster_load("data/run6.png"));
+	anim_add_raster(anim1,raster_load("data/run7.png"));
+	anim_add_raster(anim1,raster_load("data/run8.png"));
+	anim_add_raster(anim1,raster_load("data/run9.png"));*/
+	struct Sprite* sprite1=sprite_create("Toto",100,100,10,4,4,anim1);
 
 
 	while (run)
@@ -207,13 +216,16 @@ int main(int argc, char *argv[])
 		if (cam.z<0) cam.z=0;
 		if (cam.z>world->szZ) cam.z=world->szZ;
 
-		t+=0.05;
+		t++;
 
 		//graph_start_frame();
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
-		struct Pt3d proj=voxrender_proj(render,raster1p);
-		raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
+		//struct Pt3d proj=voxrender_proj(render,raster1p);
+		//raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
+
+		anim_frame(anim1);
+		sprite_draw(render,sprite1);
 
 		//graph_test();
 
@@ -246,6 +258,8 @@ int main(int argc, char *argv[])
 	}
 
 error:
+	free(anim1);
+	free(sprite1);
 	if (render) voxrender_delete(render);
 	if (world) voxworld_delete(world);
 	graph_close();

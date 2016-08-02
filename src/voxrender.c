@@ -264,7 +264,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
 								graph_vline_threadCol(ray->thread,l0,l_tmp,color);
-								graph_vline_threadColZ(ray->thread,l0,l_tmp,(ray->currentLambda+next_lambda)*4);
+								graph_vline_threadColZ(ray->thread,l0,l_tmp,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
 								if (trace)
 									printf("draw top %d %d : %x\n",l0,l_tmp,color);
 								l0=l_tmp;
@@ -295,7 +295,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 									(ray->render->clip_max-ray->render->clip_dark));//clipping
 							graph_vline_threadCol(ray->thread,l_tmp,l0,color);
-							graph_vline_threadColZ(ray->thread,l_tmp,l0,(ray->currentLambda+next_lambda)*4);
+							graph_vline_threadColZ(ray->thread,l_tmp,l0,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
 							if (trace)
 								printf("draw bottom %d %d : %x\n",l_tmp,l0,color);
 							//remove this interval to last next_current_VInterval:
@@ -309,7 +309,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 								(ray->render->clip_max-ray->render->clip_dark));//clipping
 						graph_vline_threadCol(ray->thread,l0,l1,color);
-						graph_vline_threadColZ(ray->thread,l0,l1,ray->currentLambda*8);
+						graph_vline_threadColZ(ray->thread,l0,l1,ray->currentLambda*ZBUF_FACTOR);
 						if (trace)
 							printf("draw %d %d : %x\n",l0,l1,color);
 
@@ -438,8 +438,14 @@ struct Pt3d voxrender_proj(struct VoxRender * render,struct Pt3d P)
 	q.x=render->ang_hz_cos*P.x-render->ang_hz_sin*P.y;
 	q.y=render->ang_hz_sin*P.x+render->ang_hz_cos*P.y;
 	q.z=P.z-render->cam.z;
-	q.x=render->f*q.x/q.y+(graph.render_w>>1);
-	q.z=-render->f*q.z/q.y+(graph.render_h>>1);
+	if (fabs(q.y)<render->clip_min)
+	{
+		q.x=-10000;
+		q.y=-10000;
+	}else{
+		q.x=render->f*q.x/q.y+(graph.render_w>>1);
+		q.z=-render->f*q.z/q.y+(graph.render_h>>1);
+	}
 	return(q);
 }
 
