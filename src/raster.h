@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define MAXANIMLEN 50
-#define ANIMUNIT 1000 //one step in anim is...
+#define ANIMUNIT 100 //one step in anim is... (in ms/time_factor)
 
 /***
 	Generic functions to handle :
@@ -23,8 +23,8 @@ struct Raster{//TODO: add origin?
 struct Anim{
 	struct Raster* rasters[MAXANIMLEN];
 	uint8_t len;
-	int speed; //add to step every frame
-	long current;//num of current raster (change every ANIMUNIT)
+	float time_factor; //time is increased by dt*time_factor
+	float time;//time counter of animation
 	uint8_t step;//current/ANIMUNIT
 };
 
@@ -37,9 +37,9 @@ void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, in
 
 void raster_unloadall();
 
-struct Anim* anim_create(int _speed);
+struct Anim* anim_create(float _time_factor);
 int anim_add_raster(struct Anim* anim,struct Raster* raster);//0 if error
-void anim_frame(struct Anim* anim);//one game frame
+void anim_frame(struct Anim* anim, float dt);
 struct Raster* anim_get_raster(struct Anim* anim);
 //void anim_free(struct Anim* anim);
 

@@ -77,16 +77,16 @@ int main(int argc, char *argv[])
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
-	struct Anim* anim1=anim_create(10);
+	struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
-	/*anim_add_raster(anim1,raster_load("data/run2.png"));
+	anim_add_raster(anim1,raster_load("data/run2.png"));
 	anim_add_raster(anim1,raster_load("data/run3.png"));
 	anim_add_raster(anim1,raster_load("data/run4.png"));
 	anim_add_raster(anim1,raster_load("data/run5.png"));
 	anim_add_raster(anim1,raster_load("data/run6.png"));
 	anim_add_raster(anim1,raster_load("data/run7.png"));
 	anim_add_raster(anim1,raster_load("data/run8.png"));
-	anim_add_raster(anim1,raster_load("data/run9.png"));*/
+	anim_add_raster(anim1,raster_load("data/run9.png"));
 	struct Sprite* sprite1=sprite_create("Toto",100,100,10,4,4,anim1);
 
 
@@ -224,7 +224,6 @@ int main(int argc, char *argv[])
 		//struct Pt3d proj=voxrender_proj(render,raster1p);
 		//raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
 
-		anim_frame(anim1);
 		sprite_draw(render,sprite1);
 
 		//graph_test();
@@ -250,6 +249,7 @@ int main(int argc, char *argv[])
 		speed=ellapsed_time/50.0;
 		last_time = current_time;
 		ellapsed_time = SDL_GetTicks() - start_time;
+		anim_frame(anim1,ellapsed_time);
 		if (ellapsed_time < 20)
 		{
 			//SDL_Delay(20 - ellapsed_time);

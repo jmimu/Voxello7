@@ -148,11 +148,11 @@ void raster_unloadall()
 }
 
 //-----------------------------------------------------------
-struct Anim* anim_create(int _speed)
+struct Anim* anim_create(float _time_factor)
 {
 	struct Anim* anim=(struct Anim*)malloc(sizeof(struct Anim));
-	anim->speed=_speed;
-	anim->current=0;
+	anim->time_factor=_time_factor;
+	anim->time=0;
 	anim->len=0;
 	anim->step=0;
 	return anim;
@@ -169,13 +169,13 @@ error:
 	return 0;
 }
 
-void anim_frame(struct Anim* anim)
+void anim_frame(struct Anim* anim, float dt)
 {
-	anim->current+=anim->speed;
-	anim->step=anim->current/ANIMUNIT;
+	anim->time+=anim->time_factor*dt;
+	anim->step=anim->time/ANIMUNIT;
 	if (anim->step>=anim->len)
 	{
-		anim->current=0;
+		anim->time=0;
 		anim->step=0;
 	}
 }
@@ -195,3 +195,4 @@ error:
 	anim->len=0;
 	anim->step=0;
 }*/
+
