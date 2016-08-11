@@ -51,7 +51,7 @@ struct MV_Model {
     int version;
 };
 
-
+const unsigned int mv_default_palette[ 256 ];
 
 struct MV_Model * LoadModel( const char *path );
 
