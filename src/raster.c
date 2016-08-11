@@ -143,6 +143,7 @@ void raster_unloadall()
 	{
 		next=lastRaster->previous;
 		raster_unload(lastRaster);
+		free(lastRaster);
 		lastRaster=next;
 	}
 }

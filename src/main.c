@@ -10,6 +10,7 @@
 #include "voxrender.h"
 #include "sprite.h"
 #include "raster.h"
+#include "formats/magicavoxel.h"
 
 int main(int argc, char *argv[])
 {
@@ -55,18 +56,25 @@ int main(int argc, char *argv[])
 	result=graph_init(640,480,640/2,480/2,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(300,300,50);
+	world = voxworld_create(100,100,50);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/3+0.001;
 	//cam.y=world->szY/2+0.001;
 	cam.z=1.5*world->szZ/2+0.001;
 
 	//voxworld_init_empty_cube(world,2);
+	//voxworld_init_full_cube(world);
 	voxworld_init_land(world);
 	//voxworld_init_stairs(world);
 	//voxworld_printf(world);
+
+	struct MV_Model * model = LoadModel( "data/castle.vox" );
+	//VoxWorld_set_MV_Model_palette(world,model);
+	VoxWorld_add_MV_Model(world,model,20,20,2,0);
+	MV_Model_delete(model);
 	
-	render=voxrender_create(world,30);
+	
+	render=voxrender_create(world,20);
 	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));
 	
 	last_time = SDL_GetTicks();
@@ -258,6 +266,7 @@ int main(int argc, char *argv[])
 	}
 
 error:
+	//raster_unloadall();//TODO
 	free(anim1);
 	free(sprite1);
 	if (render) voxrender_delete(render);

@@ -1,7 +1,8 @@
 Voxello 7
 =========
 
-dbg.h from http://c.learncodethehardway.org
+dbg.h from c.learncodethehardway.org
+magicavoxel format from ephtracy.github.io
 
 Choosing number of threads:
 ---------------------------

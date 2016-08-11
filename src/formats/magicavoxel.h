@@ -24,9 +24,6 @@
 #include <stdlib.h>
 #include "../voxworld.h"
 
-// magic number
-int MV_ID( int a, int b, int c, int d );
-
 //================
 // RGBA
 //================
@@ -34,12 +31,6 @@ struct MV_RGBA {
     unsigned char r, g, b, a;
 };
 
-//================
-// Voxel
-//================
-struct MV_Voxel {
-    unsigned char x, y, z, colorIndex;
-};
 
 //================
 // Model
@@ -60,33 +51,17 @@ struct MV_Model {
     int version;
 };
 
-int ReadInt( FILE *fp );
-
-void MV_Model_delete(struct MV_Model * model);
-
-struct MV_Model * MV_Model_create();
-
-
-struct chunk_t {
-    int id;
-    int contentSize;
-    int childrenSize;
-    long end;
-};
-
-
-void ReadChunk( FILE *fp, struct chunk_t *chunk );
-
-bool ReadModelFile( struct MV_Model * model, FILE *fp );
 
 
 struct MV_Model * LoadModel( const char *path );
+
+void MV_Model_delete(struct MV_Model * model);
 
 void VoxWorld_set_MV_Model_palette(struct VoxWorld * world,
     struct MV_Model * model);
 
 bool VoxWorld_add_MV_Model(struct VoxWorld * world,
-    struct MV_Model * model, int posx, int posy, int posz);
+    struct MV_Model * model, int posx, int posy, int posz,bool use_empty);
 
 
 #endif // __MV_MODEL__

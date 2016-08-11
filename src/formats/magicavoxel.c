@@ -20,6 +20,43 @@
 
 #include "../dbg.h"
 
+
+
+// magic number
+int MV_ID( int a, int b, int c, int d );
+
+
+//================
+// Voxel
+//================
+struct MV_Voxel {
+    unsigned char x, y, z, colorIndex;
+};
+
+
+
+int ReadInt( FILE *fp );
+
+
+struct MV_Model * MV_Model_create();
+
+
+struct chunk_t {
+    int id;
+    int contentSize;
+    int childrenSize;
+    long end;
+};
+
+
+void ReadChunk( FILE *fp, struct chunk_t *chunk );
+
+bool ReadModelFile( struct MV_Model * model, FILE *fp );
+
+
+//--------------------------------------
+
+
 // magic number
 int MV_ID( int a, int b, int c, int d ) {
     return ( a ) | ( b << 8 ) | ( c << 16 ) | ( d << 24 );
@@ -103,7 +140,7 @@ bool ReadModelFile( struct MV_Model * model, FILE *fp ) {
     // main chunk
     struct chunk_t mainChunk;
     ReadChunk( fp, &mainChunk );
-    check(mainChunk.id != ID_MAIN,"main chunk is not found");
+    check(mainChunk.id == ID_MAIN,"main chunk is not found");
     
     // skip content of main chunk
     fseek( fp, mainChunk.contentSize, SEEK_CUR );
@@ -163,6 +200,7 @@ error:
 
 struct MV_Model * LoadModel( const char *path )
 {
+    printf("Loading model %s...\n",path);
     struct MV_Model * model = MV_Model_create();
     
     // open file
@@ -201,14 +239,33 @@ error:
 void VoxWorld_set_MV_Model_palette(struct VoxWorld * world,
     struct MV_Model * model)
 {
-
+    int i;
+    if(!model)
+    {
+        printf("Error: MV_Model NULL!\n");
+        return;
+    }
+    for (i=0;i<255;i++)
+    {
+        world->colorMap[i]= (model->palette[i].a<<24)+
+                            (model->palette[i].r<<16)+
+                            (model->palette[i].g<<8)+
+                            (model->palette[i].b<<0);
+    }
 }
 
 
 bool VoxWorld_add_MV_Model(struct VoxWorld * world,
-    struct MV_Model * model, int posx, int posy, int posz)
+    struct MV_Model * model, int posx, int posy, int posz,
+    bool use_empty)
 {
     int i,j,x,y,z,xw,yw,zw;
+    if(!model)
+    {
+        printf("Error: MV_Model NULL!\n");
+        return false;
+    }
+
     if ((posx<0)||(posx>world->szX-model->sizex)||
         (posy<0)||(posy>world->szY-model->sizey)||
         (posz<0)||(posz>world->szZ-model->sizez))
@@ -237,17 +294,22 @@ bool VoxWorld_add_MV_Model(struct VoxWorld * world,
         for (y=0;y<model->sizey;y++)
         {
             yw=y+posy;
-            voxworld_empty_curr_exp_col(world);
+            voxworld_expand_col(world,xw,yw);
             j=x*sizexy+y*model->sizex;
             for (z=0;z<model->sizez;z++)
             {
                 zw=z+posz;
-                world->curr_exp_col[zw]=coarse[j];
+                if (coarse[j]!=EMPTY)
+                    world->curr_exp_col[zw]=coarse[j];
+                else if (use_empty)
+                    world->curr_exp_col[zw]=EMPTY;
                 j++;
             }
+            voxworld_compr_col(world);
+            voxworld_write_compr_col(world,xw,yw);
         }
     }
-
+    free(coarse);
     return true;
 }
 
