@@ -136,7 +136,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 	}
 }
 
-void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba)
+void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba,uint16_t z)
 {
 	int ymin;
 	int ymax;
@@ -152,7 +152,13 @@ void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba)
 	if (ymax>=graph.render_h) ymax=graph.render_h-1;
 	
 	for (int y=ymin+1;y<=ymax;y++)
-		graph.threadColPixels[thread][y]=rgba;
+	{
+		if (graph.threadColzbuf[thread][y]>z)
+		{
+			graph.threadColPixels[thread][y]=rgba;
+			graph.threadColzbuf[thread][y]=z;
+		}
+	}
 }
 
 void graph_clear_threadCol(int thread)
@@ -162,6 +168,7 @@ void graph_clear_threadCol(int thread)
 	for (int y=0;y<graph.render_h;y++)
 	{
 		graph.threadColPixels[thread][y]=0xFF000000;
+		graph.threadColzbuf[thread][y]=0xFFFF;
 	}
 
 }
@@ -172,46 +179,6 @@ void graph_write_threadCol(int thread, int x)
 	for (int y=0;y<graph.render_h;y++)
 	{
 		graph.pixels[i]=graph.threadColPixels[thread][y];
-		i+=graph.render_w;
-	}
-}
-
-void graph_vline_threadColZ(int thread,int y1,int y2,uint16_t z)
-{
-	int ymin;
-	int ymax;
-	if (y1>y2)
-	{
-		ymin=graph.render_h-1-y1;
-		ymax=graph.render_h-1-y2;
-	}else{
-		ymin=graph.render_h-1-y2;
-		ymax=graph.render_h-1-y1;
-	}
-	if (ymin<0) ymin=0;
-	if (ymax>=graph.render_h) ymax=graph.render_h-1;
-	
-	for (int y=ymin+1;y<=ymax;y++)
-		graph.threadColzbuf[thread][y]=z;
-
-}
-
-void graph_clear_threadColZ(int thread)
-{
-	//TODO: optimization : have a clean column, and copy it here
-	//memset (graph.threadColPixels[thread], v, graph.render_h*4 );
-	for (int y=0;y<graph.render_h;y++)
-	{
-		graph.threadColzbuf[thread][y]=0xFFFF;
-	}
-
-}
-
-void graph_write_threadColZ(int thread, int x)
-{
-	unsigned int i=x;
-	for (int y=0;y<graph.render_h;y++)
-	{
 		graph.zbuf[i]=graph.threadColzbuf[thread][y];
 		i+=graph.render_w;
 	}
