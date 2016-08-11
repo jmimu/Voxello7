@@ -52,6 +52,10 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 	world->curr_compr_col_size=0;
 
 	//init colormap
+	for (int i=0;i<255;i++)
+	{
+		world->colorMap[i]=0xFF000000+(((i*34+1)%256)<<16)+(((i*34+85)%256)<<8)+(i*34+190)%256;
+	}
 	world->colorMap[0]=0xFF0A2000;//black
 	world->colorMap[1]=0xFFFFFFFF;//white
 	world->colorMap[2]=0xFFFF0000;//red
@@ -254,6 +258,30 @@ void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
 
 }
 
+void voxworld_init_full_cube(struct VoxWorld * world)
+{
+	int x,y,z;
+	voxworld_empty_curr_exp_col(world);
+	world->curr_exp_col[0]=10;
+	world->curr_exp_col[world->szZ-1]=20;
+	voxworld_compr_col(world);
+	for (x=0;x<world->szX;x++)
+		for (y=0;y<world->szY;y++)
+		{
+			voxworld_write_compr_col(world,x,y);
+		}
+
+	for (z=2;z<world->szZ-2;z++)
+		world->curr_exp_col[z]=z;
+	voxworld_compr_col(world);
+	for (x=2;x<world->szX-2;x++)
+		for (y=2;y<world->szY-2;y++)
+		{
+			voxworld_write_compr_col(world,x,y);
+		}
+
+}
+
 void voxworld_init_stairs(struct VoxWorld * world)
 {
 	int x,y,z;
@@ -290,6 +318,7 @@ void voxworld_init_land(struct VoxWorld * world)
 		for (long y=0;y<world->szY;y++)
 		{
 			z_start=_cos(x/(world->szX/(PI*3)+1))*world->szZ/4+_sin(y/(world->szY/(PI*5)+1)+1)*world->szZ/5+world->szZ/2;
+			z_start/=5;
 			//z_start=x+y-1;
 			if (z_start<=0) z_start=1; 
 			voxworld_empty_curr_exp_col(world);
