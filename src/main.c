@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	result=graph_init(640,480,640/2,480/2,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(100,100,50);
+	world = voxworld_create(250,250,120);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/3+0.001;
 	//cam.y=world->szY/2+0.001;
@@ -72,9 +72,18 @@ int main(int argc, char *argv[])
 	//VoxWorld_set_MV_Model_palette(world,model);
 	VoxWorld_add_MV_Model(world,model,20,20,2,0);
 	MV_Model_delete(model);
+	model = LoadModel( "data/monu1.vox" );
+	VoxWorld_add_MV_Model(world,model,100,20,2,0);
+	MV_Model_delete(model);
+	model = LoadModel( "data/monu9.vox" );
+	VoxWorld_add_MV_Model(world,model,100,100,2,0);
+	MV_Model_delete(model);
+	model = LoadModel( "data/ephtracy.vox" );
+	VoxWorld_add_MV_Model(world,model,20,100,2,0);
+	MV_Model_delete(model);
 	
 	
-	render=voxrender_create(world,20);
+	render=voxrender_create(world,30);
 	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));
 	
 	last_time = SDL_GetTicks();

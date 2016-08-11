@@ -275,15 +275,18 @@ bool VoxWorld_add_MV_Model(struct VoxWorld * world,
     }
 
     //create a coarse 3d char array
-    int sizexy=model->sizex*model->sizey;
-    uint8_t* coarse = (uint8_t*)malloc(sizexy*model->sizez*sizeof(uint8_t));
-    memset(coarse,EMPTY,sizexy*model->sizez*sizeof(uint8_t));
+    int sizeyz=model->sizey*model->sizez;
+    uint8_t* coarse = (uint8_t*)malloc(sizeyz*model->sizex*sizeof(uint8_t));
+    memset(coarse,EMPTY,sizeyz*model->sizex*sizeof(uint8_t));
     for (i=0;i<model->numVoxels;i++)
     {
         x=model->voxels[i].x;
         y=model->voxels[i].y;
         z=model->voxels[i].z;
-        j=x*sizexy+y*model->sizex+z;
+        j=x*sizeyz+y*model->sizez+z;
+        //printf("(%d %d %d) (%d %d %d) i=%d, j=%d, sz=%d, sz=%d\n",
+        //    model->sizex,model->sizey,model->sizez,
+        //    x,y,z,i,j,model->numVoxels,sizexy*model->sizez);
         coarse[j]=model->voxels[i].colorIndex;
     }
 
@@ -295,7 +298,7 @@ bool VoxWorld_add_MV_Model(struct VoxWorld * world,
         {
             yw=y+posy;
             voxworld_expand_col(world,xw,yw);
-            j=x*sizexy+y*model->sizex;
+            j=x*sizeyz+y*model->sizez;
             for (z=0;z<model->sizez;z++)
             {
                 zw=z+posz;

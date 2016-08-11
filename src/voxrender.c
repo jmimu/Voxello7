@@ -387,8 +387,8 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	}
 
 	render->clip_min=1;
-	render->clip_dark=180;
-	render->clip_max=200;
+	render->clip_dark=240;
+	render->clip_max=250;
 	return render;
 }
 
