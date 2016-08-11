@@ -153,7 +153,7 @@ void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba,uint16_t z)
 	
 	for (int y=ymin+1;y<=ymax;y++)
 	{
-		if (graph.threadColzbuf[thread][y]>z)
+		//if (graph.threadColzbuf[thread][y]>z)
 		{
 			graph.threadColPixels[thread][y]=rgba;
 			graph.threadColzbuf[thread][y]=z;

@@ -263,7 +263,9 @@ void voxworld_init_full_cube(struct VoxWorld * world)
 	int x,y,z;
 	voxworld_empty_curr_exp_col(world);
 	world->curr_exp_col[0]=10;
+	world->curr_exp_col[1]=10;
 	world->curr_exp_col[world->szZ-1]=20;
+	world->curr_exp_col[world->szZ-2]=20;
 	voxworld_compr_col(world);
 	for (x=0;x<world->szX;x++)
 		for (y=0;y<world->szY;y++)
@@ -271,11 +273,13 @@ void voxworld_init_full_cube(struct VoxWorld * world)
 			voxworld_write_compr_col(world,x,y);
 		}
 
-	for (z=2;z<world->szZ-2;z++)
+	world->curr_exp_col[1]=EMPTY;
+	world->curr_exp_col[world->szZ-2]=EMPTY;
+	for (z=3;z<world->szZ-3;z++)
 		world->curr_exp_col[z]=z;
 	voxworld_compr_col(world);
-	for (x=2;x<world->szX-2;x++)
-		for (y=2;y<world->szY-2;y++)
+	for (x=1;x<world->szX-1;x++)
+		for (y=1;y<world->szY-1;y++)
 		{
 			voxworld_write_compr_col(world,x,y);
 		}

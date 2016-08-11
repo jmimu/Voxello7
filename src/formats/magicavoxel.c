@@ -245,6 +245,11 @@ void VoxWorld_set_MV_Model_palette(struct VoxWorld * world,
         printf("Error: MV_Model NULL!\n");
         return;
     }
+    if (!model->isCustomPalette)
+    {
+        printf("Warning: MV_Model has no custom palette!\n");
+        return;
+    }
     for (i=0;i<255;i++)
     {
         world->colorMap[i]= (model->palette[i].a<<24)+
