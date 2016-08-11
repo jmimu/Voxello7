@@ -207,7 +207,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				voxZ=0;
 				previous_voxZ=0;
 				previous_v=UNINIT;
-				v=EMPTY;
+				v=UNINIT;
 				
 				while (voxZ+currentCol[voxIndex].n<zMin+1)
 				{
@@ -302,7 +302,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								if (trace)
 									printf("draw bottom %d %d : %x\n",l_tmp,l0,color);
 								//remove this interval to last next_current_VInterval:
-								(*ray->next_VIntervals)[ray->next_VIntervals_num-1].l_max=l_tmp;
+								if ((ray->next_VIntervals_num>0)
+									&&((*ray->next_VIntervals)[ray->next_VIntervals_num-1].l_max>l_tmp)) //TODO: why???
+										(*ray->next_VIntervals)[ray->next_VIntervals_num-1].l_max=l_tmp;
 							}
 						}
 
