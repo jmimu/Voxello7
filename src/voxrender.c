@@ -191,7 +191,28 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 					zMin=ray->world->szZ-1;
 				if (zMax>ray->world->szZ-1)
 					zMax=ray->world->szZ-1;
-				
+
+				//opimisation: test col_full_start and col_full_end
+				if ((zMin>ray->world->col_full_end[y][x])||(zMax<ray->world->col_full_start[y][x]))
+				{
+					if (trace)
+						printf("full: %d %d =>  Z: %d %d\n",ray->world->col_full_end[y][x],ray->world->col_full_start[y][x],zMin,zMax);
+					//create a new interval for next vox column 
+					if (interval->l_min<interval->l_max)
+					{
+						if(ray->next_VIntervals_num<ray->max_VIntervals_num)
+						{
+							(*ray->next_VIntervals)[ray->next_VIntervals_num].l_min=interval->l_min;
+							(*ray->next_VIntervals)[ray->next_VIntervals_num].l_max=interval->l_max;
+							ray->next_VIntervals_num++;
+						}else{
+							printf("Error, too many VIntervals\n");
+						}
+					}
+
+					current_VInterval_i++;
+					continue;
+				}
 				if (trace)
 					printf("interval: %d %d =>  Z: %d %d\n",interval->l_min,interval->l_max,zMin,zMax);
 
@@ -400,8 +421,8 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	}
 
 	render->clip_min=1;
-	render->clip_dark=240;
-	render->clip_max=250;
+	render->clip_dark=440;
+	render->clip_max=450;
 	return render;
 }
 

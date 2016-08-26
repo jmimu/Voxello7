@@ -26,12 +26,16 @@ struct VoxWorld
 	int szX,szY,szZ;
 	struct RLE_block *** data;
 	unsigned short ** col_size;//in bytes
+	unsigned short ** col_full_start;//z of first full voxel (szZ if col empty)
+	unsigned short ** col_full_end;//z of last full voxel +1 (0 if col empty)
 	uint32_t colorMap[255];//argb
 	
 	//working columns, allocated 1 time
 	uint8_t * curr_exp_col;//size=szZ
 	struct RLE_block *curr_compr_col;//size=szZ
 	int curr_compr_col_size;//number of RLE_block
+	unsigned short curr_col_full_start;
+	unsigned short curr_col_full_end;
 };
 
 struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ);

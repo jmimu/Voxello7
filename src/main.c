@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 	result=graph_init(800,600,800,600,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(250,250,120);
+	world = voxworld_create(2500,2500,120);
 	//world = voxworld_create(6,6,6);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/3+0.001;
