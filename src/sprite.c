@@ -22,9 +22,13 @@ struct Sprite* sprite_create(const char* _name,
 
 void sprite_draw(struct VoxRender * render,struct Sprite* spr)
 {
+	float color_factor=1;
 	struct Raster* raster=anim_get_raster(spr->anim);
 	//projection of origin of sprite, y=dist perp to cam
 	struct Pt3d proj=voxrender_proj(render,spr->pos);
+	if (proj.y>render->clip_max) return;
+	if (proj.y>render->clip_dark)
+		color_factor=1-(proj.y-render->clip_dark)/(render->clip_max-render->clip_dark);
 	/*if ((proj.x<-(raster->w>>2))||(proj.x-(raster->w>>2)>graph.render_w)||
 	    (proj.y<-(raster->h>>2))||(proj.y-(raster->h>>2)>graph.render_h))
 		return;*/
@@ -32,6 +36,6 @@ void sprite_draw(struct VoxRender * render,struct Sprite* spr)
 	int show_h=render->f*spr->real_h/proj.y;
 	//raster_draw(spr->raster,proj.x-(spr->raster->w>>2),proj.z-(spr->raster->h),proj.y*ZBUF_FACTOR);
 	raster_draw_zoom(raster,proj.x-(show_w>>1),
-		proj.z-show_h,proj.y*ZBUF_FACTOR,show_w,show_h);
+		proj.z-show_h,proj.y*ZBUF_FACTOR,show_w,show_h,color_factor);
 }
 

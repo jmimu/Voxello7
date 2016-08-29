@@ -157,10 +157,10 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	int previous_v=UNINIT;
 	uint8_t v;
 	Uint32 color;
-	graph_clear_threadCol(ray->thread);
+	graph_clear_threadCol(ray->thread,ray->render->clip_max*ZBUF_FACTOR);
 	//graph_clear_threadColZ(ray->thread);
 	if ((screen_col==graph.render_w/2))
-		graph_vline_threadCol(ray->thread,0,graph.render_h-1,0xFF808080,0xFFFE);
+		graph_vline_threadCol(ray->thread,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1);
         unsigned short current_VInterval_i=0;
 		
 	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))

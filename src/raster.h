@@ -33,7 +33,7 @@ extern struct Raster* lastRaster;
 
 struct Raster* raster_load(const char* filename);
 void raster_draw(struct Raster* raster, int x, int y,uint16_t z);
-void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, int h);
+void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, int h,float color_factor);
 
 void raster_unloadall();
 

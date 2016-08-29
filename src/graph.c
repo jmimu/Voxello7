@@ -153,7 +153,7 @@ void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba,uint16_t z)
 	
 	for (int y=ymin+1;y<=ymax;y++)
 	{
-		//if (graph.threadColzbuf[thread][y]>z)
+		if (graph.threadColzbuf[thread][y]>z)
 		{
 			graph.threadColPixels[thread][y]=rgba;
 			graph.threadColzbuf[thread][y]=z;
@@ -161,14 +161,14 @@ void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba,uint16_t z)
 	}
 }
 
-void graph_clear_threadCol(int thread)
+void graph_clear_threadCol(int thread,uint16_t z)
 {
 	//TODO: optimization : have a clean column, and copy it here
 	//memset (graph.threadColPixels[thread], v, graph.render_h*4 );
 	for (int y=0;y<graph.render_h;y++)
 	{
 		graph.threadColPixels[thread][y]=0xFF000000;
-		graph.threadColzbuf[thread][y]=0xFFFF;
+		graph.threadColzbuf[thread][y]=z;
 	}
 
 }

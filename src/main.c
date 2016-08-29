@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 	anim_add_raster(anim1,raster_load("data/run7.png"));
 	anim_add_raster(anim1,raster_load("data/run8.png"));
 	anim_add_raster(anim1,raster_load("data/run9.png"));
-	struct Sprite* sprite1=sprite_create("Toto",100,100,10,4,4,anim1);
+	struct Sprite* sprite1=sprite_create("Toto",100,90,23,4,4,anim1);
 
 
 	while (run)

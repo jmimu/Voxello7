@@ -12,6 +12,7 @@ const int UNINIT=-1;
 //TODO: add check & clear
 struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 {
+	printf("Creating world...\n");
 	struct VoxWorld *world = (struct VoxWorld *) malloc(sizeof(struct VoxWorld));
 	world->szX=_szX;
 	world->szY=_szY;
@@ -231,6 +232,8 @@ void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
 {
 	int x,y,z;
 	
+	printf("Filling world...\n");
+
 	//full col for corners
 	for (z=0;z<world->szZ;z++)
 		world->curr_exp_col[z]=v;
@@ -283,6 +286,7 @@ void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
 void voxworld_init_full_cube(struct VoxWorld * world)
 {
 	int x,y,z;
+	printf("Filling world...\n");
 	voxworld_empty_curr_exp_col(world);
 	world->curr_exp_col[0]=10;
 	world->curr_exp_col[1]=10;
@@ -311,6 +315,7 @@ void voxworld_init_full_cube(struct VoxWorld * world)
 void voxworld_init_stairs(struct VoxWorld * world)
 {
 	int x,y,z;
+	printf("Filling world...\n");
 	
 	for (x=0;x<world->szX;x++)
 		for (y=0;y<world->szY;y++)
@@ -334,6 +339,7 @@ void voxworld_init_land(struct VoxWorld * world)
 	long z_start;
 	int SNOW_START=28;
 	int SNOW_END=32;
+	printf("Filling world...\n");
 	
 	for (int i=0;i<255;i++)
 	{
@@ -423,7 +429,7 @@ unsigned long voxworld_getsize(struct VoxWorld * world)
 
 struct VoxWorld * voxworld_copy(struct VoxWorld * world)
 {
-
+	printf("Copying world...\n");
 	struct VoxWorld *new_world = voxworld_create(world->szX,world->szY,world->szZ);
 	
 	for (int i=0;i<255;i++)
