@@ -46,6 +46,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba);
 void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba,uint16_t z);
 void graph_clear_threadCol(int thread, uint16_t z);
 void graph_write_threadCol(int thread, int x);
+void graph_write_threadCol_sides(int thread, int x, int offset, int step);
 void graph_close();
 void graph_start_frame();
 void graph_end_frame();

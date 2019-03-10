@@ -356,10 +356,18 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 		//next intersection
 	}
 	
-	#pragma omp critical
+	//#pragma omp critical //needed?
 	graph_write_threadCol(ray->thread,screen_col);
+
+	#ifdef DITHERING
+	//made for nb_parts=2;
+	if (screen_col<graph.render_w-1)
+		graph_write_threadCol_sides(ray->thread,screen_col+1,0,2);
+	if (screen_col>0)
+		graph_write_threadCol_sides(ray->thread,screen_col-1,1,2);
+	#endif
 	//graph_write_threadColZ(ray->thread,screen_col);
-	
+		
 	if (trace)
 		printf("\n");
 
@@ -410,7 +418,7 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	{
 		render->ray[i].thread=i;
 		render->ray[i].render=render;
-		render->ray[i].world=render->world;
+        render->ray[i].world=render->world;
 		render->ray[i].max_VIntervals_num=graph.render_h/2;//chang this limit if needed
 		render->ray[i].current_VIntervals_num=0;
 		render->ray[i].VIntervals_A=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
@@ -421,7 +429,7 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	}
 
 	render->clip_min=1;
-	render->clip_dark=440;
+    render->clip_dark=440;
 	render->clip_max=450;
 	return render;
 }
@@ -434,23 +442,26 @@ void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz)
 	render->ang_hz_sin=_sin(render->ang_hz);
 }
 
-
+#define CHUNKS
 void voxrender_render(struct VoxRender * render,bool trace)
 {
 	static int part=0;
-	int nb_parts=1;
+    int nb_parts=1;
 
 	int th_id, nthreads;
 	#pragma omp parallel private(th_id)
 	{
 		th_id = omp_get_thread_num();
 		nthreads=omp_get_num_threads();
+        //Choose between threads equality
+        //or threads independance
+    #ifdef CHUNKS
 		int start=th_id*graph.render_w/nthreads;
 		int stop=(th_id+1)*graph.render_w/nthreads;
-		//Choose between threads equality
-		//or threads independance
+        for (int c=start+part;c<stop;c+=nb_parts)
+    #else
 		for (int c=th_id*nb_parts+part;c<graph.render_w;c+=nthreads*nb_parts)
-		//for (int c=start+part;c<stop;c+=nb_parts)
+    #endif
 		{
 			voxray_reinit(&render->ray[th_id],&render->cam,c,(trace&&(c==graph.render_w/2)));
 			voxray_draw(&render->ray[th_id],c,(trace&&(c==graph.render_w/2)) );

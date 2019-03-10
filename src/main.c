@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	struct VoxRender * render=0;
 
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
-	result=graph_init(800,600,800,600,"Voxello");
+	result=graph_init(1280,720,1280/2,720/2,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
 	world = voxworld_create(2500,2500,120);

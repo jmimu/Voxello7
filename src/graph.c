@@ -184,6 +184,16 @@ void graph_write_threadCol(int thread, int x)
 	}
 }
 
+void graph_write_threadCol_sides(int thread, int x, int offset, int step)
+{
+	unsigned int i=x;
+	for (int y=offset;y<graph.render_h;y+=step)
+	{
+		graph.pixels[i]=graph.threadColPixels[thread][y];
+		graph.zbuf[i]=graph.threadColzbuf[thread][y];
+		i+=graph.render_w*step;
+	}
+}
 
 void graph_close()
 {
