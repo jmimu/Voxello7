@@ -161,7 +161,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	//graph_clear_threadColZ(ray->thread);
 	if ((screen_col==graph.render_w/2))
 		graph_vline_threadCol(ray->thread,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1);
-        unsigned short current_VInterval_i=0;
+	unsigned short current_VInterval_i=0;
 		
 	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))
 	{
@@ -185,10 +185,17 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				//compute z range of intersection
 				zMin=l_to_z(interval->l_min, ray->cam->z, ray->currentLambda, fc);
 				zMax=l_to_z(interval->l_max, ray->cam->z, ray->currentLambda, fc)+1;//+1 to look for bottom of vox above
-				if (zMin<0) zMin=0;
-				if (zMax<0) zMax=0;
+				if (zMin<0)
+					zMin=0;
+				if (zMax<0)
+					continue;//zMax=0;
 				if (zMin>ray->world->szZ-1)
-					zMin=ray->world->szZ-1;
+				{
+					//all the next intervas are out of the world too
+					ray->current_VIntervals_num=current_VInterval_i;
+					break;
+					//zMin=ray->world->szZ-1;
+				}
 				if (zMax>ray->world->szZ-1)
 					zMax=ray->world->szZ-1;
 
@@ -411,7 +418,7 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 		render->ray[i].thread=i;
 		render->ray[i].render=render;
 		render->ray[i].world=render->world;
-		render->ray[i].max_VIntervals_num=graph.render_h/2;//chang this limit if needed
+		render->ray[i].max_VIntervals_num=graph.render_h/2;//change this limit if needed
 		render->ray[i].current_VIntervals_num=0;
 		render->ray[i].VIntervals_A=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
 		render->ray[i].current_VIntervals=&(render->ray[i].VIntervals_A);
@@ -421,8 +428,8 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	}
 
 	render->clip_min=1;
-	render->clip_dark=440;
-	render->clip_max=450;
+	render->clip_dark=550;
+	render->clip_max=600;
 	return render;
 }
 

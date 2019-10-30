@@ -25,7 +25,7 @@
 #ifndef TRIGO_H
 #define TRIGO_H
 
-#define PI 3.14159
+#define PI 3.14159265358979323846
 
 double _sin(double x);
 double _cos(double x);

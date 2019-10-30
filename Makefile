@@ -16,7 +16,6 @@ TARGET=bin/voxello7
 # The Target Build
 all: $(TARGET) tests
 
-dev: CFLAGS=-g -std=c99 -Wall -Isrc -Wall -Wextra -fopenmp $(OPTFLAGS)
 dev: all
 
 $(TARGET): CFLAGS += -fPIC
