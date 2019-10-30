@@ -53,23 +53,32 @@ int main(int argc, char *argv[])
 	struct VoxWorld * world=0;
 	struct VoxRender * render=0;
 
+	//result=graph_init(1280,900,1280/1,900/1,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
-	result=graph_init(800,600,800,600,"Voxello");
+	result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(2500,2500,120);
+	world = voxworld_create(1000,1000,200);
 	//world = voxworld_create(6,6,6);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/3+0.001;
 	//cam.y=world->szY/2+0.001;
 	cam.z=1.5*world->szZ/2+0.001;
+	
+	//for cave
+	angleZ = PI/2;
+	cam.x=-world->szZ/2+0.001;
+	cam.y=world->szY/2+0.001;
+	cam.z=world->szZ/2+0.001;
 
 	//voxworld_init_empty_cube(world,2);
 	//voxworld_init_full_cube(world);
 	voxworld_init_land(world);
 	//voxworld_init_stairs(world);
+	//voxworld_init_cave(world);
 	//voxworld_printf(world);
 
+	//Warning ! using models change global palette!
 	struct MV_Model * model = LoadModel( "data/castle.vox" );
 	VoxWorld_add_MV_Model(world,model,20,20,15,0);
 	VoxWorld_set_MV_Model_palette(world,model);
@@ -84,6 +93,7 @@ int main(int argc, char *argv[])
 	VoxWorld_add_MV_Model(world,model,20,100,20,0);
 	MV_Model_delete(model);
 	
+	//voxworld_init_land2(world);
 	
 	render=voxrender_create(world,30);
 	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));

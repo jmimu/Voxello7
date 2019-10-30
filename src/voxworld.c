@@ -1,6 +1,7 @@
 #include "voxworld.h"
 
 #include <stdlib.h>
+#include <math.h>
 #include "dbg.h"
 #include "trigo.h"
 
@@ -333,6 +334,107 @@ void voxworld_init_stairs(struct VoxWorld * world)
 
 }
 
+void voxworld_init_cave(struct VoxWorld * world)
+{
+	int x,y,z;
+	int yc,zc,r;
+	printf("Filling world...\n");
+	
+	yc=world->szY/2;
+	zc=world->szZ/3;
+	r=world->szZ/10;
+	
+	for (x=0;x<world->szX;x++)
+	{
+		r=x/100+world->szZ/10;
+		zc=x/100+world->szZ/4;
+		yc=x/200+world->szY/2;
+		for (y=0;y<world->szY;y++)
+		{
+			for (z=0;z<world->szZ;z++)
+			{
+				if ((y-yc)*(y-yc)+(z-zc)*(z-zc)>r*r)
+					world->curr_exp_col[z]=x*2+y+1;
+				else
+					world->curr_exp_col[z]=EMPTY;
+			}
+			voxworld_compr_col(world);
+			voxworld_write_compr_col(world,x,y);
+		}
+	}
+}
+
+void voxworld_init_land2(struct VoxWorld * world)
+{
+	int x,y,z,h,hi,i;
+	double l;
+	printf("Filling world...\n");
+	
+	const int nb_sinc=10;
+	int sinc_x[nb_sinc];
+	int sinc_y[nb_sinc];
+	int sinc_h[nb_sinc];
+	double sinc_sx[nb_sinc];
+	double sinc_sy[nb_sinc];
+	int max_z =150;
+	for (i=0;i<nb_sinc;i++)
+	{
+		sinc_x[i]=rand()%world->szX;
+		sinc_y[i]=rand()%world->szY;
+		sinc_h[i]=rand()%(max_z*2/3)+(max_z/3);
+		sinc_sx[i]=rand()%100+40;
+		sinc_sy[i]=rand()%100+40;
+	}
+	unsigned char r,g,b;
+	for (int i=0;i<255;i++)
+	{
+		if (i<30)
+		{
+			b=150-i*5;
+			g=i*5;
+			r=i*5;
+		}
+		else if (i<150)
+		{
+			b=35+rand()%5;
+			g=150*sin(i/255.0*PI/2)+100+rand()%5;
+			r=20+rand()%5;
+		}
+		else
+		{
+			b=250*sin(i/255.0*PI/2);
+			g=150*sin(i/255.0*PI/2)+100;
+			r=250*sin(i/255.0*PI/2);
+		}
+		world->colorMap[i]=0xFF000000+(r<<16)+(g<<8)+b;
+	}
+	
+	
+	for (x=0;x<world->szX;x++)
+	{
+		for (y=0;y<world->szY;y++)
+		{
+			h=0;
+			for (i=0;i<nb_sinc;i++)
+			{
+				l= sqrt(((x-sinc_x[i])/sinc_sx[i])*((x-sinc_x[i])/sinc_sx[i]) + ((y-sinc_y[i])/sinc_sy[i])*((y-sinc_y[i])/sinc_sy[i]));
+				hi=_sin( l ) / (l+0.001)  * sinc_h[i];
+				if (h<hi) h = hi;
+			}
+			h += rand()%2 ;
+			for (z=0;z<world->szZ;z++)
+			{
+				if (z<=h)
+					//world->curr_exp_col[z]=world->colorMap[(int)(h*255.0/world->szZ)];
+					world->curr_exp_col[z]=(255.0*h)/max_z + (rand()%(h/10+1))-h/20;
+				else
+					world->curr_exp_col[z]=EMPTY;
+			}
+			voxworld_compr_col(world);
+			voxworld_write_compr_col(world,x,y);
+		}
+	}
+}
 
 void voxworld_init_land(struct VoxWorld * world)
 {

@@ -47,7 +47,9 @@ bool voxworld_write_compr_col(struct VoxWorld * world,int x, int y);
 void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v);
 void voxworld_init_full_cube(struct VoxWorld * world);
 void voxworld_init_land(struct VoxWorld * world);
+void voxworld_init_land2(struct VoxWorld * world);
 void voxworld_init_stairs(struct VoxWorld * world);
+void voxworld_init_cave(struct VoxWorld * world);
 
 void voxworld_printf(struct VoxWorld * world);
 unsigned long voxworld_getsize(struct VoxWorld * world);
