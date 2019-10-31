@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
 	//voxworld_init_empty_cube(world,2);
 	//voxworld_init_full_cube(world);
-	//voxworld_init_land(world);
+	voxworld_init_land(world);
 	//voxworld_init_stairs(world);
 	//voxworld_init_cave(world);
 	//voxworld_printf(world);
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 	VoxWorld_add_MV_Model(world,model,20,100,20,0);
 	MV_Model_delete(model);
 	
-	voxworld_init_land2(world);
+	//voxworld_init_land2(world);
 	
 	render=voxrender_create(world,30);
 	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 	anim_add_raster(anim1,raster_load("data/run7.png"));
 	anim_add_raster(anim1,raster_load("data/run8.png"));
 	anim_add_raster(anim1,raster_load("data/run9.png"));
-	struct Sprite* sprite1=sprite_create("Toto",100,90,23,4,4,anim1);
+	struct Sprite* sprite1=sprite_create("Toto",100,90,world->col_full_end[100][90],4,4,anim1);
 
 
 	while (run)
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
 
 		t++;
 
-		graph_start_frame();
+		//graph_start_frame();
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
 		//struct Pt3d proj=voxrender_proj(render,raster1p);
