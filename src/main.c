@@ -196,7 +196,8 @@ int main(int argc, char *argv[])
 				case SDL_MOUSEMOTION:
 					angleX += event.motion.yrel*0.002;
 					angleZ += event.motion.xrel*0.002;
-
+					if (angleZ<0) angleZ+=2*PI;
+					if (angleZ>2*PI) angleZ-=2*PI;
 				break;
 				case SDL_MOUSEWHEEL:
 					if (event.wheel.y>0) focale*=1.1;
@@ -224,7 +225,7 @@ int main(int argc, char *argv[])
 		if (key_f)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){-speed*_sin(angleZ),-speed*_cos(angleZ),0});
+			add(&cam,(struct Pt3d){-speed*_sin(angleZ)*(cam.z+50)/50,-speed*_cos(angleZ)*(cam.z+50)/50,0});
 		}
 		if (key_r)
 		{
@@ -257,7 +258,7 @@ int main(int argc, char *argv[])
 
 		//graph_test();
 
-		graph_end_frame();
+		graph_end_frame(angleZ-0.54,angleZ+0.54);
 		//run=false;
 
 		if (trace)

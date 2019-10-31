@@ -6,6 +6,7 @@
 
 #include "dbg.h"
 #include "raster.h"
+#include "trigo.h"
 
 struct Graph graph;
 int nb_threads=-1;
@@ -70,7 +71,7 @@ bool graph_init(int _window_w,int _window_h,
 	graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
 	graph.texture = SDL_CreateTextureFromSurface(graph.renderer,graph.surface);
 	
-	SDL_Surface* backsurf = IMG_Load("data/back.png");
+	SDL_Surface* backsurf = IMG_Load("data/back2.jpg");
 	SDL_Surface* backsurf_conv=SDL_ConvertSurface(backsurf,graph.surface->format,0);
 	graph.background = SDL_CreateTextureFromSurface(graph.renderer, backsurf);
 	SDL_FreeSurface(backsurf);
@@ -99,13 +100,25 @@ void graph_start_frame()
 #endif
 }
 
-void graph_end_frame()
+void graph_end_frame(double ang_l,double ang_r)
 {
 	//for (unsigned int i=0;i<graph.render_w*graph.render_h;i++)//show zbuffer
 	//	graph.pixels[i]=0xFF000000 | (graph.zbuf[i]>>1)+10;
 	SDL_UpdateTexture(graph.texture, NULL, graph.pixels, graph.render_w * sizeof (uint32_t));
 	//SDL_RenderClear(renderer);
-	SDL_RenderCopy(graph.renderer, graph.background, NULL, NULL);
+	
+	int w,h;
+	if (ang_l<0) {ang_l+=2*PI;ang_r+=2*PI;}
+	if (ang_r>4*PI) {ang_l-=2*PI;ang_r-=2*PI;}
+	SDL_QueryTexture(graph.background, NULL, NULL,&w,&h);
+	w/=2;
+	SDL_Rect SrcR;
+	SrcR.x = ang_l*w/(2*PI);
+	SrcR.y = 0;
+	SrcR.w = (ang_r-ang_l)*w/(2*PI);
+	SrcR.h = h;
+
+	SDL_RenderCopy(graph.renderer, graph.background, &SrcR, NULL);
 	SDL_RenderCopy(graph.renderer, graph.texture, NULL, NULL);
 	SDL_RenderPresent(graph.renderer);
 }

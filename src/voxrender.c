@@ -464,7 +464,7 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 
 	render->clip_min=1;
 	render->clip_dark=300;
-	render->clip_alpha=1950;
+	render->clip_alpha=1800;
 	render->clip_max=2000;
 	
 	render->clip_sub1=(render->clip_dark*9+render->clip_max*1)/10;

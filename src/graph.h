@@ -50,7 +50,7 @@ void graph_clear_threadCol(int thread, uint16_t z);
 void graph_write_threadCol(int thread, int x);
 void graph_close();
 void graph_start_frame();
-void graph_end_frame();
+void graph_end_frame(double ang_l,double ang_r);
 void ScreenshotBMP(const char * filename);
 
 void graph_test();

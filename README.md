@@ -10,6 +10,10 @@ Choosing number of threads:
 
 bug: bottom of screen
 
+TODO :
+------
+  * put all background part out of graph
+
 Optimizations :
 ---------------
   * make one world for each thread? (cam and fc too?)
@@ -17,7 +21,7 @@ Optimizations :
   * vox column from top to down? (sky first)
   * simplify far column drawing
   * be able to have different resolution in x and y (use window size ratio instead of render size ratio)
-  * add blur to far parts (shader?)
+  * add blur to far parts (shader?) => must use opengl : https://lazyfoo.net/tutorials/SDL/51_SDL_and_modern_opengl/index.php
   
   * expand only necessary part of column
   * record last and first full vox of each col
