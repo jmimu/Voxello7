@@ -73,7 +73,7 @@ struct VoxRender
 
 	double f;//focal (in pixels)
 	double * fc;//distance from screen column to nodal point
-	
+	double render2ScreenFactor; //if render area has different ratio from window
 };
 
 
