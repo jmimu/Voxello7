@@ -86,8 +86,8 @@ bool graph_init(int _window_w,int _window_h,
 
 void graph_start_frame()
 {
-	//for (int i=0;i<graph.render_w*graph.render_h;i++)
-	//	graph.pixels[i]=0x00;
+	for (int i=0;i<graph.render_w*graph.render_h;i++)
+		graph.pixels[i]=0xFF582012;
 #ifdef DBG_GRAPH
 		graph_vline(graph.render_w/2,0,graph.render_h,0xFF00B040);
 #endif
@@ -167,7 +167,7 @@ void graph_clear_threadCol(int thread,uint16_t z)
 	//memset (graph.threadColPixels[thread], v, graph.render_h*4 );
 	for (int y=0;y<graph.render_h;y++)
 	{
-		graph.threadColPixels[thread][y]=0xFF000000;
+		graph.threadColPixels[thread][y]=0xFF402010;
 		graph.threadColzbuf[thread][y]=z;
 	}
 
@@ -224,13 +224,14 @@ uint32_t color_bright(uint32_t color,float factor)
 	int r=(color&0xFF0000)>>16;
 	int g=(color&0xFF00)>>8;
 	int b=color&0xFF;
+	int a=0xFF*factor;
 	r*=factor;
 	g*=factor;
 	b*=factor;
 	if (r>255) r=255;
 	if (g>255) g=255;
 	if (b>255) b=255;
-	return (r<<16)+(g<<8)+(b)+0xFF000000;
+	return (r<<16)+(g<<8)+(b)+(a<<24);
 }
 
 

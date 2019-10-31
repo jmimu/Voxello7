@@ -1,16 +1,21 @@
-Un monde vide coûte moins cher qu'un sol (130 FPS pour cube vide, 100FPS pour land).
-=> le découpage en sous-colonnes coûte cher ou c'est parce que c'est très bien compressé quand c'est vide ?
+Pouvoir fonctionner en sous-ech en x et pas en y.
+
+Tester les zones loin avec alpha => il faut utiliser l'alpha blending de sdl => faire des surfaces
+
+Est-ce qu'on gagne en multi-threads à écrire dans des images séparées ?
 
 il faudrait vraiment simplifier les calculs loin, le clipping doux n'est pas suffisant.
  - faire un monde sous-ech ? et travailler dessus quand on est loin ? (par ex vide non prioritaire)
- - travailler autrement quand on est avec des pixels qui font plus d'un voxel ? (mais risque de rater des murs fins !)
+ - travailler autrement quand on est avec des pixels qui font plus d'un voxel ? (mais risque de rater des murs fins !) => implémenté rapidement, c'est pas mal
 
 On pourrait aussi compresser autrement : si 50 voxels plein mais de couleurs différentes, on dit jusque qu'il y a 50 voxels pleins.
 On regadera les couleurs plus tard... En gros on compresse en RLE pour plein/vide et ailleurs on enregistre les détails des couleurs (en RLE).
 Cette méthode permettra aussi de simplifier les calculs de collision.
+=> on peut vérifier que ça va plus vite en mettant tout en uni. Avec une scène de montagne on passe de 80 (couleur au hasard pour chaque voxel) à 100 FPS (uni).
+Ça complique pas mal l'algo pour des résultats limités.
 
 Essayer de fixer un taille mémoire pour chaque colonne compressée pour économiser une indirection et avoir plus de mémoire en contiguité ?
 (bof, de toutes façons c'est un tableau 2d donc les voisins peuvent pas être à la suite en mémoire).
 
 Est-ce qu'on vérifie quand une portion de rayon est trop vers le haut ou le bas ?
-Si le bas d'une portion de rayon dépasse sz_z, plus besoin de la traiter.
+Si le bas d'une portion de rayon dépasse sz_z, plus besoin de la traiter. => fait, pas impressionnant.

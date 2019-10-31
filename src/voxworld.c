@@ -366,11 +366,11 @@ void voxworld_init_cave(struct VoxWorld * world)
 
 void voxworld_init_land2(struct VoxWorld * world)
 {
-	int x,y,z,h,hi,i;
+	int x,y,z,h,hi,i,c;
 	double l;
 	printf("Filling world...\n");
 	
-	const int nb_sinc=10;
+	const int nb_sinc=50;
 	int sinc_x[nb_sinc];
 	int sinc_y[nb_sinc];
 	int sinc_h[nb_sinc];
@@ -422,11 +422,12 @@ void voxworld_init_land2(struct VoxWorld * world)
 				if (h<hi) h = hi;
 			}
 			h += rand()%2 ;
+			c = (255.0*h)/max_z + (rand()%(h/10+1))-h/20;
 			for (z=0;z<world->szZ;z++)
 			{
 				if (z<=h)
 					//world->curr_exp_col[z]=world->colorMap[(int)(h*255.0/world->szZ)];
-					world->curr_exp_col[z]=(255.0*h)/max_z + (rand()%(h/10+1))-h/20;
+					world->curr_exp_col[z]=c;
 				else
 					world->curr_exp_col[z]=EMPTY;
 			}

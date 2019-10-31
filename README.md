@@ -17,9 +17,15 @@ Optimizations :
   * vox column from top to down? (sky first)
   * simplify far column drawing
   * be able to have different resolution in x and y (use window size ratio instead of render size ratio)
+  * add blur to far parts (shader?)
   
   * expand only necessary part of column
   * record last and first full vox of each col
   * compress only empty space ?
   * faster clip_min
   * update only 1/2 col
+
+Improvements :
+-------------
+  * support multiple voxels objects
+  * support alpha voxel objects

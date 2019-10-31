@@ -64,7 +64,10 @@ struct VoxRender
 	struct VoxRay *ray;//one per thread
 
 	double clip_min;//min dist for intersection
-	double clip_dark;//startx dist for darkness
+	double clip_dark;//start dist for darkness
+	double clip_sub1;//start dist for sub precision
+	double clip_sub2;//start dist for second sub precision
+	double clip_sub3;//start dist for third sub precision
 	double clip_max;//max dist for intersection
 
 	double f;//focal (in pixels)

@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(1000,1000,200);
+	world = voxworld_create(4000,4000,200);
 	//world = voxworld_create(6,6,6);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/3+0.001;
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
 	//voxworld_init_empty_cube(world,2);
 	//voxworld_init_full_cube(world);
-	voxworld_init_land(world);
+	//voxworld_init_land(world);
 	//voxworld_init_stairs(world);
 	//voxworld_init_cave(world);
 	//voxworld_printf(world);
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 	VoxWorld_add_MV_Model(world,model,20,100,20,0);
 	MV_Model_delete(model);
 	
-	//voxworld_init_land2(world);
+	voxworld_init_land2(world);
 	
 	render=voxrender_create(world,30);
 	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));
@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 		if (key_r)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){speed*_sin(angleZ),speed*_cos(angleZ),0});
+			add(&cam,(struct Pt3d){speed*_sin(angleZ)*(cam.z+50)/50,speed*_cos(angleZ)*(cam.z+50)/50,0});
 		}
 		if (key_e)
 		{
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
 
 		t++;
 
-		//graph_start_frame();
+		graph_start_frame();
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
 		//struct Pt3d proj=voxrender_proj(render,raster1p);

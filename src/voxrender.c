@@ -165,6 +165,32 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 		
 	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))
 	{
+		//simple way to be faster when far. TODO: use sub-res worlds
+		if (ray->currentLambda > ray->render->clip_sub1)
+		{
+			if (!voxray_findNextIntersection(ray,trace))
+				break;
+		}
+		if (ray->currentLambda > ray->render->clip_sub2)
+		{
+			voxray_findNextIntersection(ray,trace);
+			voxray_findNextIntersection(ray,trace);
+			voxray_findNextIntersection(ray,trace);
+			if (!voxray_findNextIntersection(ray,trace))
+				break;
+		}
+		if (ray->currentLambda > ray->render->clip_sub3)
+		{
+			voxray_findNextIntersection(ray,trace);
+			voxray_findNextIntersection(ray,trace);
+			voxray_findNextIntersection(ray,trace);
+			voxray_findNextIntersection(ray,trace);
+			voxray_findNextIntersection(ray,trace);
+			voxray_findNextIntersection(ray,trace);
+			voxray_findNextIntersection(ray,trace);
+			if (!voxray_findNextIntersection(ray,trace))
+				break;
+		}
 		x=ray->currentX;
 		y=ray->currentY;
 
@@ -428,8 +454,11 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	}
 
 	render->clip_min=1;
-	render->clip_dark=550;
-	render->clip_max=600;
+	render->clip_dark=100;
+	render->clip_max=2000;
+	render->clip_sub1=(render->clip_dark*19+render->clip_max*1)/20;
+	render->clip_sub2=(render->clip_dark*9+render->clip_max*1)/10;
+	render->clip_sub3=(render->clip_dark*4+render->clip_max*1)/5;
 	return render;
 }
 
