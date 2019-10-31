@@ -313,6 +313,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								if (ray->currentLambda>ray->render->clip_dark)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
+								if (ray->currentLambda>ray->render->clip_alpha)
+									color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
+										(ray->render->clip_max-ray->render->clip_alpha));//clipping
 								//TODO: suspicious l_tmp, have to use zbuffer, why?
 								graph_vline_threadCol(ray->thread,l0,l_tmp,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
 								if (trace)
@@ -352,6 +355,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								if (ray->currentLambda>ray->render->clip_dark)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
+								if (ray->currentLambda>ray->render->clip_alpha)
+									color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
+										(ray->render->clip_max-ray->render->clip_alpha));//clipping
 								graph_vline_threadCol(ray->thread,l_tmp,l0,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
 								if (trace)
 									printf("draw bottom %d %d : %x\n",l_tmp,l0,color);
@@ -368,6 +374,9 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						if (ray->currentLambda>ray->render->clip_dark)
 							color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 								(ray->render->clip_max-ray->render->clip_dark));//clipping
+						if (ray->currentLambda>ray->render->clip_alpha)
+							color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
+								(ray->render->clip_max-ray->render->clip_alpha));//clipping
 						graph_vline_threadCol(ray->thread,l0,l1,color,ray->currentLambda*ZBUF_FACTOR);
 						if (trace)
 							printf("draw %d %d : %x\n",l0,l1,color);
@@ -454,8 +463,10 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	}
 
 	render->clip_min=1;
-	render->clip_dark=100;
+	render->clip_dark=300;
+	render->clip_alpha=1950;
 	render->clip_max=2000;
+	
 	render->clip_sub1=(render->clip_dark*9+render->clip_max*1)/10;
 	render->clip_sub2=(render->clip_dark*5+render->clip_max*1)/6;
 	render->clip_sub3=(render->clip_dark*3+render->clip_max*1)/4;

@@ -29,3 +29,4 @@ Improvements :
 -------------
   * support multiple voxels objects
   * support alpha voxel objects
+  * make world edition thread-safe

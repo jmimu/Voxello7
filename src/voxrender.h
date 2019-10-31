@@ -65,6 +65,7 @@ struct VoxRender
 
 	double clip_min;//min dist for intersection
 	double clip_dark;//start dist for darkness
+	double clip_alpha;//start dist for alpha
 	double clip_sub1;//start dist for sub precision
 	double clip_sub2;//start dist for second sub precision
 	double clip_sub3;//start dist for third sub precision

@@ -67,9 +67,15 @@ bool graph_init(int _window_w,int _window_h,
 	//SDL_RenderSetLogicalSize(sdlRenderer, 640, 480);
 
 	graph.renderer = SDL_CreateRenderer(graph.window, -1, 0);
-
 	graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
 	graph.texture = SDL_CreateTextureFromSurface(graph.renderer,graph.surface);
+	
+	SDL_Surface* backsurf = IMG_Load("data/back.png");
+	SDL_Surface* backsurf_conv=SDL_ConvertSurface(backsurf,graph.surface->format,0);
+	graph.background = SDL_CreateTextureFromSurface(graph.renderer, backsurf);
+	SDL_FreeSurface(backsurf);
+	SDL_FreeSurface(backsurf_conv);
+	
 	graph.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
 	graph.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
 	graph.threadColPixels = (uint32_t**) malloc (nb_threads*sizeof(uint32_t*));
@@ -99,6 +105,7 @@ void graph_end_frame()
 	//	graph.pixels[i]=0xFF000000 | (graph.zbuf[i]>>1)+10;
 	SDL_UpdateTexture(graph.texture, NULL, graph.pixels, graph.render_w * sizeof (uint32_t));
 	//SDL_RenderClear(renderer);
+	SDL_RenderCopy(graph.renderer, graph.background, NULL, NULL);
 	SDL_RenderCopy(graph.renderer, graph.texture, NULL, NULL);
 	SDL_RenderPresent(graph.renderer);
 }
@@ -167,7 +174,7 @@ void graph_clear_threadCol(int thread,uint16_t z)
 	//memset (graph.threadColPixels[thread], v, graph.render_h*4 );
 	for (int y=0;y<graph.render_h;y++)
 	{
-		graph.threadColPixels[thread][y]=0xFF402010;
+		graph.threadColPixels[thread][y]=0;//0xFF402010;
 		graph.threadColzbuf[thread][y]=z;
 	}
 
@@ -191,6 +198,7 @@ void graph_close()
 	SDL_GL_DeleteContext(graph.context);
 #endif
 	SDL_DestroyTexture(graph.texture);
+	SDL_DestroyTexture(graph.background);
 	SDL_FreeSurface(graph.surface);
 	SDL_DestroyRenderer(graph.renderer);
 	SDL_DestroyWindow(graph.window);
@@ -224,14 +232,25 @@ uint32_t color_bright(uint32_t color,float factor)
 	int r=(color&0xFF0000)>>16;
 	int g=(color&0xFF00)>>8;
 	int b=color&0xFF;
-	int a=0xFF*factor;
+	int a=(color&0xFF000000)>>24;
 	r*=factor;
 	g*=factor;
 	b*=factor;
 	if (r>255) r=255;
 	if (g>255) g=255;
 	if (b>255) b=255;
-	return (r<<16)+(g<<8)+(b)+(a<<24);
+	return (a<<24)+(r<<16)+(g<<8)+b;
+}
+
+uint32_t color_alpha(uint32_t color,float factor)
+{
+	int r=(color&0xFF0000)>>16;
+	int g=(color&0xFF00)>>8;
+	int b=color&0xFF;
+	int a=(color&0xFF000000)>>24;
+	a*=factor;
+	if (a>255) a=255;
+	return (a<<24)+(r<<16)+(g<<8)+b;
 }
 
 

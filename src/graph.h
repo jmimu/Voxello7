@@ -22,13 +22,15 @@ struct Graph{
 		int window_w,window_h;
 		int render_w,render_h;
 		SDL_Window* window;
-		SDL_Renderer *renderer;
-		SDL_Surface *surface;
-		SDL_Texture *texture;
+		SDL_Renderer *renderer; //screen
+		SDL_Surface *surface; //pixels texture (only kept for its format)
+		SDL_Texture *texture; //pixels texture
+		SDL_Texture *background;
 #ifdef OPENGL3
 		SDL_GLContext context;
 #endif
-		uint32_t *pixels;
+		uint32_t *pixels; //where voxrender writes
+		
 		uint16_t *zbuf; //zbuffer unit: voxel side*8
 		uint32_t **threadColPixels;//one column for one thread
 		uint16_t **threadColzbuf;//one column for one thread
@@ -54,6 +56,6 @@ void ScreenshotBMP(const char * filename);
 void graph_test();
 
 uint32_t color_bright(uint32_t color,float factor);
-
+uint32_t color_alpha(uint32_t color,float factor);
 
 #endif // GRAPH_H

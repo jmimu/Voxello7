@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
 	//voxworld_init_empty_cube(world,2);
 	//voxworld_init_full_cube(world);
-	voxworld_init_land(world);
+	//voxworld_init_land(world);
 	//voxworld_init_stairs(world);
 	//voxworld_init_cave(world);
 	//voxworld_printf(world);
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 	VoxWorld_add_MV_Model(world,model,20,100,20,0);
 	MV_Model_delete(model);
 	
-	//voxworld_init_land2(world);
+	voxworld_init_land2(world);
 	
 	render=voxrender_create(world,30);
 	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));
