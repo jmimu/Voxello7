@@ -1,7 +1,6 @@
 #include "graph.h"
 
 #include <stdio.h>
-#include <omp.h>
 #include <SDL2/SDL_image.h>
 
 #include "dbg.h"
@@ -11,9 +10,9 @@ struct Graph graph;
 int nb_threads=-1;
 
 bool graph_init(int _window_w,int _window_h,
-				int _render_w,int _render_h,const char* title)
+		int _render_w,int _render_h,const char* title,
+		int nb_threads)
 {
-	nb_threads=omp_get_max_threads();
 	graph.window_w=_window_w;
 	graph.window_h=_window_h;
 	graph.render_w=_render_w;

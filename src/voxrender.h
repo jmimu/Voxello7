@@ -1,9 +1,12 @@
 #ifndef VOXRENDER_H
 #define VOXRENDER_H
 
+#define _REENTRANT
+
 #include "pt3d.h"
 #include "voxworld.h"
 #include <stdbool.h>
+#include <pthread.h>
 
 /*****************
  * One ray of raycasting
@@ -61,15 +64,16 @@ struct VoxRender
 	struct Pt3d cam;
 	double ang_hz;
 	double ang_hz_cos,ang_hz_sin;
-	struct VoxRay *ray;//one per thread
+
+	int nb_threads;
+	pthread_t *threads;
 
 	double clip_min;//min dist for intersection
 	double clip_dark;//startx dist for darkness
 	double clip_max;//max dist for intersection
 
 	double f;//focal (in pixels)
-	double * fc;//distance from screen column to nodal point
-	
+	double * fc;//distance from screen column to nodal point	
 };
 
 
@@ -82,8 +86,10 @@ bool voxray_findNextIntersection(struct VoxRay * ray,bool trace);//returns false
 void voxray_draw(struct VoxRay * ray,int c,bool trace);
 void Voxray_show_info(struct VoxRay * ray);
 
+void * render_thread_run(void *render);
 
-struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm);
+
+struct VoxRender * voxrender_create(struct VoxWorld *_world, double f_eq35mm, int nb_threads);
 void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz);
 void voxrender_render(struct VoxRender * render,bool trace);
 struct Pt3d voxrender_proj(struct VoxRender * render,struct Pt3d P);

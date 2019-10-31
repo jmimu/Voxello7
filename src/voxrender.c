@@ -3,7 +3,6 @@
 #include "trigo.h"
 #include "voxworld.h"
 #include <assert.h>
-#include <omp.h>
 
 //TODO: work in center-relative coords and transform only before drawing?
 int z_to_l(int z, double cam_z, double lambda, double fc);
@@ -31,8 +30,8 @@ void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace)
 {
 	ray->cam=cam;
 	//t (tx,ty) is the hz vector of the ray in world frame
-	double t_x= (c+0.5-graph.render_w/2)*ray->render->ang_hz_cos+ray->render->f*ray->render->ang_hz_sin; 
-	double t_y=-(c+0.5-graph.render_w/2)*ray->render->ang_hz_sin+ray->render->f*ray->render->ang_hz_cos; 
+	double t_x= (c+0.5-graph.render_w/2)*ray->render->ang_hz_cos+ray->render->f*ray->render->ang_hz_sin;
+	double t_y=-(c+0.5-graph.render_w/2)*ray->render->ang_hz_sin+ray->render->f*ray->render->ang_hz_cos;
 	ray->dirX=0;
 	if (t_x>0) ray->dirX=+1;
 	if (t_x<0) ray->dirX=-1;
@@ -52,7 +51,7 @@ void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace)
 		ray->incY=100000;
 	else
 		ray->incY=fabs(ray->render->fc[c]/t_y);
-	
+
 	ray->currentLambda=0;//where we are on the ray
 
 	double offsetX,offsetY;
@@ -96,7 +95,7 @@ void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace)
 
 	if (trace)
 		printf("currentLambda: %f,  nextXLambda: %f,  nextYLambda: %f\n",ray->currentLambda,ray->nextXLambda,ray->nextYLambda);
-	
+
 	ray->current_VIntervals_num=1;
 	(*ray->current_VIntervals)[0].l_min=0;
 	(*ray->current_VIntervals)[0].l_max=graph.render_h;
@@ -161,8 +160,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	//graph_clear_threadColZ(ray->thread);
 	if ((screen_col==graph.render_w/2))
 		graph_vline_threadCol(ray->thread,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1);
-        unsigned short current_VInterval_i=0;
-		
+	unsigned short current_VInterval_i=0;
+
 	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))
 	{
 		x=ray->currentX;
@@ -170,7 +169,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 
 		if (trace)
 			printf("x: %d  y: %d\n",x,y);
-		
+
 		if ((x>=0)&&(x<ray->world->szX)
 				&&(y>=0)&&(y<ray->world->szY))
 		{
@@ -197,7 +196,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				{
 					if (trace)
 						printf("full: %d %d =>  Z: %d %d\n",ray->world->col_full_end[y][x],ray->world->col_full_start[y][x],zMin,zMax);
-					//create a new interval for next vox column 
+					//create a new interval for next vox column
 					if (interval->l_min<interval->l_max)
 					{
 						if(ray->next_VIntervals_num<ray->max_VIntervals_num)
@@ -229,7 +228,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				previous_voxZ=0;
 				previous_v=UNINIT;
 				v=UNINIT;
-				
+
 				while (voxZ+currentCol[voxIndex].n<zMin+1)
 				{
 					v=currentCol[voxIndex].v;
@@ -264,7 +263,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						continue;
 					if (trace)
 						printf("value:%d for l in %d %d\n",v,l0,l1);
-					
+
 					if (v==EMPTY)
 					{
 						//test if need to draw top of vox below
@@ -287,8 +286,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								l0=l_tmp;
 							}
 						}
-						
-						//create a new interval for next vox column 
+
+						//create a new interval for next vox column
 						if (l0<l1)
 						{
 							if(ray->next_VIntervals_num<ray->max_VIntervals_num)
@@ -302,7 +301,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						}
 						if (trace)
 							printf("save for next interval %d %d\n",l0,l1);
-						
+
 					}else{
 						//test if need to draw bottom of vox
 						if ((previous_v==EMPTY)&&(l0-graph.render_h/2>0))
@@ -355,8 +354,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 
 		//next intersection
 	}
-	
-	//#pragma omp critical //needed?
+
+	//THREADS?
 	graph_write_threadCol(ray->thread,screen_col);
 
 	#ifdef DITHERING
@@ -367,7 +366,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 		graph_write_threadCol_sides(ray->thread,screen_col-1,1,2);
 	#endif
 	//graph_write_threadColZ(ray->thread,screen_col);
-		
+
 	if (trace)
 		printf("\n");
 
@@ -397,9 +396,22 @@ void Voxray_show_info(struct VoxRay * ray)
 	printf("At (%d,%d) %f\n",ray->currentX,ray->currentY,ray->currentLambda);
 }
 
+void * render_thread_run(void *render)
+{
+	struct VoxRay ray;
+	ray.render=(struct VoxRender*)render;
+	ray.thread=?; thread attr ?
+	ray.world=render->world;
+	ray.max_VIntervals_num=graph.render_h/2;//chang this limit if needed
+	ray.current_VIntervals_num=0;
+	ray.VIntervals_A=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
+	ray.current_VIntervals=&(render->ray[i].VIntervals_A);
+	ray.next_VIntervals_num=0;
+	ray.VIntervals_B=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
+	ray.next_VIntervals=&(render->ray[i].VIntervals_B);
+}
 
-
-struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
+struct VoxRender * voxrender_create(struct VoxWorld *_world, double f_eq35mm, int nb_threads)
 {
 	struct VoxRender *render = (struct VoxRender *) malloc(sizeof(struct VoxRender));
 	render->world=_world;
@@ -410,26 +422,12 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 		render->fc[c]=sqrt(render->f*render->f+(c+0.5-graph.render_w/2)*(c+0.5-graph.render_w/2));
 		//printf("render->fc[%d]=%f\n",c,render->fc[c]);
 	}
-	
-	printf("Num of threads: %d\n",omp_get_max_threads());
 
-	render->ray=(struct VoxRay*)malloc(omp_get_max_threads()*sizeof(struct VoxRay));
-	for (int i=0;i<omp_get_max_threads();i++)
-	{
-		render->ray[i].thread=i;
-		render->ray[i].render=render;
-        render->ray[i].world=render->world;
-		render->ray[i].max_VIntervals_num=graph.render_h/2;//chang this limit if needed
-		render->ray[i].current_VIntervals_num=0;
-		render->ray[i].VIntervals_A=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
-		render->ray[i].current_VIntervals=&(render->ray[i].VIntervals_A);
-		render->ray[i].next_VIntervals_num=0;
-		render->ray[i].VIntervals_B=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
-		render->ray[i].next_VIntervals=&(render->ray[i].VIntervals_B);
-	}
+	render->nb_threads=nb_threads;
+	render->threads=(pthread_t*)malloc(render->nb_threads*sizeof(pthread_t));
 
 	render->clip_min=1;
-    render->clip_dark=440;
+	render->clip_dark=440;
 	render->clip_max=450;
 	return render;
 }
@@ -446,22 +444,23 @@ void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz)
 void voxrender_render(struct VoxRender * render,bool trace)
 {
 	static int part=0;
-    int nb_parts=1;
+	int nb_parts=1;
 
+	//THREADS?
+	//juste set semaphore
 	int th_id, nthreads;
-	#pragma omp parallel private(th_id)
 	{
 		th_id = omp_get_thread_num();
 		nthreads=omp_get_num_threads();
-        //Choose between threads equality
-        //or threads independance
-    #ifdef CHUNKS
+		//Choose between threads equality
+		//or threads independance
+	#ifdef CHUNKS
 		int start=th_id*graph.render_w/nthreads;
 		int stop=(th_id+1)*graph.render_w/nthreads;
-        for (int c=start+part;c<stop;c+=nb_parts)
-    #else
+		for (int c=start+part;c<stop;c+=nb_parts)
+	#else
 		for (int c=th_id*nb_parts+part;c<graph.render_w;c+=nthreads*nb_parts)
-    #endif
+	#endif
 		{
 			voxray_reinit(&render->ray[th_id],&render->cam,c,(trace&&(c==graph.render_w/2)));
 			voxray_draw(&render->ray[th_id],c,(trace&&(c==graph.render_w/2)) );

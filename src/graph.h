@@ -38,7 +38,8 @@ extern struct Graph graph;
 extern int nb_threads;
 
 bool graph_init(int _window_w,int _window_h,
-				int _render_w,int _render_h,const char* title);
+		int _render_w,int _render_h,const char* title,
+		int nb_threads);
 
 void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b);//todo: add z!
 void graph_putpixel(int x,int y,uint32_t rgba);//todo: add z!

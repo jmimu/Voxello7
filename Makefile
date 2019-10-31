@@ -1,5 +1,5 @@
-CFLAGS= -g -O3 -std=c99 -Wall -Wextra -fopenmp -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
-LIBS=-lm -lSDL2 -lSDL2_image $(OPTLIBS)
+CFLAGS= -g -O3 -std=c99 -Wall -Wextra -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
+LIBS=-lm -lSDL2 -lSDL2_image -pthread $(OPTLIBS)
 PREFIX?=/usr/local
 
 SOURCES=$(wildcard src/**/*.c src/*.c)
@@ -16,7 +16,7 @@ TARGET=bin/voxello7
 # The Target Build
 all: $(TARGET) tests
 
-dev: CFLAGS=-g -std=c99 -Wall -Isrc -Wall -Wextra -fopenmp $(OPTFLAGS)
+dev: CFLAGS=-g -std=c99 -Wall -Isrc -Wall -Wextra $(OPTFLAGS)
 dev: all
 
 $(TARGET): CFLAGS += -fPIC
