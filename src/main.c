@@ -10,6 +10,7 @@
 #include "voxrender.h"
 #include "sprite.h"
 #include "raster.h"
+#include "background.h"
 #include "formats/magicavoxel.h"
 
 int main(int argc, char *argv[])
@@ -52,10 +53,11 @@ int main(int argc, char *argv[])
 	
 	struct VoxWorld * world=0;
 	struct VoxRender * render=0;
+	struct Background * background=0;
 
-	//result=graph_init(1280,900,1280/1,900/1,"Voxello");
+	result=graph_init(1280,900,1280/2,900/1,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
-	result=graph_init(800,600,800/1,600/1,"Voxello");
+	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
 	world = voxworld_create(4000,4000,200);
@@ -102,9 +104,7 @@ int main(int argc, char *argv[])
 	current_time = last_time;
 	previous_fps_time=SDL_GetTicks()/1000;
 	
-	//SDL_EnableKeyRepeat(10, 10);
-
-	SDL_SetRelativeMouseMode(SDL_TRUE);
+	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
 	struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
@@ -118,6 +118,7 @@ int main(int argc, char *argv[])
 	anim_add_raster(anim1,raster_load("data/run9.png"));
 	struct Sprite* sprite1=sprite_create("Toto",100,90,world->col_full_end[100][90],4,4,anim1);
 
+	background=background_create("data/back2.jpg");
 
 	while (run)
 	{
@@ -258,7 +259,8 @@ int main(int argc, char *argv[])
 
 		//graph_test();
 
-		graph_end_frame(angleZ-0.54,angleZ+0.54);
+		background_draw(background,angleZ-0.54,angleZ+0.54);
+		graph_end_frame();
 		//run=false;
 
 		if (trace)
@@ -293,6 +295,7 @@ error:
 	free(sprite1);
 	if (render) voxrender_delete(render);
 	if (world) voxworld_delete(world);
+	if (background) background_delete(background);
 	graph_close();
 
 }

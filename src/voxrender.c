@@ -6,17 +6,17 @@
 #include <omp.h>
 
 //TODO: work in center-relative coords and transform only before drawing?
-int z_to_l(int z, double cam_z, double lambda, double fc, double render2ScreenFactor);
-int l_to_z(int l, double cam_z, double lambda, double fc, double render2ScreenFactor);
+int z_to_l(int z, double cam_z, double lambda, double fc);
+int l_to_z(int l, double cam_z, double lambda, double fc);
 
-int z_to_l(int z, double cam_z, double lambda, double fc, double render2ScreenFactor)
+int z_to_l(int z, double cam_z, double lambda, double fc)
 {
-	return render2ScreenFactor*fc*(z-cam_z)/lambda+graph.render_h/2-0.5;
+	return graph.render2ScreenFactor*fc*(z-cam_z)/lambda+graph.render_h/2-0.5;
 }
 
-int l_to_z(int l, double cam_z, double lambda, double fc, double render2ScreenFactor)
+int l_to_z(int l, double cam_z, double lambda, double fc)
 {
-	return (l-graph.render_h/2+0.5)*lambda/(render2ScreenFactor*fc)+cam_z;
+	return (l-graph.render_h/2+0.5)*lambda/(graph.render2ScreenFactor*fc)+cam_z;
 }
 
 
@@ -162,7 +162,6 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	if ((screen_col==graph.render_w/2))
 		graph_vline_threadCol(ray->thread,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1);
 	unsigned short current_VInterval_i=0;
-	double render2ScreenFactor = ray->render->render2ScreenFactor;
 	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))
 	{
 		//simple way to be faster when far. TODO: use sub-res worlds
@@ -209,8 +208,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 			{
 				interval=&((*ray->current_VIntervals)[current_VInterval_i]);
 				//compute z range of intersection
-				zMin=l_to_z(interval->l_min, ray->cam->z, ray->currentLambda, fc, render2ScreenFactor);
-				zMax=l_to_z(interval->l_max, ray->cam->z, ray->currentLambda, fc, render2ScreenFactor)+1;//+1 to look for bottom of vox above
+				zMin=l_to_z(interval->l_min, ray->cam->z, ray->currentLambda, fc);
+				zMax=l_to_z(interval->l_max, ray->cam->z, ray->currentLambda, fc)+1;//+1 to look for bottom of vox above
 				if (zMin<0)
 					zMin=0;
 				if (zMax<0)
@@ -274,7 +273,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				if (trace)
 					printf("start at voxIndex: %d, voxZ: %d, v=%d\n",voxIndex, voxZ, v);
 
-				int l0=z_to_l(zMin, ray->cam->z, ray->currentLambda, fc, render2ScreenFactor);
+				int l0=z_to_l(zMin, ray->cam->z, ray->currentLambda, fc);
 				if (l0<interval->l_min)
 					l0=interval->l_min;
 				int l0_previous=l0;
@@ -290,7 +289,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 					if (trace)
 						printf("v: %d (%d), voxZ: %d (%d) voxIndex: %d\n",v, previous_v, voxZ, previous_voxZ,voxIndex);
 
-					l1=z_to_l(voxZ, ray->cam->z, ray->currentLambda, fc, render2ScreenFactor);
+					l1=z_to_l(voxZ, ray->cam->z, ray->currentLambda, fc);
 					if (l1>interval->l_max)
 						l1=interval->l_max;
 					if (l1<l0) //TODO: understand why it occurs...
@@ -304,7 +303,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						if ((previous_v!=EMPTY)&&(previous_v!=UNINIT)&&(l0-graph.render_h/2<0))
 						{
 							double next_lambda=voxray_lambdaNextIntersection(ray);
-							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc, render2ScreenFactor);
+							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
 							if (l_tmp>l0)//TODO: how l_tmp<l0 is possible?
 							{
 								if (l_tmp>l1) l_tmp=l1;
@@ -344,7 +343,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						if ((previous_v==EMPTY)&&(l0-graph.render_h/2>0))
 						{
 							double next_lambda=voxray_lambdaNextIntersection(ray);
-							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc, render2ScreenFactor);
+							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
 							if (l_tmp<l0) //how is it possible?
 							{
 								if (trace)
@@ -439,8 +438,6 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	render->world=_world;
 	render->f=graph.render_w*f_eq35mm/35.0;
 	render->fc=(double*)malloc(graph.render_w*sizeof(double));
-	render->render2ScreenFactor = ((((double)graph.window_w)/graph.window_h)/(((double)graph.render_w)/graph.render_h));
-	printf("fact: %f\n",render->render2ScreenFactor);
 	for (int c=0;c<graph.render_w;c++)
 	{
 		render->fc[c]=sqrt(render->f*render->f+(c+0.5-graph.render_w/2)*(c+0.5-graph.render_w/2));

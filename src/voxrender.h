@@ -51,6 +51,8 @@ struct VoxRay
 };
 
 
+
+
 /*
  * Projection on a plan, nodal point = cam,
  * focal=f, plan size=graph render size

@@ -25,7 +25,6 @@ struct Graph{
 		SDL_Renderer *renderer; //screen
 		SDL_Surface *surface; //pixels texture (only kept for its format)
 		SDL_Texture *texture; //pixels texture
-		SDL_Texture *background;
 #ifdef OPENGL3
 		SDL_GLContext context;
 #endif
@@ -34,6 +33,8 @@ struct Graph{
 		uint16_t *zbuf; //zbuffer unit: voxel side*8
 		uint32_t **threadColPixels;//one column for one thread
 		uint16_t **threadColzbuf;//one column for one thread
+
+		double render2ScreenFactor;
 };
 
 extern struct Graph graph;
@@ -50,7 +51,7 @@ void graph_clear_threadCol(int thread, uint16_t z);
 void graph_write_threadCol(int thread, int x);
 void graph_close();
 void graph_start_frame();
-void graph_end_frame(double ang_l,double ang_r);
+void graph_end_frame();
 void ScreenshotBMP(const char * filename);
 
 void graph_test();

@@ -6,7 +6,6 @@
 
 #include "dbg.h"
 #include "raster.h"
-#include "trigo.h"
 
 struct Graph graph;
 int nb_threads=-1;
@@ -19,6 +18,9 @@ bool graph_init(int _window_w,int _window_h,
 	graph.window_h=_window_h;
 	graph.render_w=_render_w;
 	graph.render_h=_render_h;
+	graph.render2ScreenFactor = ((((double)graph.window_w)/graph.window_h)/(((double)graph.render_w)/graph.render_h));
+	printf("render2ScreenFactor: %f\n",graph.render2ScreenFactor);
+
 	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
 	{
 		printf("SDL2 could not initialize! SDL2_Error: %s\n",SDL_GetError());
@@ -71,12 +73,6 @@ bool graph_init(int _window_w,int _window_h,
 	graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
 	graph.texture = SDL_CreateTextureFromSurface(graph.renderer,graph.surface);
 	
-	SDL_Surface* backsurf = IMG_Load("data/back2.jpg");
-	SDL_Surface* backsurf_conv=SDL_ConvertSurface(backsurf,graph.surface->format,0);
-	graph.background = SDL_CreateTextureFromSurface(graph.renderer, backsurf);
-	SDL_FreeSurface(backsurf);
-	SDL_FreeSurface(backsurf_conv);
-	
 	graph.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
 	graph.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
 	graph.threadColPixels = (uint32_t**) malloc (nb_threads*sizeof(uint32_t*));
@@ -100,25 +96,12 @@ void graph_start_frame()
 #endif
 }
 
-void graph_end_frame(double ang_l,double ang_r)
+void graph_end_frame()
 {
 	//for (unsigned int i=0;i<graph.render_w*graph.render_h;i++)//show zbuffer
 	//	graph.pixels[i]=0xFF000000 | (graph.zbuf[i]>>1)+10;
 	SDL_UpdateTexture(graph.texture, NULL, graph.pixels, graph.render_w * sizeof (uint32_t));
 	//SDL_RenderClear(renderer);
-	
-	int w,h;
-	if (ang_l<0) {ang_l+=2*PI;ang_r+=2*PI;}
-	if (ang_r>4*PI) {ang_l-=2*PI;ang_r-=2*PI;}
-	SDL_QueryTexture(graph.background, NULL, NULL,&w,&h);
-	w/=2;
-	SDL_Rect SrcR;
-	SrcR.x = ang_l*w/(2*PI);
-	SrcR.y = 0;
-	SrcR.w = (ang_r-ang_l)*w/(2*PI);
-	SrcR.h = h;
-
-	SDL_RenderCopy(graph.renderer, graph.background, &SrcR, NULL);
 	SDL_RenderCopy(graph.renderer, graph.texture, NULL, NULL);
 	SDL_RenderPresent(graph.renderer);
 }
@@ -211,7 +194,6 @@ void graph_close()
 	SDL_GL_DeleteContext(graph.context);
 #endif
 	SDL_DestroyTexture(graph.texture);
-	SDL_DestroyTexture(graph.background);
 	SDL_FreeSurface(graph.surface);
 	SDL_DestroyRenderer(graph.renderer);
 	SDL_DestroyWindow(graph.window);
