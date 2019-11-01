@@ -55,12 +55,12 @@ int main(int argc, char *argv[])
 	struct VoxRender * render=0;
 	struct Background * background=0;
 
-	result=graph_init(1280,900,1280/2,900/1,"Voxello");
+	result=graph_init(1920,1080,1920/2,1080/1,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(4000,4000,200);
+	world = voxworld_create(2000,2000,200);
 	//world = voxworld_create(6,6,6);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/3+0.001;
@@ -217,12 +217,12 @@ int main(int argc, char *argv[])
 		if (key_g)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){speed*_cos(angleZ),-speed*_sin(angleZ),0});
+			add(&cam,(struct Pt3d){speed*_cos(angleZ)*(cam.z+50)/50,-speed*_sin(angleZ)*(cam.z+50)/50,0});
 		}
 		if (key_d)
 		{
 			//add_to_cam=add_to_cam.mult(rendering.m_cam_orient);
-			add(&cam,(struct Pt3d){-speed*_cos(angleZ),speed*_sin(angleZ),0});
+			add(&cam,(struct Pt3d){-speed*_cos(angleZ)*(cam.z+50)/50,speed*_sin(angleZ)*(cam.z+50)/50,0});
 		}
 		if (key_f)
 		{
@@ -274,6 +274,7 @@ int main(int argc, char *argv[])
 		if (previous_fps_time!=current_time/1000)
 		{
 			printf("FPS: %d\n",fps);
+			fflush(stdout);
 			previous_fps_time=current_time/1000;
 			fps=0;
 		}
