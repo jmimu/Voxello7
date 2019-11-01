@@ -23,8 +23,8 @@ struct Background * background_create(char* filename)
 void background_draw(struct Background * bg, double ang_l, double ang_r)
 {
 	static SDL_Rect SrcR;
-	ang_l*=graph.render2ScreenFactor;
-	ang_r*=graph.render2ScreenFactor;
+	//ang_l*=graph.render2ScreenFactor;
+	//ang_r*=graph.render2ScreenFactor;
 	if (ang_l<0) {ang_l+=2*PI;ang_r+=2*PI;}
 	if (ang_r>4*PI) {ang_l-=2*PI;ang_r-=2*PI;}
 	SrcR.x = ang_l*bg->w/(2*PI);

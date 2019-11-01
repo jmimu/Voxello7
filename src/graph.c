@@ -39,7 +39,7 @@ bool graph_init(int _window_w,int _window_h,
 
 	graph.window = SDL_CreateWindow(title,SDL_WINDOWPOS_CENTERED,
 				SDL_WINDOWPOS_CENTERED,graph.window_w,graph.window_h,
-				SDL_WINDOW_OPENGL);//SDL_WINDOW_FULLSCREEN_DESKTOP
+				SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP*0);//SDL_WINDOW_FULLSCREEN_DESKTOP
 
 #ifdef OPENGL3	
 	//OGL part (from Headerphile.com OpenGL Tutorial part 1)

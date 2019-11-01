@@ -446,6 +446,29 @@ void voxworld_init_land2(struct VoxWorld * world)
 	}
 }
 
+void voxworld_init_rand(struct VoxWorld * world)
+{
+	int x,y,z,ref;
+	printf("Filling world...\n");
+
+	for (x=0;x<world->szX;x++)
+		for (y=0;y<world->szY;y++)
+		{
+			for (z=0;z<world->szZ;z++)
+			{
+				ref=(z-world->szZ/2)*(z-world->szZ/2);
+				//printf("%d ",ref);
+				if (rand()%5000<ref)
+					world->curr_exp_col[z]=rand()%256;
+				else
+					world->curr_exp_col[z]=EMPTY;
+			}
+			voxworld_compr_col(world);
+			voxworld_write_compr_col(world,x,y);
+		}
+
+}
+
 void voxworld_init_land(struct VoxWorld * world)
 {
 	long z_start;
