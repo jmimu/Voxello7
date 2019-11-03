@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 	cam.y=world->szY/2+0.001;
 	cam.z=world->szZ/2+0.001;
 
-	//voxworld_init_empty_cube(world,2);
+	voxworld_init_empty_cube(world,2);
 	//voxworld_init_full_cube(world);
 	//voxworld_init_land(world);
 	//voxworld_init_stairs(world);
@@ -94,8 +94,7 @@ int main(int argc, char *argv[])
 	model = LoadModel( "data/ephtracy.vox" );
 	VoxWorld_add_MV_Model(world,model,20,100,20,0);
 	MV_Model_delete(model);
-	
-	voxworld_init_land2(world);
+
 	//voxworld_init_rand(world);
 	
 	render=voxrender_create(world,30);
@@ -120,6 +119,8 @@ int main(int argc, char *argv[])
 	struct Sprite* sprite1=sprite_create("Toto",100,90,world->col_full_end[100][90],4,4,anim1);
 
 	background=background_create("data/back2.jpg");
+
+	voxworld_init_land2(world);
 
 	while (run)
 	{

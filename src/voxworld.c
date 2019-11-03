@@ -370,7 +370,7 @@ void voxworld_init_land2(struct VoxWorld * world)
 	double l;
 	printf("Filling world...\n");
 	
-	const int nb_sinc=50;
+	const int nb_sinc=30;
 	int sinc_x[nb_sinc];
 	int sinc_y[nb_sinc];
 	int sinc_h[nb_sinc];
@@ -409,41 +409,36 @@ void voxworld_init_land2(struct VoxWorld * world)
 		world->colorMap[i]=0xFF000000+(r<<16)+(g<<8)+b;
 	}
 	
-	int th_id, nthreads;
-	//#pragma omp parallel private(th_id) //impossible until got one curr_exp_col per thread
+	for (int x=0;x<world->szX;x++)
 	{
-		th_id = omp_get_thread_num();
-		nthreads=omp_get_num_threads();
-		int xstart=th_id*world->szX/nthreads;
-		int xstop=(th_id+1)*world->szX/nthreads;
-		//Choose between threads equality
-		//or threads independance
-		for (int x=xstart;x<xstop;x++)
+		for (y=0;y<world->szY;y++)
 		{
-			for (y=0;y<world->szY;y++)
+			h=0;
+			for (i=0;i<nb_sinc;i++)
 			{
-				h=0;
-				for (i=0;i<nb_sinc;i++)
-				{
-					l= sqrt(((x-sinc_x[i])/sinc_sx[i])*((x-sinc_x[i])/sinc_sx[i]) + ((y-sinc_y[i])/sinc_sy[i])*((y-sinc_y[i])/sinc_sy[i]));
-					hi=_sin( l ) / (l+0.001)  * sinc_h[i];
-					if (h<hi) h = hi;
-				}
-				h += rand()%2 ;
-				c = (255.0*h)/max_z + (rand()%(h/10+1))-h/20;
-				for (z=0;z<world->szZ;z++)
-				{
-					if (z<=h)
-						//world->curr_exp_col[z]=world->colorMap[(int)(h*255.0/world->szZ)];
-						world->curr_exp_col[z]=c;
-					else
-						world->curr_exp_col[z]=EMPTY;
-				}
-				voxworld_compr_col(world);
+				l= sqrt(((x-sinc_x[i])/sinc_sx[i])*((x-sinc_x[i])/sinc_sx[i]) + ((y-sinc_y[i])/sinc_sy[i])*((y-sinc_y[i])/sinc_sy[i]));
+				hi=_sin( l ) / (l+0.001)  * sinc_h[i];
+				if (h<hi) h = hi;
+			}
+			h += rand()%2 ;
+			c = (255.0*h)/max_z + (rand()%(h/10+1))-h/20;
+			for (z=0;z<world->szZ;z++)
+			{
+				if (z<=h)
+					//world->curr_exp_col[z]=world->colorMap[(int)(h*255.0/world->szZ)];
+					world->curr_exp_col[z]=c;
+				else
+					world->curr_exp_col[z]=EMPTY;
+			}
+			voxworld_compr_col(world);
+			#pragma omp critical
+			{
 				voxworld_write_compr_col(world,x,y);
 			}
 		}
 	}
+
+	printf("Filling world done.\n");
 }
 
 void voxworld_init_rand(struct VoxWorld * world)

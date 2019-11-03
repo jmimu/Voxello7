@@ -1,7 +1,8 @@
 IDEES
 =====
 
-Permettre la géné/modif de terrain en multithread => faire un pthread pour remplir le terrain et voir ce que ça donne au rendu !
+Permettre la géné/modif de terrain en multithread => faire un pthread pour remplir le terrain et voir ce que ça donne au rendu ! => possible avec des sections, mais alors un seul thread pour le rendu, et parfois ça coince.
+Le rendu est certainement ralenti par le fait que omp parallel est pas fait pour être appelé 50x par seconde. => utiliser pthread pour gérer des threads qui existent tout le temps. Commencer par faire un qui génère le monde...
 
 Corriger formule ciel, utiliser la focale, l'angle vert de l'image et le rapport render.
 
