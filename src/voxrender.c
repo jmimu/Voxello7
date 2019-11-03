@@ -213,7 +213,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				if (zMin<0)
 					zMin=0;
 				if (zMax<0)
-					continue;//zMax=0;
+					zMax=0;
 				if (zMin>ray->world->szZ-1)
 				{
 					//all the next intervas are out of the world too
@@ -397,9 +397,11 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 		//next intersection
 	}
 	
-	#pragma omp critical
-	graph_write_threadCol(ray->thread,screen_col);
-	//graph_write_threadColZ(ray->thread,screen_col);
+	//#pragma omp critical //not necessary and slowing down
+	{
+		graph_write_threadCol(ray->thread,screen_col);
+		//graph_write_threadColZ(ray->thread,screen_col);
+	}
 	
 	if (trace)
 		printf("\n");
@@ -486,7 +488,14 @@ void voxrender_render(struct VoxRender * render,bool trace)
 	static int part=0;
 	int nb_parts=1;
 
-	int th_id, nthreads;
+	#pragma omp parallel for schedule(guided)
+	for (int c=0;c<graph.render_w;c++)
+	{
+		voxray_reinit(&render->ray[omp_get_thread_num()],&render->cam,c,(trace&&(c==graph.render_w/2)));
+		voxray_draw(&render->ray[omp_get_thread_num()],c,(trace&&(c==graph.render_w/2)) );
+	}
+
+	/*int th_id, nthreads;
 	#pragma omp parallel private(th_id)
 	{
 		th_id = omp_get_thread_num();
@@ -503,7 +512,7 @@ void voxrender_render(struct VoxRender * render,bool trace)
 		}
 	}
 	part++;
-	part%=nb_parts;
+	part%=nb_parts;*/
 }
 
 struct Pt3d voxrender_proj(struct VoxRender * render,struct Pt3d P)

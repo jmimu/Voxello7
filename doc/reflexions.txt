@@ -1,7 +1,7 @@
 IDEES
 =====
 
-Permettre la géné/modif de terrain en multithread
+Permettre la géné/modif de terrain en multithread => faire un pthread pour remplir le terrain et voir ce que ça donne au rendu !
 
 Corriger formule ciel, utiliser la focale, l'angle vert de l'image et le rapport render.
 
@@ -10,6 +10,9 @@ Pouvoir fonctionner en sous-ech en x et pas en y => version simplifiee ok, prép
 il faudrait vraiment simplifier les calculs loin, le clipping doux n'est pas suffisant.
  - faire un monde sous-ech ? et travailler dessus quand on est loin ? (par ex vide non prioritaire)
  - travailler autrement quand on est avec des pixels qui font plus d'un voxel ? (mais risque de rater des murs fins !) => implémenté rapidement, c'est pas mal
+
+
+Faire une struct objet physique, ou collidable, avec une forme de collision (série de voxels pour la surface de contact et normale pour savoir dans quelle direction rebondir). Est-ce qu'il faut préparer toutes les formes de collision en avance ? Lent à faire en direct ?
 
 
 Essayer de fixer un taille mémoire pour chaque colonne compressée pour économiser une indirection et avoir plus de mémoire en contiguité ?
