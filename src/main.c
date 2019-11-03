@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <math.h>
+#include <pthread.h>
 
 #include "graph.h"
 #include "pt3d.h"
@@ -12,6 +13,15 @@
 #include "raster.h"
 #include "background.h"
 #include "formats/magicavoxel.h"
+
+void *filling(void* arg)
+{
+	printf("Start filling world\n");
+	struct VoxWorld * world = (struct VoxWorld *)arg;
+	voxworld_init_land2(world);
+	printf("Done filling world\n");
+	pthread_exit(NULL);
+}
 
 int main(int argc, char *argv[])
 {
@@ -120,7 +130,17 @@ int main(int argc, char *argv[])
 
 	background=background_create("data/back2.jpg");
 
-	voxworld_init_land2(world);
+	//voxworld_init_land2(world);
+	{//separate thread part
+		int res;
+		pthread_t a_thread;
+		res = pthread_create(&a_thread, NULL, filling, (void*)world);
+		if (res != 0)
+		{
+			perror("Thread creation failed!\n");
+		}
+	}
+
 
 	while (run)
 	{
