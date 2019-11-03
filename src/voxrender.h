@@ -63,7 +63,6 @@ struct VoxRender
 	struct Pt3d cam;
 	double ang_hz;
 	double ang_hz_cos,ang_hz_sin;
-	struct VoxRay *ray;//one per thread
 
 	double clip_min;//min dist for intersection
 	double clip_dark;//start dist for darkness

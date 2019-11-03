@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(2000,2000,200);
+	world = voxworld_create(4000,4000,256);
 	//world = voxworld_create(6,6,6);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/3+0.001;
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 	current_time = last_time;
 	previous_fps_time=SDL_GetTicks()/1000;
 	
-	//SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
+	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
 	struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
@@ -279,14 +279,11 @@ int main(int argc, char *argv[])
 		voxrender_setCam(render,cam,angleZ);
 
 		//voxrender_render(render,trace);
-		printf("Start renders\n");
-		fflush(stdout);
-		for (int i=0;i<NB_RENDER_THREADS;i++) sem_post(&render_sem); //start all
-		printf("wait for renders\n");
-		fflush(stdout);
-		for (int i=0;i<NB_RENDER_THREADS;i++) sem_wait(&render_thread_sems[i]);//wait for all
-		printf("renders finished\n");
-		fflush(stdout);
+		//printf("Start renders\n");fflush(stdout);
+		for (int i=0;i<NB_RENDER_THREADS;i++) sem_post(&rth_start_sems[i]); //start all
+		//printf("wait for renders\n");fflush(stdout);
+		for (int i=0;i<NB_RENDER_THREADS;i++) sem_wait(&rth_done_sems[i]);//wait for all
+		//printf("renders finished\n");fflush(stdout);
 
 		//struct Pt3d proj=voxrender_proj(render,raster1p);
 		//raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
@@ -333,6 +330,7 @@ error:
 	if (render) voxrender_delete(render);
 	if (world) voxworld_delete(world);
 	if (background) background_delete(background);
+	del_render_th();
 	graph_close();
 
 }

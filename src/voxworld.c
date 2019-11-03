@@ -370,7 +370,7 @@ void voxworld_init_land2(struct VoxWorld * world)
 	double l;
 	printf("Filling world...\n");
 	
-	const int nb_sinc=30;
+	const int nb_sinc=50;
 	int sinc_x[nb_sinc];
 	int sinc_y[nb_sinc];
 	int sinc_h[nb_sinc];

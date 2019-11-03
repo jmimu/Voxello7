@@ -75,13 +75,6 @@ bool graph_init(int _window_w,int _window_h,
 	
 	graph.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
 	graph.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
-	graph.threadColPixels = (uint32_t**) malloc (nb_threads*sizeof(uint32_t*));
-	graph.threadColzbuf = (uint16_t**) malloc (nb_threads*sizeof(uint16_t*));
-	for (int i=0;i<nb_threads;i++)
-	{
-		graph.threadColPixels[i]=(uint32_t*) malloc (graph.render_h*sizeof(uint32_t));
-		graph.threadColzbuf[i]=(uint16_t*) malloc (graph.render_h*sizeof(uint16_t));
-	}
 	return true;
 }
 
@@ -139,55 +132,6 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 	}
 }
 
-void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba,uint16_t z)
-{
-	int ymin;
-	int ymax;
-	if (y1>y2)
-	{
-		ymin=graph.render_h-1-y1;
-		ymax=graph.render_h-1-y2;
-	}else{
-		ymin=graph.render_h-1-y2;
-		ymax=graph.render_h-1-y1;
-	}
-	if (ymin<0) ymin=0;
-	if (ymax>=graph.render_h) ymax=graph.render_h-1;
-	
-	for (int y=ymin+1;y<=ymax;y++)
-	{
-		if (graph.threadColzbuf[thread][y]>z)
-		{
-			graph.threadColPixels[thread][y]=rgba;
-			graph.threadColzbuf[thread][y]=z;
-		}
-	}
-}
-
-void graph_clear_threadCol(int thread,uint16_t z)
-{
-	//TODO: optimization : have a clean column, and copy it here
-	//memset (graph.threadColPixels[thread], v, graph.render_h*4 );
-	for (int y=0;y<graph.render_h;y++)
-	{
-		graph.threadColPixels[thread][y]=0;//0xFF402010;
-		graph.threadColzbuf[thread][y]=z;
-	}
-
-}
-
-void graph_write_threadCol(int thread, int x)
-{
-	unsigned int i=x;
-	for (int y=0;y<graph.render_h;y++)
-	{
-		graph.pixels[i]=graph.threadColPixels[thread][y];
-		graph.zbuf[i]=graph.threadColzbuf[thread][y];
-		i+=graph.render_w;
-	}
-}
-
-
 void graph_close()
 {
 #ifdef OPENGL3	
@@ -197,13 +141,6 @@ void graph_close()
 	SDL_FreeSurface(graph.surface);
 	SDL_DestroyRenderer(graph.renderer);
 	SDL_DestroyWindow(graph.window);
-	for (int i=0;i<nb_threads;i++)
-	{
-		free(graph.threadColPixels[i]);
-		free(graph.threadColzbuf[i]);
-	}
-	free(graph.threadColPixels);  
-	free(graph.threadColzbuf);  
 	free(graph.pixels);  
 	free(graph.zbuf);  
 	raster_unloadall();

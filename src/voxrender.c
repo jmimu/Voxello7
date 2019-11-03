@@ -4,6 +4,7 @@
 #include "voxworld.h"
 #include <assert.h>
 #include <omp.h>
+#include "render_threads.h"
 
 //TODO: work in center-relative coords and transform only before drawing?
 int z_to_l(int z, double cam_z, double lambda, double fc);
@@ -448,21 +449,6 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	
 	printf("Num of threads: %d\n",omp_get_max_threads());
 
-	render->ray=(struct VoxRay*)malloc(omp_get_max_threads()*sizeof(struct VoxRay));
-	for (int i=0;i<omp_get_max_threads();i++)
-	{
-		render->ray[i].thread=i;
-		render->ray[i].render=render;
-		render->ray[i].world=render->world;
-		render->ray[i].max_VIntervals_num=graph.render_h/2;//change this limit if needed
-		render->ray[i].current_VIntervals_num=0;
-		render->ray[i].VIntervals_A=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
-		render->ray[i].current_VIntervals=&(render->ray[i].VIntervals_A);
-		render->ray[i].next_VIntervals_num=0;
-		render->ray[i].VIntervals_B=(struct VoxVInterval *)malloc(render->ray[i].max_VIntervals_num*sizeof(struct VoxVInterval));
-		render->ray[i].next_VIntervals=&(render->ray[i].VIntervals_B);
-	}
-
 	render->clip_min=1;
 	render->clip_dark=300;
 	render->clip_alpha=1800;
@@ -486,12 +472,12 @@ void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz)
 void voxrender_render(struct VoxRender * render,bool trace)
 {
 
-	//#pragma omp parallel for schedule(guided)
+	/*#pragma omp parallel for schedule(guided)
 	for (int c=0;c<graph.render_w;c++)
 	{
 		voxray_reinit(&render->ray[omp_get_thread_num()],&render->cam,c,(trace&&(c==graph.render_w/2)));
 		voxray_draw(&render->ray[omp_get_thread_num()],c,(trace&&(c==graph.render_w/2)) );
-	}
+	}*/
 
 	/*
 	static int part=0;
@@ -538,8 +524,5 @@ struct Pt3d voxrender_proj(struct VoxRender * render,struct Pt3d P)
 void voxrender_delete(struct VoxRender * render)
 {
 	free(render->fc);
-	for (int i=0;i<omp_get_max_threads();i++)
-		voxray_delete(&(render->ray[i]));
-	free(render->ray);
 	free(render);
 }
