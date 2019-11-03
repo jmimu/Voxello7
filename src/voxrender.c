@@ -486,7 +486,7 @@ void voxrender_setCam(struct VoxRender * render,struct Pt3d _cam,double _ang_hz)
 void voxrender_render(struct VoxRender * render,bool trace)
 {
 
-	#pragma omp parallel for schedule(guided)
+	//#pragma omp parallel for schedule(guided)
 	for (int c=0;c<graph.render_w;c++)
 	{
 		voxray_reinit(&render->ray[omp_get_thread_num()],&render->cam,c,(trace&&(c==graph.render_w/2)));

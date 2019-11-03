@@ -13,6 +13,8 @@
 #include "raster.h"
 #include "background.h"
 #include "formats/magicavoxel.h"
+#include "render_threads.h"
+
 
 void *filling(void* arg)
 {
@@ -114,7 +116,7 @@ int main(int argc, char *argv[])
 	current_time = last_time;
 	previous_fps_time=SDL_GetTicks()/1000;
 	
-	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
+	//SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
 	struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
@@ -140,6 +142,8 @@ int main(int argc, char *argv[])
 			perror("Thread creation failed!\n");
 		}
 	}
+
+	printf("start_render_th: %d\n",start_render_th(render));
 
 
 	while (run)
@@ -273,7 +277,17 @@ int main(int argc, char *argv[])
 
 		//graph_start_frame();
 		voxrender_setCam(render,cam,angleZ);
-		voxrender_render(render,trace);
+
+		//voxrender_render(render,trace);
+		printf("Start renders\n");
+		fflush(stdout);
+		for (int i=0;i<NB_RENDER_THREADS;i++) sem_post(&render_sem); //start all
+		printf("wait for renders\n");
+		fflush(stdout);
+		for (int i=0;i<NB_RENDER_THREADS;i++) sem_wait(&render_thread_sems[i]);//wait for all
+		printf("renders finished\n");
+		fflush(stdout);
+
 		//struct Pt3d proj=voxrender_proj(render,raster1p);
 		//raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
 
