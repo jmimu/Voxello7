@@ -13,7 +13,7 @@ const int UNINIT=-1;
 //TODO: add check & clear
 struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 {
-	printf("Creating world...\n");
+	printf("Creating a %.1e voxels world...\n",((double)_szX)*_szY*_szZ);
 	struct VoxWorld *world = (struct VoxWorld *) malloc(sizeof(struct VoxWorld));
 	world->szX=_szX;
 	world->szY=_szY;
@@ -486,7 +486,7 @@ void voxworld_init_Menger(struct VoxWorld * world)
 				if (isBadMenger(x,y,z))
 					world->curr_exp_col[z]=EMPTY;
 				else
-					world->curr_exp_col[z]=rand()%5+10;
+					world->curr_exp_col[z]=2;
 			}
 			voxworld_compr_col(world);
 			voxworld_write_compr_col(world,x,y);
