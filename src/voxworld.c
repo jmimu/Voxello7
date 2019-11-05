@@ -56,9 +56,10 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 			world->data[y][x][nbr_RLE_block-1]=(struct RLE_block){.n=last_RLE_block_size,.v=EMPTY};
 		}
 	}
-	
+
 	//create working colums memory space
 	world->curr_exp_col=(uint8_t *) malloc(world->szZ*sizeof(uint8_t));
+	voxworld_empty_curr_exp_col(world);
 	world->curr_compr_col=(struct RLE_block *) malloc(world->szZ*sizeof(struct RLE_block));
 	world->curr_compr_col_size=0;
 
@@ -177,16 +178,19 @@ void voxworld_compr_col(struct VoxWorld * world)
 			world->curr_col_full_start=z;
 		if ((world->curr_col_full_end<=z)&&(world->curr_exp_col[z]!=EMPTY))
 			world->curr_col_full_end=z+1;
-		if (rle.v==world->curr_exp_col[z])
+		if ((rle.v==world->curr_exp_col[z])&&(rle.n<255))
 		{
 			rle.n++;
 		}else{
+			//record rle
 			world->curr_compr_col[world->curr_compr_col_size]=rle;
+			world->curr_compr_col_size++;
+			//new rle
 			rle.n=1;
 			rle.v=world->curr_exp_col[z];
-			world->curr_compr_col_size++;
 		}
 	}
+	//record last rle
 	world->curr_compr_col[world->curr_compr_col_size]=rle;
 	world->curr_compr_col_size++;
 
@@ -409,7 +413,7 @@ void voxworld_init_land2(struct VoxWorld * world)
 		world->colorMap[i]=0xFF000000+(r<<16)+(g<<8)+b;
 	}
 	
-	for (int x=0;x<world->szX;x++)
+	for (x=0;x<world->szX;x++)
 	{
 		for (y=0;y<world->szY;y++)
 		{
@@ -443,52 +447,52 @@ void voxworld_init_land2(struct VoxWorld * world)
 
 /*bool isBadMenger(int v)//check if 1 in base 3
 {
-    while (v>0)
-    {
-        if (v%3==1)
-            return true;
-        v/=3;
-    }
-    return false;
+	while (v>0)
+	{
+		if (v%3==1)
+			return true;
+		v/=3;
+	}
+	return false;
 }*/
 
 bool isBadMenger(int v1, int v2, int v3) //check if 1 in base 3 on the same digits
 {
-    while ((v1>0)||(v2>0)||(v3>0))
-    {
-        if ((v1%3==1)&&(v2%3==1))
-            return true;
-        if ((v1%3==1)&&(v3%3==1))
-            return true;
-        if ((v2%3==1)&&(v3%3==1))
-            return true;
-        v1/=3;
-        v2/=3;
-        v3/=3;
-    }
-    return false;
+	while ((v1>0)||(v2>0)||(v3>0))
+	{
+		if ((v1%3==1)&&(v2%3==1))
+			return true;
+		if ((v1%3==1)&&(v3%3==1))
+			return true;
+		if ((v2%3==1)&&(v3%3==1))
+			return true;
+		v1/=3;
+		v2/=3;
+		v3/=3;
+	}
+	return false;
 }
 
 void voxworld_init_Menger(struct VoxWorld * world)
 {
-    int x,y,z;
-    printf("Filling world...\n");
-    for (x=0;x<world->szX;x++)
-    {
-        for (y=0;y<world->szY;y++)
-        {
-            for (z=0;z<world->szZ;z++)
-            {
-                if (isBadMenger(x,y,z))
-                    world->curr_exp_col[z]=EMPTY;
-                else
-                    world->curr_exp_col[z]=rand()%5+10;
-            }
-            voxworld_compr_col(world);
-            voxworld_write_compr_col(world,x,y);
-        }
-    }
-    printf("Filling world done.\n");
+	int x,y,z;
+	printf("Filling world...\n");
+	for (x=0;x<world->szX;x++)
+	{
+		for (y=0;y<world->szY;y++)
+		{
+			for (z=0;z<world->szZ;z++)
+			{
+				if (isBadMenger(x,y,z))
+					world->curr_exp_col[z]=EMPTY;
+				else
+					world->curr_exp_col[z]=rand()%5+10;
+			}
+			voxworld_compr_col(world);
+			voxworld_write_compr_col(world,x,y);
+		}
+	}
+	printf("Filling world done.\n");
 }
 
 

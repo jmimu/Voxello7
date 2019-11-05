@@ -18,7 +18,24 @@ void *filling(void* arg)
 {
 	printf("Start filling world\n");
 	struct VoxWorld * world = (struct VoxWorld *)arg;
-	voxworld_init_land2(world);
+
+    //Warning ! using models change global palette!
+    struct MV_Model * model = LoadModel( "data/castle.vox" );
+    VoxWorld_add_MV_Model(world,model,20,20,15,0);
+    VoxWorld_set_MV_Model_palette(world,model);
+    MV_Model_delete(model);
+    model = LoadModel( "data/monu1.vox" );
+    VoxWorld_add_MV_Model(world,model,100,20,0,0);
+    MV_Model_delete(model);
+    model = LoadModel( "data/monu9.vox" );
+    VoxWorld_add_MV_Model(world,model,100,100,2,0);
+    MV_Model_delete(model);
+    model = LoadModel( "data/ephtracy.vox" );
+    VoxWorld_add_MV_Model(world,model,20,100,20,0);
+    MV_Model_delete(model);
+
+    //voxworld_init_land2(world);
+    voxworld_init_Menger(world);
 	printf("Done filling world\n");
 	pthread_exit(NULL);
 }
@@ -70,8 +87,8 @@ int main(int argc, char *argv[])
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	world = voxworld_create(2000,2000,200);
-	//world = voxworld_create(6,6,6);
+    //world = voxworld_create(2000,2000,200);
+    world = voxworld_create(3*3*3*3*3*3,3*3*3*3*3*3,3*3*3*3*3*3);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/3+0.001;
 	//cam.y=world->szY/2+0.001;
@@ -83,27 +100,12 @@ int main(int argc, char *argv[])
 	cam.y=world->szY/2+0.001;
 	cam.z=world->szZ/2+0.001;
 
-	voxworld_init_empty_cube(world,2);
-	//voxworld_init_full_cube(world);
+    //voxworld_init_empty_cube(world,2);
+    //voxworld_init_full_cube(world);
 	//voxworld_init_land(world);
 	//voxworld_init_stairs(world);
 	//voxworld_init_cave(world);
 	//voxworld_printf(world);
-
-	//Warning ! using models change global palette!
-	struct MV_Model * model = LoadModel( "data/castle.vox" );
-	VoxWorld_add_MV_Model(world,model,20,20,15,0);
-	VoxWorld_set_MV_Model_palette(world,model);
-	MV_Model_delete(model);
-	model = LoadModel( "data/monu1.vox" );
-	VoxWorld_add_MV_Model(world,model,100,20,0,0);
-	MV_Model_delete(model);
-	model = LoadModel( "data/monu9.vox" );
-	VoxWorld_add_MV_Model(world,model,100,100,2,0);
-	MV_Model_delete(model);
-	model = LoadModel( "data/ephtracy.vox" );
-	VoxWorld_add_MV_Model(world,model,20,100,20,0);
-	MV_Model_delete(model);
 
 	//voxworld_init_rand(world);
 	
@@ -114,7 +116,7 @@ int main(int argc, char *argv[])
 	current_time = last_time;
 	previous_fps_time=SDL_GetTicks()/1000;
 	
-	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
+    SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
 	struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
