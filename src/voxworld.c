@@ -441,6 +441,57 @@ void voxworld_init_land2(struct VoxWorld * world)
 	printf("Filling world done.\n");
 }
 
+/*bool isBadMenger(int v)//check if 1 in base 3
+{
+    while (v>0)
+    {
+        if (v%3==1)
+            return true;
+        v/=3;
+    }
+    return false;
+}*/
+
+bool isBadMenger(int v1, int v2, int v3) //check if 1 in base 3 on the same digits
+{
+    while ((v1>0)||(v2>0)||(v3>0))
+    {
+        if ((v1%3==1)&&(v2%3==1))
+            return true;
+        if ((v1%3==1)&&(v3%3==1))
+            return true;
+        if ((v2%3==1)&&(v3%3==1))
+            return true;
+        v1/=3;
+        v2/=3;
+        v3/=3;
+    }
+    return false;
+}
+
+void voxworld_init_Menger(struct VoxWorld * world)
+{
+    int x,y,z;
+    printf("Filling world...\n");
+    for (x=0;x<world->szX;x++)
+    {
+        for (y=0;y<world->szY;y++)
+        {
+            for (z=0;z<world->szZ;z++)
+            {
+                if (isBadMenger(x,y,z))
+                    world->curr_exp_col[z]=EMPTY;
+                else
+                    world->curr_exp_col[z]=rand()%5+10;
+            }
+            voxworld_compr_col(world);
+            voxworld_write_compr_col(world,x,y);
+        }
+    }
+    printf("Filling world done.\n");
+}
+
+
 void voxworld_init_rand(struct VoxWorld * world)
 {
 	int x,y,z,ref;

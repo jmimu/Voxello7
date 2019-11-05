@@ -51,6 +51,7 @@ void voxworld_init_land2(struct VoxWorld * world);
 void voxworld_init_stairs(struct VoxWorld * world);
 void voxworld_init_cave(struct VoxWorld * world);
 void voxworld_init_rand(struct VoxWorld * world);
+void voxworld_init_Menger(struct VoxWorld * world);
 
 void voxworld_printf(struct VoxWorld * world);
 unsigned long voxworld_getsize(struct VoxWorld * world);
