@@ -23,6 +23,8 @@ struct VoxVInterval
 struct VoxRay
 {
 	int thread;
+    int screen_col2;//render column (in half pixels)
+    int screen_col_min,screen_col_max;//drawing columns
 	struct VoxRender *render;
 	struct VoxWorld *world;
 	struct Pt3d * cam;
@@ -74,18 +76,21 @@ struct VoxRender
 	double clip_max;//max dist for intersection
 
 	double f;//focal (in pixels)
-	double * fc;//distance from screen column to nodal point
-	double render2ScreenFactor; //if render area has different ratio from window
+    double * fc;//distance from screen column to nodal point (index in half pixels)
+
+    float * allRenderColMin;
+    float * allRenderColMax;
+    double render2ScreenFactor; //if render area has different ratio from window
 };
 
 
 void voxray_delete(struct VoxRay * ray);
 void voxray_swap_intervals(struct VoxRay * ray);
 
-void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int c, bool trace);
+void voxray_reinit(struct VoxRay * ray,struct Pt3d *cam, int screen_col_min, int screen_col_max, bool trace);
 double voxray_lambdaNextIntersection(struct VoxRay * ray);
 bool voxray_findNextIntersection(struct VoxRay * ray,bool trace);//returns false if out of bounds
-void voxray_draw(struct VoxRay * ray,int c,bool trace);
+void voxray_draw(struct VoxRay * ray, bool trace);
 void Voxray_show_info(struct VoxRay * ray);
 
 

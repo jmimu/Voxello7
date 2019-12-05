@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 	struct VoxRender * render=0;
 	struct Background * background=0;
 
-	result=graph_init(1920,1080,1920/2,1080/1,"Voxello");
+    result=graph_init(1920,1080,1920/1,1080/1,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");

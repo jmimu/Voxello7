@@ -176,15 +176,21 @@ void graph_clear_threadCol(int thread,uint16_t z)
 
 }
 
-void graph_write_threadCol(int thread, int x)
+void graph_write_threadCol(int thread, int xmin, int xmax)
 {
-	unsigned int i=x;
-	for (int y=0;y<graph.render_h;y++)
+    unsigned int i=xmin;
+    unsigned int i2=i;
+    for (int y=0;y<graph.render_h;y++)
 	{
-		graph.pixels[i]=graph.threadColPixels[thread][y];
-		graph.zbuf[i]=graph.threadColzbuf[thread][y];
-		i+=graph.render_w;
-	}
+        i2=i;
+        for (int x=xmin;x<=xmax;x++)
+        {
+            graph.pixels[i2]=graph.threadColPixels[thread][y];
+            graph.zbuf[i2]=graph.threadColzbuf[thread][y];
+            i2++;
+        }
+        i+=graph.render_w;
+    }
 }
 
 
