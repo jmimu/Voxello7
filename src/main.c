@@ -13,6 +13,7 @@
 #include "raster.h"
 #include "background.h"
 #include "formats/magicavoxel.h"
+#include "formats/voxtxt.h"
 
 void *filling(void* arg)
 {
@@ -35,7 +36,11 @@ void *filling(void* arg)
     MV_Model_delete(model);
 
     //voxworld_init_land2(world);
-    voxworld_init_Menger(world);
+    //voxworld_init_Menger(world);
+    
+    voxworld_init_empty_cube(world,2);
+    VoxWorld_add_from_txt(world, "/tmp/vox.txt", 500,500,200);
+
 	printf("Done filling world\n");
 	pthread_exit(NULL);
 }
@@ -87,8 +92,14 @@ int main(int argc, char *argv[])
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	//world = voxworld_create(2000,2000,200);
-	world = voxworld_create(3*3*3*3*3*3,3*3*3*3*3*3,3*3*3*3*3*3);
+	//world = voxworld_create(1000,1000,400);
+	world = VoxWorld_create_from_txt("/tmp/vox.txt");
+	if (!world)
+	{
+		world = voxworld_create(1000,1000,400);
+		voxworld_init_empty_cube(world,2);
+	}
+	//world = voxworld_create(3*3*3*3*3*3,3*3*3*3*3*3,3*3*3*3*3*3);
 	check_debug(world,"Unable to create world...");
 	cam.x=world->szX/3+0.001;
 	//cam.y=world->szY/2+0.001;
@@ -128,12 +139,15 @@ int main(int argc, char *argv[])
 	anim_add_raster(anim1,raster_load("data/run7.png"));
 	anim_add_raster(anim1,raster_load("data/run8.png"));
 	anim_add_raster(anim1,raster_load("data/run9.png"));
-	struct Sprite* sprite1=sprite_create("Toto",100,90,world->col_full_end[100][90],4,4,anim1);
+	struct Sprite* sprite1 = NULL;
+	if ((world->szX>100) && (world->szY>90))
+		sprite1=sprite_create("Toto",100,90,world->col_full_end[100][90],4,4,anim1);
 
 	background=background_create("data/back2.jpg");
 
+	
 	//voxworld_init_land2(world);
-	{//separate thread part
+	/*{//separate thread part
 		int res;
 		pthread_t a_thread;
 		res = pthread_create(&a_thread, NULL, filling, (void*)world);
@@ -141,7 +155,7 @@ int main(int argc, char *argv[])
 		{
 			perror("Thread creation failed!\n");
 		}
-	}
+	}*/
 
 
 	while (run)
@@ -279,7 +293,7 @@ int main(int argc, char *argv[])
 		//struct Pt3d proj=voxrender_proj(render,raster1p);
 		//raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
 
-		sprite_draw(render,sprite1);
+		if (sprite1) sprite_draw(render,sprite1);
 
 		//graph_test();
 
@@ -317,7 +331,7 @@ int main(int argc, char *argv[])
 error:
 	//raster_unloadall();//TODO
 	free(anim1);
-	free(sprite1);
+	if (sprite1) free(sprite1);
 	if (render) voxrender_delete(render);
 	if (world) voxworld_delete(world);
 	if (background) background_delete(background);
