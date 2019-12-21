@@ -87,14 +87,22 @@ int main(int argc, char *argv[])
 	struct VoxRender * render=0;
 	struct Background * background=0;
 
-	result=graph_init(1920,1080,1920/2,1080/1,"Voxello");
+	result=graph_init(1920/2,1080/2,1920/2,1080/2,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	//world = voxworld_create(1000,1000,400);
-	world = VoxWorld_create_from_txt("/tmp/vox.txt");
-	if (!world)
+	if (argc>1)
+	{
+		world = VoxWorld_create_from_txt(argv[1]);
+		//return 0;
+	}
+	else
+	{
+		world = voxworld_create(1000,1000,400);
+		voxworld_init_land2(world);
+	}
+	if (!world) //in case of wrong filename
 	{
 		world = voxworld_create(1000,1000,400);
 		voxworld_init_empty_cube(world,2);

@@ -26,7 +26,7 @@ obj = context.active_object
 
 #output dim
 use_fix_vox_size = False
-vox_max_size = 1000 #in 1 dimension
+vox_max_size = 3000 #in 1 dimension
 vox_size=0.1
 
 add_cubes = False

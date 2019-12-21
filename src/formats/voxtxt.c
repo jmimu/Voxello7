@@ -53,7 +53,11 @@ void VoxWorld_add_from_txt(struct VoxWorld * world, const char *path, int dx, in
     int xmin,xmax,ymin,ymax,zmin,zmax;
     long nb,i;
     int x,y,z,v;
+    int x_prev,y_prev;
+    x_prev=-1;
+    y_prev=-1;
     char str[MAXCHAR];
+    
     if (fgets(str, MAXCHAR, fp) != NULL)
     {
         if (sscanf(str, "%d %d %d %d %d %d %ld", &xmin,&xmax,&ymin,&ymax,&zmin,&zmax,&nb) != 7)
@@ -68,12 +72,31 @@ void VoxWorld_add_from_txt(struct VoxWorld * world, const char *path, int dx, in
         {
             if (sscanf(str, "%d %d %d %d", &x,&y,&z,&v) != 4)
                check(false,"Bad 1st line format");
-            if ((x+dx>0) && (x+dx<world->szX) && (y+dy>0) && (y+dy<world->szY) && (z+dz>0) && (z+dz<world->szZ))
-                add_vox(world,x+dx,y+dy,z+dz,v);
+            x+=dx;y+=dy;z+=dz;
+            if ((x>=0) && (x<world->szX) && (y>=0) && (y<world->szY) && (z>=0) && (z<world->szZ))
+            {
+                //add_vox(world,x,y,z,v);
+                if ((x!=x_prev)||(y!=y_prev))
+                {
+                    if (i>0)
+                    {
+                        voxworld_compr_col(world);
+                        voxworld_write_compr_col(world,x_prev,y_prev);
+                    }
+                    voxworld_expand_col(world,x,y);
+                }
+                world->curr_exp_col[z]=v+30;
+                
+                x_prev=x;y_prev=y;
+            }
+            else
+                printf("Out: %d %d %d\n",x+dx,y+dy,z+dz);
         }else{
             check(false,"Wrong vox number: %ld~%ld: *%s*",i,nb,str);
         }
     }
+    voxworld_compr_col(world);
+    voxworld_write_compr_col(world,x_prev,y_prev);
     
 error:
     // close file
