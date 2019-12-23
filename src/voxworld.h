@@ -54,6 +54,7 @@ void voxworld_init_rand(struct VoxWorld * world);
 void voxworld_init_Menger(struct VoxWorld * world);
 
 void voxworld_printf(struct VoxWorld * world);
+void voxworld_print_col(struct VoxWorld * world,int x, int y);
 unsigned long voxworld_getsize(struct VoxWorld * world);
 struct VoxWorld * voxworld_copy(struct VoxWorld * world);
 

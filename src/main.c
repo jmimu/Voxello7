@@ -119,6 +119,15 @@ int main(int argc, char *argv[])
 	cam.y=world->szY/2+0.001;
 	cam.z=world->szZ/2+0.001;
 
+	//test quake speed
+	#ifdef TESTQUAKESPEED
+		cam.x=world->szY*1499.5/3000;
+		cam.y=world->szY*2238.5/3000;
+		cam.z=world->szY*415.5/3000;
+		angleZ=PI/2;
+		voxworld_print_col(world,world->szY*1643/3000,world->szY*2239/3000);
+	#endif
+
     //voxworld_init_empty_cube(world,2);
     //voxworld_init_full_cube(world);
 	//voxworld_init_land(world);
@@ -311,6 +320,7 @@ int main(int argc, char *argv[])
 
 		if (trace)
 		{
+			printf("Cam: %f %f %f %f\n",cam.x,cam.y,cam.z,angleZ);
 			ScreenshotBMP("out.bmp");
 			trace=false;
 		}

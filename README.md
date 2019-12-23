@@ -13,6 +13,7 @@ bug: bottom of screen
 TODO :
 ------
   * put all background part out of graph
+  * stop using curr_compr_col
 
 Optimizations :
 ---------------
@@ -23,7 +24,7 @@ Optimizations :
   * be able to have different resolution in x and y (use window size ratio instead of render size ratio)
   * add blur to far parts (shader?) => must use opengl : https://lazyfoo.net/tutorials/SDL/51_SDL_and_modern_opengl/index.php
   
-  * becomes very slow on top of quake e1m1 stairs? faster when just lower.
+  * becomes very slow on top of quake e1m1 stairs? faster when just lower. => seems to be due to RLE.n==255, creating many intervals.
   
   * expand only necessary part of column
   * record last and first full vox of each col

@@ -157,6 +157,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	int previous_v=UNINIT;
 	uint8_t v;
 	Uint32 color;
+	int total_intervals=0;
 	graph_clear_threadCol(ray->thread,ray->render->clip_max*ZBUF_FACTOR);
 	//graph_clear_threadColZ(ray->thread);
 	if ((screen_col==graph.render_w/2))
@@ -237,6 +238,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							(*ray->next_VIntervals)[ray->next_VIntervals_num].l_min=interval->l_min;
 							(*ray->next_VIntervals)[ray->next_VIntervals_num].l_max=interval->l_max;
 							ray->next_VIntervals_num++;
+							if (trace)
+								if (ray->next_VIntervals_num>total_intervals) total_intervals=ray->next_VIntervals_num;
 						}else{
 							printf("Error, too many VIntervals\n");
 						}
@@ -262,6 +265,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 				previous_v=UNINIT;
 				v=UNINIT;
 				
+				//find start of visible part for this column
 				while (voxZ+currentCol[voxIndex].n<zMin+1)
 				{
 					v=currentCol[voxIndex].v;
@@ -285,7 +289,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 					previous_voxZ=voxZ;
 					voxZ+=currentCol[voxIndex].n;
 					voxIndex++;
-
+					
 					if (trace)
 						printf("v: %d (%d), voxZ: %d (%d) voxIndex: %d\n",v, previous_v, voxZ, previous_voxZ,voxIndex);
 
@@ -297,6 +301,24 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 					if (trace)
 						printf("value:%d for l in %d %d\n",v,l0,l1);
 					
+					/*if ((v==EMPTY)&&(previous_voxZ<zMin)&&(voxZ>zMax)) //useless?
+					{
+						if(ray->next_VIntervals_num<ray->max_VIntervals_num)
+						{
+							(*ray->next_VIntervals)[ray->next_VIntervals_num].l_min=l0;
+							(*ray->next_VIntervals)[ray->next_VIntervals_num].l_max=l1;
+							ray->next_VIntervals_num++;
+						}else{
+							printf("Error, too many VIntervals\n");
+						}
+						l0_previous=l0;
+						l0=l1;
+						if (trace)
+							printf("end of z: %d/%d\n",voxZ,zMax);
+						previous_v=v;
+						continue;
+					}*/
+
 					if (v==EMPTY)
 					{
 						//test if need to draw top of vox below
@@ -331,6 +353,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								(*ray->next_VIntervals)[ray->next_VIntervals_num].l_min=l0;
 								(*ray->next_VIntervals)[ray->next_VIntervals_num].l_max=l1;
 								ray->next_VIntervals_num++;
+								if (trace)
+									if (ray->next_VIntervals_num>total_intervals) total_intervals=ray->next_VIntervals_num;
 							}else{
 								printf("Error, too many VIntervals\n");
 							}
@@ -404,7 +428,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	}
 	
 	if (trace)
-		printf("\n");
+		printf("Num intervals: %d.\n",total_intervals);
 
 
 }

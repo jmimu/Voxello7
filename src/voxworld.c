@@ -134,6 +134,22 @@ void voxworld_empty_curr_exp_col(struct VoxWorld * world)
 	memset(world->curr_exp_col,EMPTY,world->szZ);
 }
 
+void voxworld_print_col(struct VoxWorld * world,int x, int y)
+{
+	int i=0;
+	int z=0;
+	struct RLE_block rle;
+	
+	printf("Col %d %d: ",x,y);
+	while (z<world->szZ)
+	{
+		rle=world->data[y][x][i];
+		printf("@%d: %d, ",z,rle.v);
+		z+=rle.n;
+		i++;
+	}
+	printf("end.\n");
+}
 
 //expand one compressed column into curr_exp_col
 void voxworld_expand_col(struct VoxWorld * world,int x, int y)
@@ -218,7 +234,7 @@ bool voxworld_write_compr_col(struct VoxWorld * world,int x, int y)
 	world->col_full_end[y][x] = world->curr_col_full_end;
 
 	memcpy(world->data[y][x],world->curr_compr_col,
-			world->curr_compr_col_size*sizeof(struct RLE_block));
+			world->curr_compr_col_size*sizeof(struct RLE_block)); //TODO: why use curr_compr_col?
 #ifdef DBG_VOX
 	printf("Copy results: ");
 	for (int i=0;i<world->curr_compr_col_size; i++)
