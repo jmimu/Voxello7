@@ -15,9 +15,11 @@ extern const int UNINIT;
 
 //#define DBG_VOX
 
+#define MAX_RLE_N 65000 //255
+
 struct RLE_block
 {
-	uint8_t n; 
+	uint16_t n; 
 	uint8_t v; 
 };
 

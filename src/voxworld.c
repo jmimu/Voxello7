@@ -20,8 +20,8 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 	world->szZ=_szZ;
 	
 	//to create an empty world of height world->szZ, we need
-	int nbr_RLE_block=1+world->szZ/255;
-	int last_RLE_block_size=world->szZ%255;
+	int nbr_RLE_block=1+world->szZ/MAX_RLE_N;
+	int last_RLE_block_size=world->szZ%MAX_RLE_N;
 	
 	//data[y][x] is a RLE_block
 	world->data = (struct RLE_block***) malloc(world->szY*sizeof(struct RLE_block**));
@@ -51,7 +51,7 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 			world->col_full_end[y][x] = 0;
 			for (int z=0;z<nbr_RLE_block-1;z++)
 			{
-				world->data[y][x][z]=(struct RLE_block){.n=255,.v=EMPTY};
+				world->data[y][x][z]=(struct RLE_block){.n=MAX_RLE_N,.v=EMPTY};
 			}
 			world->data[y][x][nbr_RLE_block-1]=(struct RLE_block){.n=last_RLE_block_size,.v=EMPTY};
 		}
@@ -194,7 +194,7 @@ void voxworld_compr_col(struct VoxWorld * world)
 			world->curr_col_full_start=z;
 		if ((world->curr_col_full_end<=z)&&(world->curr_exp_col[z]!=EMPTY))
 			world->curr_col_full_end=z+1;
-		if ((rle.v==world->curr_exp_col[z])&&(rle.n<255))
+		if ((rle.v==world->curr_exp_col[z])&&(rle.n<MAX_RLE_N))
 		{
 			rle.n++;
 		}else{
