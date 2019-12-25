@@ -234,6 +234,15 @@ error:
 	return false;
 }
 
+int voxworld_get_ground_z(struct VoxWorld * world, int x, int y)
+{
+    if ((x>=0)&&(x<world->szX)&&(y>=0)&&(y<world->szY))
+        return world->col_full_end[x][y];
+    else
+        return 0;
+}
+
+
 //empty cube : only edges are put to v
 void voxworld_init_empty_cube(struct VoxWorld * world, uint16_t v)
 {

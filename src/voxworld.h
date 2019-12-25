@@ -49,6 +49,8 @@ void voxworld_empty_curr_exp_col(struct VoxWorld * world);
 void voxworld_expand_col(struct VoxWorld * world,int x, int y);
 void voxworld_compr_col(struct VoxWorld * world);
 bool voxworld_write_compr_col(struct VoxWorld * world,int x, int y);
+int voxworld_get_ground_z(struct VoxWorld * world, int x, int y);
+
 void voxworld_init_empty_cube(struct VoxWorld * world, VOX_TYPE v);
 void voxworld_init_full_cube(struct VoxWorld * world);
 void voxworld_init_land(struct VoxWorld * world);

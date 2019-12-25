@@ -23,16 +23,16 @@ void *filling(void* arg)
     //voxworld_init_land(world);
 
     struct MV_Model * model = LoadModel( "data/castle.vox" );
-    VoxWorld_add_MV_Model(world,model,20,20,100,0);
+    VoxWorld_add_MV_Model(world,model,20,20,voxworld_get_ground_z(world,20,20),0);
     MV_Model_delete(model);
     model = LoadModel( "data/monu1.vox" );
-    VoxWorld_add_MV_Model(world,model,100,20,100,0);
+    VoxWorld_add_MV_Model(world,model,100,20,voxworld_get_ground_z(world,100,20),0);
     MV_Model_delete(model);
     model = LoadModel( "data/monu9.vox" );
-    VoxWorld_add_MV_Model(world,model,100,100,100,0);
+    VoxWorld_add_MV_Model(world,model,100,100,voxworld_get_ground_z(world,100,100),0);
     MV_Model_delete(model);
     model = LoadModel( "data/ephtracy.vox" );
-    VoxWorld_add_MV_Model(world,model,20,100,100,0);
+    VoxWorld_add_MV_Model(world,model,20,100,voxworld_get_ground_z(world,20,100),0);
     MV_Model_delete(model);
 
     //voxworld_init_Menger(world);
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 	anim_add_raster(anim1,raster_load("data/run9.png"));
 	struct Sprite* sprite1 = NULL;
 	if ((world->szX>100) && (world->szY>90))
-		sprite1=sprite_create("Toto",100,90,world->col_full_end[100][90],4,4,anim1);
+        sprite1=sprite_create("Toto",100,90,voxworld_get_ground_z(world,100,90),4,4,anim1);
 
 	background=background_create("data/back2.jpg");
 
