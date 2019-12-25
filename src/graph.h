@@ -56,7 +56,7 @@ void ScreenshotBMP(const char * filename);
 
 void graph_test();
 
-uint32_t color_bright(uint32_t color,float factor);
+uint32_t color_bright(uint32_t color, float factor);
 uint32_t color_alpha(uint32_t color,float factor);
 
 #endif // GRAPH_H

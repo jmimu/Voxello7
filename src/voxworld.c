@@ -5,7 +5,7 @@
 #include "dbg.h"
 #include "trigo.h"
 
-const uint8_t EMPTY=0xFF;
+const VOX_TYPE EMPTY=0xffff;
 const int UNINIT=-1;
 
 
@@ -58,24 +58,10 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 	}
 
 	//create working colums memory space
-	world->curr_exp_col=(uint8_t *) malloc(world->szZ*sizeof(uint8_t));
+    world->curr_exp_col=(VOX_TYPE *) malloc(world->szZ*sizeof(VOX_TYPE));
 	voxworld_empty_curr_exp_col(world);
 	world->curr_compr_col=(struct RLE_block *) malloc(world->szZ*sizeof(struct RLE_block));
 	world->curr_compr_col_size=0;
-
-	//init colormap
-	for (int i=0;i<255;i++)
-	{
-		world->colorMap[i]=0xFF000000+(((i*34+1)%256)<<16)+(((i*34+85)%256)<<8)+(i*34+190)%256;
-	}
-	world->colorMap[0]=0xFF0A2000;//black
-	world->colorMap[1]=0xFFFFFFFF;//white
-	world->colorMap[2]=0xFFFF0000;//red
-	world->colorMap[3]=0xFF00FF00;//green
-	world->colorMap[4]=0xFF0000FF;//blue
-	world->colorMap[5]=0xFF00FFFF;//yellow
-	world->colorMap[6]=0xFFFFFF00;//cyan
-	world->colorMap[7]=0xFFFF00FF;//violet
 	
 	return world;
 error:
@@ -249,7 +235,7 @@ error:
 }
 
 //empty cube : only edges are put to v
-void voxworld_init_empty_cube(struct VoxWorld * world, uint8_t v)
+void voxworld_init_empty_cube(struct VoxWorld * world, uint16_t v)
 {
 	int x,y,z;
 	
@@ -405,29 +391,6 @@ void voxworld_init_land2(struct VoxWorld * world)
 		sinc_sx[i]=rand()%100+40;
 		sinc_sy[i]=rand()%100+40;
 	}
-	unsigned char r,g,b;
-	for (int i=0;i<255;i++)
-	{
-		if (i<30)
-		{
-			b=150-i*5;
-			g=i*5;
-			r=i*5;
-		}
-		else if (i<150)
-		{
-			b=35+rand()%5;
-			g=150*sin(i/255.0*PI/2)+100+rand()%5;
-			r=20+rand()%5;
-		}
-		else
-		{
-			b=250*sin(i/255.0*PI/2);
-			g=150*sin(i/255.0*PI/2)+100;
-			r=250*sin(i/255.0*PI/2);
-		}
-		world->colorMap[i]=0xFF000000+(r<<16)+(g<<8)+b;
-	}
 	
 	for (x=0;x<world->szX;x++)
 	{
@@ -541,12 +504,7 @@ void voxworld_init_land(struct VoxWorld * world)
 	int SNOW_START=28;
 	int SNOW_END=32;
 	printf("Filling world...\n");
-	
-	for (int i=0;i<255;i++)
-	{
-		world->colorMap[i]=0xFF000000+(((i*34+1)%256)<<16)+(((i*34+85)%256)<<8)+(i*34+190)%256;
-	}
-	
+		
 	for (long x=0;x<world->szX;x++)
 		for (long y=0;y<world->szY;y++)
 		{
@@ -632,10 +590,7 @@ struct VoxWorld * voxworld_copy(struct VoxWorld * world)
 {
 	printf("Copying world...\n");
 	struct VoxWorld *new_world = voxworld_create(world->szX,world->szY,world->szZ);
-	
-	for (int i=0;i<255;i++)
-		new_world->colorMap[i]=world->colorMap[i];
-	
+		
 	for (long x=0;x<world->szX;x++)
 		for (long y=0;y<world->szY;y++)
 		{
@@ -654,4 +609,19 @@ error:
 	return NULL;
 }
 
+uint32_t color_15to24(VOX_TYPE v)
+{
+    int r=((v>>10)&0x1F)<<3;
+    int g=((v>>5)&0x1F)<<3;
+    int b=((v>>0)&0x1F)<<3;
+    int a=0xff;
+    return (a<<24)+(r<<16)+(g<<8)+b;
+}
 
+VOX_TYPE color_24to15(uint32_t c)
+{
+    int r=((c>>19)&0x1F);
+    int g=((c>>11)&0x1F);
+    int b=((c>> 3)&0x1F);
+    return (r<<10)+(g<<5)+b;
+}

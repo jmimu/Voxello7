@@ -220,21 +220,19 @@ void graph_test()
 	}
 }
 
-
-
-uint32_t color_bright(uint32_t color,float factor)
+uint32_t color_bright(uint32_t color, float factor)
 {
-	int r=(color&0xFF0000)>>16;
-	int g=(color&0xFF00)>>8;
-	int b=color&0xFF;
-	int a=(color&0xFF000000)>>24;
-	r*=factor;
-	g*=factor;
-	b*=factor;
-	if (r>255) r=255;
-	if (g>255) g=255;
-	if (b>255) b=255;
-	return (a<<24)+(r<<16)+(g<<8)+b;
+    int r=(color&0xFF0000)>>16;
+    int g=(color&0xFF00)>>8;
+    int b=color&0xFF;
+    int a=(color&0xFF000000)>>24;
+    r*=factor;
+    g*=factor;
+    b*=factor;
+    if (r>255) r=255;
+    if (g>255) g=255;
+    if (b>255) b=255;
+    return (a<<24)+(r<<16)+(g<<8)+b;
 }
 
 uint32_t color_alpha(uint32_t color,float factor)

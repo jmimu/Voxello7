@@ -155,7 +155,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	int voxZ=0;
 	int previous_voxZ=0;
 	int previous_v=UNINIT;
-	uint8_t v;
+    VOX_TYPE v;
 	Uint32 color;
 	int total_intervals=0;
 	graph_clear_threadCol(ray->thread,ray->render->clip_max*ZBUF_FACTOR);
@@ -329,8 +329,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							if (l_tmp>l0)//TODO: how l_tmp<l0 is possible?
 							{
 								if (l_tmp>l1) l_tmp=l1;
-								color=ray->world->colorMap[previous_v];
-								color=color_bright(color,0.6);
+                                color=color_15to24(previous_v);
+                                color=color_bright(color,0.6);
 								if (ray->currentLambda>ray->render->clip_dark)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
@@ -373,8 +373,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								if (trace)
 									printf("prepare to draw bottom %d %d (%d)\n",l_tmp,l0,l0_previous);
 								if (l_tmp<l0_previous) l_tmp=l0_previous;
-								color=ray->world->colorMap[v];
-								color=color_bright(color,0.6);
+                                color=color_15to24(v);
+                                color=color_bright(color,0.6);
 								if (ray->currentLambda>ray->render->clip_dark)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
@@ -391,7 +391,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							}
 						}
 
-						color=ray->world->colorMap[v];
+                        color=color_15to24(v);
 						if (ray->lastIntersectionWasX)
 							color=color_bright(color,0.8);
 						if (ray->currentLambda>ray->render->clip_dark)
@@ -489,8 +489,8 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 
 	render->clip_min=1;
 	render->clip_dark=100;
-	render->clip_alpha=1800;
-	render->clip_max=2000;
+    render->clip_alpha=1000;
+    render->clip_max=1200;
 	
 	render->clip_sub1=(render->clip_dark*1+render->clip_max*1)/2;
 	render->clip_sub2=(render->clip_dark*1+render->clip_max*2)/3;

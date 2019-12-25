@@ -225,7 +225,6 @@ error:
     return 0;
 }
 
-
 /*    int sizex, sizey, sizez;
     // voxels
     int numVoxels;
@@ -235,31 +234,6 @@ error:
     struct MV_RGBA palette[ 256 ];
     // version
     int version;*/
-
-void VoxWorld_set_MV_Model_palette(struct VoxWorld * world,
-    struct MV_Model * model)
-{
-    int i;
-    if(!model)
-    {
-        printf("Error: MV_Model NULL!\n");
-        return;
-    }
-    if (!model->isCustomPalette)
-    {
-        for (i=0;i<255;i++)
-            world->colorMap[i]= mv_default_palette[i];
-    }else{
-        for (i=0;i<255;i++)
-        {
-            world->colorMap[i]= (model->palette[i].a<<24)+
-                                (model->palette[i].r<<16)+
-                                (model->palette[i].g<<8)+
-                                (model->palette[i].b<<0);
-        }
-    }
-}
-
 
 bool VoxWorld_add_MV_Model(struct VoxWorld * world,
     struct MV_Model * model, int posx, int posy, int posz,
@@ -282,8 +256,8 @@ bool VoxWorld_add_MV_Model(struct VoxWorld * world,
 
     //create a coarse 3d char array
     int sizeyz=model->sizey*model->sizez;
-    uint8_t* coarse = (uint8_t*)malloc(sizeyz*model->sizex*sizeof(uint8_t));
-    memset(coarse,EMPTY,sizeyz*model->sizex*sizeof(uint8_t));
+    VOX_TYPE* coarse = (VOX_TYPE*)malloc(sizeyz*model->sizex*sizeof(VOX_TYPE));
+    memset(coarse,EMPTY,sizeyz*model->sizex*sizeof(VOX_TYPE));//only works because EMPTY is twice the same byte
     for (i=0;i<model->numVoxels;i++)
     {
         x=model->voxels[i].x;
@@ -293,7 +267,21 @@ bool VoxWorld_add_MV_Model(struct VoxWorld * world,
         //printf("(%d %d %d) (%d %d %d) i=%d, j=%d, sz=%d, sz=%d\n",
         //    model->sizex,model->sizey,model->sizez,
         //    x,y,z,i,j,model->numVoxels,sizexy*model->sizez);
-        coarse[j]=model->voxels[i].colorIndex;
+
+        //coarse[j]=model->voxels[i].colorIndex; //direct input
+
+        //with 15bit color
+        if (!model->isCustomPalette)
+        {
+            unsigned int color=mv_default_palette[model->voxels[i].colorIndex];
+            coarse[j]=(((color%0x00ff0000)>>3)<<10)
+                    +(((color%0x0000ff00)>>3)<<5)
+                    +((color%0x000000ff)>>3);
+        }else{
+            coarse[j]=((model->palette[model->voxels[i].colorIndex].r>>3)<<10)
+                    +((model->palette[model->voxels[i].colorIndex].g>>3)<<5)
+                    +(model->palette[model->voxels[i].colorIndex].b>>3);
+        }
     }
 
     //copy it into world

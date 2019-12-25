@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include "../voxworld.h"
 
+#define MAGIC_EMPTY 0xff
+
 //================
 // RGBA
 //================
@@ -56,9 +58,6 @@ const unsigned int mv_default_palette[ 256 ];
 struct MV_Model * LoadModel( const char *path );
 
 void MV_Model_delete(struct MV_Model * model);
-
-void VoxWorld_set_MV_Model_palette(struct VoxWorld * world,
-    struct MV_Model * model);
 
 bool VoxWorld_add_MV_Model(struct VoxWorld * world,
     struct MV_Model * model, int posx, int posy, int posz,bool use_empty);

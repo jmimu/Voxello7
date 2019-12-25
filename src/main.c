@@ -20,26 +20,25 @@ void *filling(void* arg)
 	printf("Start filling world\n");
 	struct VoxWorld * world = (struct VoxWorld *)arg;
 
-    //Warning ! using models change global palette!
+    //voxworld_init_land(world);
+
     struct MV_Model * model = LoadModel( "data/castle.vox" );
-    VoxWorld_add_MV_Model(world,model,20,20,15,0);
-    VoxWorld_set_MV_Model_palette(world,model);
+    VoxWorld_add_MV_Model(world,model,20,20,100,0);
     MV_Model_delete(model);
     model = LoadModel( "data/monu1.vox" );
-    VoxWorld_add_MV_Model(world,model,100,20,0,0);
+    VoxWorld_add_MV_Model(world,model,100,20,100,0);
     MV_Model_delete(model);
     model = LoadModel( "data/monu9.vox" );
-    VoxWorld_add_MV_Model(world,model,100,100,2,0);
+    VoxWorld_add_MV_Model(world,model,100,100,100,0);
     MV_Model_delete(model);
     model = LoadModel( "data/ephtracy.vox" );
-    VoxWorld_add_MV_Model(world,model,20,100,20,0);
+    VoxWorld_add_MV_Model(world,model,20,100,100,0);
     MV_Model_delete(model);
 
-    //voxworld_init_land2(world);
     //voxworld_init_Menger(world);
     
-    voxworld_init_empty_cube(world,2);
-    VoxWorld_add_from_txt(world, "/tmp/vox.txt", 500,500,200);
+    //voxworld_init_empty_cube(world,2);
+    //VoxWorld_add_from_txt(world, "/tmp/vox.txt", 500,500,200);
 
 	printf("Done filling world\n");
 	pthread_exit(NULL);
@@ -50,6 +49,7 @@ int main(int argc, char *argv[])
 	(void) argc;
 	(void) argv;
 	bool result;
+    printf("RLE size: %d\n",sizeof(struct RLE_block));
 
 	//inputs
 	bool key_r=false;
@@ -100,11 +100,11 @@ int main(int argc, char *argv[])
 	else
 	{
 		world = voxworld_create(1000,1000,400);
-		voxworld_init_land2(world);
+        voxworld_init_land(world);
 	}
 	if (!world) //in case of wrong filename
 	{
-		world = voxworld_create(1000,1000,400);
+        world = voxworld_create(400,400,200);
 		voxworld_init_empty_cube(world,2);
 	}
 	//world = voxworld_create(3*3*3*3*3*3,3*3*3*3*3*3,3*3*3*3*3*3);
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 
 	
 	//voxworld_init_land2(world);
-	/*{//separate thread part
+    {//separate thread part
 		int res;
 		pthread_t a_thread;
 		res = pthread_create(&a_thread, NULL, filling, (void*)world);
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 		{
 			perror("Thread creation failed!\n");
 		}
-	}*/
+    }
 
 
 	while (run)
