@@ -85,7 +85,7 @@ void VoxWorld_add_from_txt(struct VoxWorld * world, const char *path, int dx, in
                     }
                     voxworld_expand_col(world,x,y);
                 }
-                world->curr_exp_col[z]=v+30;
+                world->curr_exp_col[z]=v;
                 
                 x_prev=x;y_prev=y;
             }

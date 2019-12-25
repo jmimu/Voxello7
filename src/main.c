@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 	if ((world->szX>100) && (world->szY>90))
         sprite1=sprite_create("Toto",100,90,voxworld_get_ground_z(world,100,90),4,4,anim1);
 
-	background=background_create("data/back2.jpg");
+    background=background_create("data/back1.jpg");
 
 	
 	//voxworld_init_land2(world);
@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 
 		//graph_test();
 
-		background_draw(background,angleZ-0.54,angleZ+0.54);
+        background_draw(background,angleZ-0.54,angleZ+0.54);
 		graph_end_frame();
 		//run=false;
 

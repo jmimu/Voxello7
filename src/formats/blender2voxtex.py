@@ -208,6 +208,7 @@ for f in obj.data.polygons:
                 vectAM = ptM - ptA
                 decomp = mat_inv @ vectAM
                 check = mat @ decomp
+                ptT = ptM - decomp[2]*vectW #closest in triangle
                 #print("decomp: ",decomp, ptM, vectAM)
                 if (decomp.x+decomp.y<1.05) and (-0.05<decomp.x) and (-0.05<decomp.y) and (-1.005<decomp.z) and (decomp.z<0.005):
                     #print("add")
