@@ -620,9 +620,9 @@ error:
 
 uint32_t color_15to24(VOX_TYPE v)
 {
-    int r=((v>>10)&0x1F)<<3;
-    int g=((v>>5)&0x1F)<<3;
-    int b=((v>>0)&0x1F)<<3;
+    int r=((v>>10)&0x1F)*0xff/0x1f;
+    int g=((v>>5)&0x1F)*0xff/0x1f;
+    int b=((v>>0)&0x1F)*0xff/0x1f;
     int a=0xff;
     return (a<<24)+(r<<16)+(g<<8)+b;
 }
