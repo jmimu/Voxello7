@@ -35,7 +35,7 @@ mesh = obj.data
 
 #output dim
 use_fix_vox_size = False
-vox_max_size = 1000 #in 1 dimension
+vox_max_size = 2000 #in 1 dimension
 vox_size=0.1
 
 add_cubes = False
@@ -198,24 +198,36 @@ for f in obj.data.polygons:
     slot = obj.material_slots[f.material_index]
     material = slot.material
     image = None
-    if material is not None:
-        image = bpy.data.textures[material.name].image
+    #if material is not None:
+    #    image = bpy.data.textures[material.name].image
+
+    print(bpy.data.materials[material.name].node_tree.nodes.keys())
+    if not "Diffuse BSDF" in bpy.data.materials[material.name].node_tree.nodes.keys():
+        continue
+    principled = bpy.data.materials[material.name].node_tree.nodes["Diffuse BSDF"]
+    base_color = principled.inputs[0] #Or principled.inputs[0]
+    link = base_color.links[0]
+    link_node = link.from_node
+    print( link_node.image.name )
+    image=link_node.image
+    #image.filepath = "/tmp/"+image.name+".png"
+    #image.save()
 
     for x in range(x_min_f,x_max_f+1):
         for y in range(y_min_f,y_max_f+1):
             for z in range(z_min_f,z_max_f+1):
-                ptM = Vector( [x,y,z] )
+                ptM = Vector( [x,y,z] ) #current point, in voxel frame
                 vectAM = ptM - ptA
                 decomp = mat_inv @ vectAM
                 check = mat @ decomp
-                ptT = ptM - decomp[2]*vectW #closest in triangle
+                ptT = (ptM - decomp[2]*vectW)*vox_size #closest in triangle, in blender frame
                 #print("decomp: ",decomp, ptM, vectAM)
                 if (decomp.x+decomp.y<1.05) and (-0.05<decomp.x) and (-0.05<decomp.y) and (-1.005<decomp.z) and (decomp.z<0.005):
                     #print("add")
                     if (add_cubes):
                         bpy.ops.mesh.primitive_cube_add(location=(x,y,z),size=1)
                     if image is not None:
-                        rgba = list(getUVPixelColor(mesh, f, ptM, image))
+                        rgba = list(getUVPixelColor(mesh, f, ptT, image))
                         coul = int(rgba[0]*31)*32*32 + int(rgba[1]*31)*32 + int(rgba[2]*31)
                     else:
                         coul = 13005000
