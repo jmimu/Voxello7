@@ -31,6 +31,6 @@ Improvements :
 -------------
   * support multiple voxels objects => even for each vertical wall ?
   * support alpha voxel objects
-  * make world edition thread-safe
+  * make world edition and collision check thread-safe
   * how to update sub-worlds? reread all columns?
   * make collisions on sub-worlds?

@@ -9,6 +9,7 @@
 #include "dbg.h"
 #include "voxworld.h"
 #include "voxrender.h"
+#include "mob.h"
 #include "sprite.h"
 #include "raster.h"
 #include "background.h"
@@ -49,7 +50,6 @@ int main(int argc, char *argv[])
 	(void) argc;
 	(void) argv;
 	bool result;
-    printf("RLE size: %d\n",sizeof(struct RLE_block));
 
 	//inputs
 	bool key_r=false;
@@ -160,6 +160,12 @@ int main(int argc, char *argv[])
 	if ((world->szX>100) && (world->szY>90))
         sprite1=sprite_create("Toto",100,90,voxworld_get_ground_z(world,100,90),4,4,anim1);
 
+	struct Anim* anim_bullet=anim_create(1);
+	anim_add_raster(anim_bullet,raster_load("data/bullet.png"));
+	struct Sprite* sprite_bullet = NULL;
+    sprite_bullet=sprite_create("Bullet",10,10,10,1,1,anim_bullet);
+    struct Mob* mob_bullet = NULL;
+
     background=background_create("data/back1.jpg");
 
 	
@@ -261,7 +267,10 @@ int main(int argc, char *argv[])
 					//std::cout<<"Dist: "<<distance<<std::endl;
 				break;
 				case SDL_MOUSEBUTTONDOWN:
-					break;
+					if (mob_bullet) free(mob_bullet);
+					mob_bullet=mob_create(sprite_bullet,100*_sin(angleZ),100*_cos(angleZ),0);
+					mob_bullet->spr->pos=cam;
+				break;
 
 			}
 		}
@@ -311,6 +320,7 @@ int main(int argc, char *argv[])
 		//raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
 
 		if (sprite1) sprite_draw(render,sprite1);
+		if (mob_bullet) mob_draw(render,mob_bullet);
 
 		//graph_test();
 
@@ -339,6 +349,17 @@ int main(int argc, char *argv[])
 		last_time = current_time;
 		ellapsed_time = SDL_GetTicks() - start_time;
 		anim_frame(anim1,ellapsed_time);
+		if (mob_bullet)
+		{
+			mob_update(world,mob_bullet,ellapsed_time/1000.0);
+			if (mob_bullet->toDestroy)
+			{
+				free(mob_bullet);
+				mob_bullet=NULL;
+				printf("Bullet destroyed\n");
+			}
+		}
+
 		if (ellapsed_time < 20)
 		{
 			//SDL_Delay(20 - ellapsed_time);
