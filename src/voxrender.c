@@ -330,7 +330,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							{
 								if (l_tmp>l1) l_tmp=l1;
                                 color=color_15to24(previous_v);
-                                color=color_bright(color,0.6);
+                                color=color_bright(color,1.4);
 								if (ray->currentLambda>ray->render->clip_dark)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
@@ -374,7 +374,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 									printf("prepare to draw bottom %d %d (%d)\n",l_tmp,l0,l0_previous);
 								if (l_tmp<l0_previous) l_tmp=l0_previous;
                                 color=color_15to24(v);
-                                color=color_bright(color,0.6);
+                                color=color_bright(color,0.8);
 								if (ray->currentLambda>ray->render->clip_dark)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
@@ -393,7 +393,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 
                         color=color_15to24(v);
 						if (ray->lastIntersectionWasX)
-							color=color_bright(color,0.8);
+                            color=color_bright(color,1.2);
 						if (ray->currentLambda>ray->render->clip_dark)
 							color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 								(ray->render->clip_max-ray->render->clip_dark));//clipping
@@ -488,9 +488,9 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 	}
 
 	render->clip_min=1;
-    render->clip_dark=500;
-    render->clip_alpha=700;
-    render->clip_max=800;
+    render->clip_dark=300;
+    render->clip_alpha=500;
+    render->clip_max=600;
 	
     render->clip_sub1=render->clip_max;//(render->clip_dark*1+render->clip_max*1)/2;
     render->clip_sub2=render->clip_max;//(render->clip_dark*1+render->clip_max*2)/3;
