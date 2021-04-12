@@ -2,10 +2,27 @@ Voxello 7
 =========
 
 dbg.h from c.learncodethehardway.org
+
 magicavoxel format from ephtracy.github.io
 
+Dependencies
+------------
+
+libSDL2 libSDL2image
+
+Compilation
+-----------
+
+    make
+
+Run
+---
+
+    bin/voxello7 [vox_file.txt]
+
+
 To choose number of threads
---------------------------
+---------------------------
     export OMP_NUM_THREADS=4
 
 Features

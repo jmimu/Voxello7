@@ -21,25 +21,25 @@ void *filling(void* arg)
 	printf("Start filling world\n");
 	struct VoxWorld * world = (struct VoxWorld *)arg;
 
-    //voxworld_init_land(world);
+	//voxworld_init_land(world);
 
-    struct MV_Model * model = LoadModel( "data/castle.vox" );
-    VoxWorld_add_MV_Model(world,model,20,20,voxworld_get_ground_z(world,20,20),0);
-    MV_Model_delete(model);
-    model = LoadModel( "data/monu1.vox" );
-    VoxWorld_add_MV_Model(world,model,100,20,voxworld_get_ground_z(world,100,20),0);
-    MV_Model_delete(model);
-    model = LoadModel( "data/monu9.vox" );
-    VoxWorld_add_MV_Model(world,model,100,100,voxworld_get_ground_z(world,100,100),0);
-    MV_Model_delete(model);
-    model = LoadModel( "data/ephtracy.vox" );
-    VoxWorld_add_MV_Model(world,model,20,100,voxworld_get_ground_z(world,20,100),0);
-    MV_Model_delete(model);
+	struct MV_Model * model = LoadModel( "data/castle.vox" );
+	VoxWorld_add_MV_Model(world,model,20,20,voxworld_get_ground_z(world,20,20),0);
+	MV_Model_delete(model);
+	model = LoadModel( "data/monu1.vox" );
+	VoxWorld_add_MV_Model(world,model,100,20,voxworld_get_ground_z(world,100,20),0);
+	MV_Model_delete(model);
+	model = LoadModel( "data/monu9.vox" );
+	VoxWorld_add_MV_Model(world,model,100,100,voxworld_get_ground_z(world,100,100),0);
+	MV_Model_delete(model);
+	model = LoadModel( "data/ephtracy.vox" );
+	VoxWorld_add_MV_Model(world,model,20,100,voxworld_get_ground_z(world,20,100),0);
+	MV_Model_delete(model);
 
-    //voxworld_init_Menger(world);
-    
-    //voxworld_init_empty_cube(world,2);
-    //VoxWorld_add_from_txt(world, "/tmp/vox.txt", 500,500,200);
+	//voxworld_init_Menger(world);
+
+	//voxworld_init_empty_cube(world,2);
+	//VoxWorld_add_from_txt(world, "/tmp/vox.txt", 500,500,200);
 
 	printf("Done filling world\n");
 	pthread_exit(NULL);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	struct VoxRender * render=0;
 	struct Background * background=0;
 
-	result=graph_init(1920/2,1080/2,1920/2,1080/2,"Voxello");
+	result=graph_init(1920,1080,1920/2,1080/2,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
@@ -100,11 +100,11 @@ int main(int argc, char *argv[])
 	else
 	{
 		world = voxworld_create(1000,1000,400);
-        voxworld_init_land(world);
+		voxworld_init_land(world);
 	}
 	if (!world) //in case of wrong filename
 	{
-        world = voxworld_create(400,400,200);
+		world = voxworld_create(400,400,200);
 		voxworld_init_empty_cube(world,2);
 	}
 	//world = voxworld_create(3*3*3*3*3*3,3*3*3*3*3*3,3*3*3*3*3*3);
@@ -128,23 +128,23 @@ int main(int argc, char *argv[])
 		voxworld_print_col(world,world->szY*1643/3000,world->szY*2239/3000);
 	#endif
 
-    //voxworld_init_empty_cube(world,2);
-    //voxworld_init_full_cube(world);
+	//voxworld_init_empty_cube(world,2);
+	//voxworld_init_full_cube(world);
 	//voxworld_init_land(world);
 	//voxworld_init_stairs(world);
 	//voxworld_init_cave(world);
 	//voxworld_printf(world);
 
 	//voxworld_init_rand(world);
-	
-	render=voxrender_create(world,30);
+
+	render=voxrender_create(world,14);
 	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));
-	
+
 	last_time = SDL_GetTicks();
 	current_time = last_time;
 	previous_fps_time=SDL_GetTicks()/1000;
 	
-    SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
+	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
 	struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
@@ -158,19 +158,19 @@ int main(int argc, char *argv[])
 	anim_add_raster(anim1,raster_load("data/run9.png"));
 	struct Sprite* sprite1 = NULL;
 	if ((world->szX>100) && (world->szY>90))
-        sprite1=sprite_create("Toto",100,90,voxworld_get_ground_z(world,100,90),4,4,anim1);
+		sprite1=sprite_create("Toto",100,90,voxworld_get_ground_z(world,100,90),4,4,anim1);
 
 	struct Anim* anim_bullet=anim_create(1);
 	anim_add_raster(anim_bullet,raster_load("data/bullet.png"));
 	struct Sprite* sprite_bullet = NULL;
-    sprite_bullet=sprite_create("Bullet",10,10,10,1,1,anim_bullet);
-    struct Mob* mob_bullet = NULL;
+	sprite_bullet=sprite_create("Bullet",10,10,10,1,1,anim_bullet);
+	struct Mob* mob_bullet = NULL;
 
-    background=background_create("data/back1.jpg");
+	background=background_create("data/back1.jpg");
 
-	
+
 	//voxworld_init_land2(world);
-    {//separate thread part
+	{//separate thread part
 		int res;
 		pthread_t a_thread;
 		res = pthread_create(&a_thread, NULL, filling, (void*)world);
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 		{
 			perror("Thread creation failed!\n");
 		}
-    }
+	}
 
 
 	while (run)
@@ -324,7 +324,7 @@ int main(int argc, char *argv[])
 
 		//graph_test();
 
-        background_draw(background,angleZ-0.54,angleZ+0.54);
+		background_draw(background,angleZ-0.54,angleZ+0.54);
 		graph_end_frame();
 		//run=false;
 

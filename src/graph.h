@@ -8,7 +8,7 @@
 #define ZBUF_FACTOR 8
 
 #define DBG_GRAPH
-#define OPENGL3
+//#define OPENGL3
 
 /***
 	Generic functions to handle :
