@@ -37,6 +37,7 @@ mesh = obj.data
 use_fix_vox_size = False
 vox_max_size = 2000 #in 1 dimension
 vox_size=0.1
+depth=3
 
 add_cubes = False
 
@@ -188,12 +189,12 @@ for f in obj.data.polygons:
 
     #print("Range: ",x_min_f," - ",x_max_f,"; ",y_min_f," - ",y_max_f,"; ",z_min_f," - ",z_max_f)
 
-    x_min_f=floor(x_min_f/vox_size)
-    x_max_f= ceil(x_max_f/vox_size)
-    y_min_f=floor(y_min_f/vox_size)
-    y_max_f= ceil(y_max_f/vox_size)
-    z_min_f=floor(z_min_f/vox_size)
-    z_max_f= ceil(z_max_f/vox_size)
+    x_min_f=floor(x_min_f/vox_size)-depth #todo: increase only in -normal direction
+    x_max_f= ceil(x_max_f/vox_size)+depth
+    y_min_f=floor(y_min_f/vox_size)-depth
+    y_max_f= ceil(y_max_f/vox_size)+depth
+    z_min_f=floor(z_min_f/vox_size)-depth
+    z_max_f= ceil(z_max_f/vox_size)+depth
 
     slot = obj.material_slots[f.material_index]
     material = slot.material
@@ -222,7 +223,7 @@ for f in obj.data.polygons:
                 check = mat @ decomp
                 ptT = (ptM - decomp[2]*vectW)*vox_size #closest in triangle, in blender frame
                 #print("decomp: ",decomp, ptM, vectAM)
-                if (decomp.x+decomp.y<1.05) and (-0.05<decomp.x) and (-0.05<decomp.y) and (-1.005<decomp.z) and (decomp.z<0.005):
+                if (decomp.x+decomp.y<1.05) and (-0.05<decomp.x) and (-0.05<decomp.y) and (-0.005-depth<decomp.z) and (decomp.z<0.005):
                     #print("add")
                     if (add_cubes):
                         bpy.ops.mesh.primitive_cube_add(location=(x,y,z),size=1)
