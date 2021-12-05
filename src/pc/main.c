@@ -1,7 +1,7 @@
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <math.h>
 #include <pthread.h>
-#include <3ds.h>
 
 #include "graph.h"
 #include "pt3d.h"
@@ -9,13 +9,13 @@
 #include "dbg.h"
 #include "voxworld.h"
 #include "voxrender.h"
-/*#include "mob.h"
+#include "mob.h"
 #include "sprite.h"
 #include "raster.h"
-#include "background.h"*/
+#include "background.h"
 #include "formats/magicavoxel.h"
 #include "formats/voxtxt.h"
-/*
+
 void *filling(void* arg)
 {
 	printf("Start filling world\n");
@@ -43,7 +43,7 @@ void *filling(void* arg)
 
 	printf("Done filling world\n");
 	pthread_exit(NULL);
-}*/
+}
 
 int main(int argc, char *argv[])
 {
@@ -59,6 +59,9 @@ int main(int argc, char *argv[])
 	bool key_e=false;
 	bool key_t=false;
 
+	//----- events -----
+	SDL_Event event;
+
 	//----- timing -----
 	uint32_t last_time;
 	uint32_t current_time;
@@ -68,7 +71,7 @@ int main(int argc, char *argv[])
 
 	double angleZ = 0.0000;
 	double angleX = 0.0000;
-	double speed=1;//should be calculated with last frame duration
+	double speed=0;//calculated with last frame duration
 
 	struct Pt3d cam={2.50001,-5.001,2.001};
 	double focale=300;
@@ -84,12 +87,12 @@ int main(int argc, char *argv[])
 	struct VoxRender * render=0;
 	struct Background * background=0;
 
-	result=graph_init(320,240,320,240,"Voxello");
+	result=graph_init(1920,1080,1920/2,1080/2,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 	
-	/*if (argc>1)
+	if (argc>1)
 	{
 		world = VoxWorld_create_from_txt(argv[1]);
 		//return 0;
@@ -98,10 +101,10 @@ int main(int argc, char *argv[])
 	{
 		world = voxworld_create(1000,1000,400);
 		voxworld_init_land(world);
-	}*/
+	}
 	if (!world) //in case of wrong filename
 	{
-		world = voxworld_create(3*3*3*3,3*3*3*3,3*3*3*3);
+		world = voxworld_create(400,400,200);
 		voxworld_init_empty_cube(world,2);
 	}
 	//world = voxworld_create(3*3*3*3*3*3,3*3*3*3*3*3,3*3*3*3*3*3);
@@ -117,27 +120,33 @@ int main(int argc, char *argv[])
 	cam.z=world->szZ/2+0.001;
 
 	//test quake speed
-	/*#ifdef TESTQUAKESPEED
+	#ifdef TESTQUAKESPEED
 		cam.x=world->szY*1499.5/3000;
 		cam.y=world->szY*2238.5/3000;
 		cam.z=world->szY*415.5/3000;
 		angleZ=PI/2;
 		voxworld_print_col(world,world->szY*1643/3000,world->szY*2239/3000);
-	#endif*/
+	#endif
 
 	//voxworld_init_empty_cube(world,2);
 	//voxworld_init_full_cube(world);
 	//voxworld_init_land(world);
 	//voxworld_init_stairs(world);
 	//voxworld_init_cave(world);
-	voxworld_init_Menger(world);
 	//voxworld_printf(world);
+
 	//voxworld_init_rand(world);
 
 	render=voxrender_create(world,14);
-	printf("Sizeof VoxRay: %zu\n",sizeof(struct VoxRay));
+	printf("Sizeof VoxRay: %ld\n",sizeof(struct VoxRay));
 
-	/*struct Anim* anim1=anim_create(1);
+	last_time = SDL_GetTicks();
+	current_time = last_time;
+	previous_fps_time=SDL_GetTicks()/1000;
+	
+	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
+
+	struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
 	anim_add_raster(anim1,raster_load("data/run2.png"));
 	anim_add_raster(anim1,raster_load("data/run3.png"));
@@ -157,9 +166,9 @@ int main(int argc, char *argv[])
 	sprite_bullet=sprite_create("Bullet",10,10,10,1,1,anim_bullet);
 	struct Mob* mob_bullet = NULL;
 
-	background=background_create("data/back1.jpg");*/
+	background=background_create("data/back1.jpg");
 
-/*
+
 	//voxworld_init_land2(world);
 	{//separate thread part
 		int res;
@@ -169,49 +178,84 @@ int main(int argc, char *argv[])
 		{
 			perror("Thread creation failed!\n");
 		}
-	}*/
+	}
 
-  printf("Start !\n");
-	while (run && aptMainLoop())
+
+	while (run)
 	{
-    //Scan all the inputs. This should be done once for each frame
-		hidScanInput();
+		//run=false;
+		frame_couter++;//for valgrind
+		//if (frame_couter>20) break;
 
-		//hidKeysDown returns information about which buttons have been just pressed (and they weren't in the previous frame)
-		u32 kHeld = hidKeysHeld();
+		fps++;
 
-		if (kHeld & KEY_START) run=false;
-		key_g = (kHeld & KEY_A);
-		key_d = (kHeld & KEY_Y);
-		//key_r = (kHeld & KEY_X);
-		//key_f = (kHeld & KEY_B);
-		key_e = (kHeld & KEY_X);
-		key_t = (kHeld & KEY_B);
+		start_time = SDL_GetTicks();
+		while (SDL_PollEvent(&event))
+		{
 
-		/*	"KEY_A", "KEY_B", "KEY_SELECT", "KEY_START",
-		"KEY_DRIGHT", "KEY_DLEFT", "KEY_DUP", "KEY_DDOWN",
-		"KEY_R", "KEY_L", "KEY_X", "KEY_Y",
-		"", "", "KEY_ZL", "KEY_ZR",
-		"", "", "", "",
-		"KEY_TOUCH", "", "", "",
-		"KEY_CSTICK_RIGHT", "KEY_CSTICK_LEFT", "KEY_CSTICK_UP", "KEY_CSTICK_DOWN",
-		"KEY_CPAD_RIGHT", "KEY_CPAD_LEFT", "KEY_CPAD_UP", "KEY_CPAD_DOWN"*/
-	
-  	circlePosition pos;
-		//Read the CirclePad position
-		hidCircleRead(&pos);
+			switch(event.type)
+			{
+				case SDL_QUIT:
+					exit(0);
+				break;
 
-		//Print the CirclePad position
-		printf("\x1b[3;1H%04d; %04d", pos.dx, pos.dy);
-		key_r = (pos.dy>15);
-		key_f = (pos.dy<-15);
-  	
-		if (fabs(pos.dx)>15)
-  		angleZ += pos.dx/2000.0;
-		if (angleZ<0) angleZ+=2*PI;
-		if (angleZ>2*PI) angleZ-=2*PI;
-		
-				/*case SDL_MOUSEMOTION:
+				case SDL_KEYDOWN:
+					switch(event.key.keysym.sym)
+					{
+						case SDLK_ESCAPE:
+							run=false;
+							break;
+						case SDLK_w:
+							trace=true;
+							break;
+						case SDLK_r:
+							key_r=true;
+							break;
+						case SDLK_f:
+							key_f=true;
+							break;
+						case SDLK_d:
+							key_d=true;
+							break;
+						case SDLK_g:
+							key_g=true;
+							break;
+						case SDLK_e:
+							key_e=true;
+							break;
+						case SDLK_t:
+							key_t=true;
+							break;
+						default:
+							break;
+					}
+					break;
+				case SDL_KEYUP:
+					switch(event.key.keysym.sym)
+					{
+						case SDLK_r:
+							key_r=false;
+							break;
+						case SDLK_f:
+							key_f=false;
+							break;
+						case SDLK_d:
+							key_d=false;
+							break;
+						case SDLK_g:
+							key_g=false;
+							break;
+						case SDLK_e:
+							key_e=false;
+							break;
+						case SDLK_t:
+							key_t=false;
+							break;
+						default:
+							break;
+					}
+					break;
+				case SDL_MOUSEMOTION:
 					angleX += event.motion.yrel*0.002;
 					angleZ += event.motion.xrel*0.002;
 					if (angleZ<0) angleZ+=2*PI;
@@ -226,8 +270,12 @@ int main(int argc, char *argv[])
 					if (mob_bullet) free(mob_bullet);
 					mob_bullet=mob_create(sprite_bullet,100*_sin(angleZ),100*_cos(angleZ),0);
 					mob_bullet->spr->pos=cam;
-				break;*/
+				break;
 
+			}
+		}
+		//SDL_WarpMouseInWindow(graph->get_window(),graph->get_window_w()/2,graph->get_window_h()/2);
+		//while (SDL_PollEvent(&event)) ;
 
 		if (key_g)
 		{
@@ -265,29 +313,29 @@ int main(int argc, char *argv[])
 
 		t++;
 
-		//graph_start_frame();//useless
+		//graph_start_frame();
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
 		//struct Pt3d proj=voxrender_proj(render,raster1p);
 		//raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
 
-		//if (sprite1) sprite_draw(render,sprite1);
-		//if (mob_bullet) mob_draw(render,mob_bullet);
+		if (sprite1) sprite_draw(render,sprite1);
+		if (mob_bullet) mob_draw(render,mob_bullet);
 
 		//graph_test();
 
-		//background_draw(background,angleZ-0.54,angleZ+0.54);
+		background_draw(background,angleZ-0.54,angleZ+0.54);
 		graph_end_frame();
 		//run=false;
 
-		/*if (trace)
+		if (trace)
 		{
 			printf("Cam: %f %f %f %f\n",cam.x,cam.y,cam.z,angleZ);
 			ScreenshotBMP("out.bmp");
 			trace=false;
-		}*/
+		}
 
-		/*//----- timing -----
+		//----- timing -----
 		if (previous_fps_time!=current_time/1000)
 		{
 			printf("FPS: %d\n",fps);
@@ -315,17 +363,17 @@ int main(int argc, char *argv[])
 		if (ellapsed_time < 20)
 		{
 			//SDL_Delay(20 - ellapsed_time);
-		}*/
+		}
 		//----- end timing -----
 	}
 
 error:
 	//raster_unloadall();//TODO
-	/*free(anim1);
-	if (sprite1) free(sprite1);*/
+	free(anim1);
+	if (sprite1) free(sprite1);
 	if (render) voxrender_delete(render);
 	if (world) voxworld_delete(world);
-	//if (background) background_delete(background);
+	if (background) background_delete(background);
 	graph_close();
 
 }

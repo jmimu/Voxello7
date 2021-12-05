@@ -1,20 +1,14 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <3ds.h>
+#include <SDL2/SDL.h>
 #include <stdbool.h>
-#include <stdlib.h>
+
 //zbuf in fix point
 #define ZBUF_FACTOR 8
 
 #define DBG_GRAPH
-
-#ifdef WITH_OMP
-  #include <omp.h>
-#else
-  int omp_get_max_threads();
-  int omp_get_thread_num();
-#endif
+//#define OPENGL3
 
 /***
 	Generic functions to handle :
@@ -27,8 +21,14 @@
 struct Graph{
 		int window_w,window_h;
 		int render_w,render_h;
-
-		uint8_t *pixels; //where voxrender writes
+		SDL_Window* window;
+		SDL_Renderer *renderer; //screen
+		SDL_Surface *surface; //pixels texture (only kept for its format)
+		SDL_Texture *texture; //pixels texture
+#ifdef OPENGL3
+		SDL_GLContext context;
+#endif
+		uint32_t *pixels; //where voxrender writes
 		
 		uint16_t *zbuf; //zbuffer unit: voxel side*8
 		uint32_t **threadColPixels;//one column for one thread
@@ -52,7 +52,7 @@ void graph_write_threadCol(int thread, int x);
 void graph_close();
 void graph_start_frame();
 void graph_end_frame();
-//void ScreenshotBMP(const char * filename);
+void ScreenshotBMP(const char * filename);
 
 void graph_test();
 

@@ -5,6 +5,9 @@
 #include "voxworld.h"
 #include <stdbool.h>
 
+#define FACTOR_DARK 0.6
+#define FACTOR_BRIGHT 1.5
+
 /*****************
  * One ray of raycasting
  * = one vertical plane

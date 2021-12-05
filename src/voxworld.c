@@ -423,7 +423,9 @@ void voxworld_init_land2(struct VoxWorld * world)
 					world->curr_exp_col[z]=EMPTY;
 			}
 			voxworld_compr_col(world);
+    #ifdef WITH_OMP			
 			#pragma omp critical
+		#endif
 			{
 				voxworld_write_compr_col(world,x,y);
 			}
@@ -474,7 +476,7 @@ void voxworld_init_Menger(struct VoxWorld * world)
 				if (isBadMenger(x,y,z))
 					world->curr_exp_col[z]=EMPTY;
 				else
-					world->curr_exp_col[z]=2;
+					world->curr_exp_col[z]=0x200;
 			}
 			voxworld_compr_col(world);
 			voxworld_write_compr_col(world,x,y);
