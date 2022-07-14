@@ -8,13 +8,21 @@ magicavoxel format from ephtracy.github.io
 Dependencies
 ------------
 
-libSDL2 libSDL2image
+PC: libSDL2 libSDL2image
+3DS: devkitarm
 
 Compilation
 -----------
 
-    make
-
+PC :
+    make -f Makefile_pc clean
+    make -f Makefile_pc -j 4
+    
+3DS :
+    docker run -ti --rm --device /dev/fuse --privileged -v $(pwd):/prog devkitpro/devkitarm bash
+    make -f Makefile_3ds clean
+    make -f Makefile_3ds -j 4
+    
 Run
 ---
 

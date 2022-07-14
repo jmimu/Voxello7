@@ -1,13 +1,21 @@
 #include "graph.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+
+#ifdef __PC__
+  #include <omp.h>
+  #include <SDL2/SDL_image.h>
+  #include "pc/raster.h"
+#endif
+
+#ifndef WITH_OMP
+  int omp_get_max_threads() {return 1;}
+  int omp_get_thread_num() {return 0;}
+#endif
 
 #include "dbg.h"
 
-#ifndef WITH_OMP
-  int omp_get_max_threads(){return 1;}
-  int omp_get_thread_num(){return 0;}
-#endif
 
 struct Graph graph;
 int nb_threads=-1;
@@ -22,14 +30,68 @@ bool graph_init(int _window_w,int _window_h,
 	graph.render_h=_render_h;
 	graph.render2ScreenFactor = ((((double)graph.window_w)/graph.window_h)/(((double)graph.render_w)/graph.render_h));
 	printf("render2ScreenFactor: %f\n",graph.render2ScreenFactor);
+#ifdef __PC__
+	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+	{
+		printf("SDL2 could not initialize! SDL2_Error: %s\n",SDL_GetError());
+		return false;
+	}
+	printf("SDL2 initialized.\n");
 
+	int flags=IMG_INIT_JPG|IMG_INIT_PNG;
+	int initted=IMG_Init(flags);
+	if((initted&flags) != flags) {
+		printf("IMG_Init: Failed to init required jpg and png support!\n");
+		printf("IMG_Init: %s\n", IMG_GetError());
+		return false;
+	}
+	printf("SDL2_image initialized.\n");
+
+	graph.window = SDL_CreateWindow(title,SDL_WINDOWPOS_CENTERED,
+				SDL_WINDOWPOS_CENTERED,graph.window_w,graph.window_h,
+				SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP*0);//SDL_WINDOW_FULLSCREEN_DESKTOP
+
+#ifdef OPENGL3	
+	//OGL part (from Headerphile.com OpenGL Tutorial part 1)
+	graph.context = SDL_GL_CreateContext(graph.window);
+	// Set our OpenGL version.
+	// SDL_GL_CONTEXT_CORE gives us only the newer version, deprecated functions are disabled
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	// 3.2 is part of the modern versions of OpenGL, but most video cards whould be able to run it
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	// Turn on double buffering with a 24bit Z buffer.
+	// You may need to change this to 16 or 32 for your system
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	// This makes our buffer swap syncronized with the monitor's vertical refresh
+	SDL_GL_SetSwapInterval(1);
+	//test GL context:
+	int value = 0;
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
+	printf("SDL_GL_CONTEXT_MAJOR_VERSION : %d \n",value);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &value);
+	printf("SDL_GL_CONTEXT_MINOR_VERSION : %d \n",value);
+	//end OGL part
+#endif
+	
+	
+	//if SDL_WINDOW_FULLSCREEN_DESKTOP
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
+	//SDL_RenderSetLogicalSize(sdlRenderer, 640, 480);
+
+	graph.renderer = SDL_CreateRenderer(graph.window, -1, 0);
+	graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+	graph.texture = SDL_CreateTextureFromSurface(graph.renderer,graph.surface);
+	
+	graph.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+#endif
+#ifdef __3DS__
 	gfxInitDefault();
 	consoleInit(GFX_TOP, NULL);
 	printf("\x1b[21;16HPress Start to exit.");
 	gfxSetDoubleBuffering(GFX_BOTTOM, false);
-	graph.pixels = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
-	
-	//graph.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+	graph.pixels = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);	
+#endif
 	graph.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
 	graph.threadColPixels = (uint32_t**) malloc (nb_threads*sizeof(uint32_t*));
 	graph.threadColzbuf = (uint16_t**) malloc (nb_threads*sizeof(uint16_t*));
@@ -45,42 +107,63 @@ bool graph_init(int _window_w,int _window_h,
 
 void graph_start_frame()
 {
-	//for (int i=0;i<graph.render_w*graph.render_h;i++)
-		//graph.pixels[i]=0xFF582012; //a bit slow ??
-	memset(graph.pixels, 30, graph.render_w*graph.render_h*3);
+#ifdef __PC__
+	for (int i=0;i<graph.render_w*graph.render_h;i++)
+		graph.pixels[i]=0xFF582012; //a bit slow ??
+	//memset(graph.pixels, 30, graph.render_w*graph.render_h*3);
+#endif
 
 #ifdef DBG_GRAPH
-		graph_vline(graph.render_w/2,0,graph.render_h,0x40B000);
+		graph_vline(graph.render_w/2,0,graph.render_h,0x40B000);//0xFF00B040
+
 #endif
 }
 
 void graph_end_frame()
 {
+#ifdef __PC__
+	//for (unsigned int i=0;i<graph.render_w*graph.render_h;i++)//show zbuffer
+	//	graph.pixels[i]=0xFF000000 | (graph.zbuf[i]>>1)+10;
+	SDL_UpdateTexture(graph.texture, NULL, graph.pixels, graph.render_w * sizeof (uint32_t));
+	//SDL_RenderClear(renderer);
+	SDL_RenderCopy(graph.renderer, graph.texture, NULL, NULL);
+	SDL_RenderPresent(graph.renderer);
+#endif
+#ifdef __3DS__
 	// Flush and swap framebuffers
 	gfxFlushBuffers();
 	gfxSwapBuffers();
 
 	//Wait for VBlank
 	gspWaitForVBlank();
+#endif
 }
 
 
 void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b)
 {
-	//graph.pixels[x+y*graph.render_w]=(r<<16)+(g<<8)+(b)+0xFF000000;
+#ifdef __PC__
+	graph.pixels[x+y*graph.render_w]=(r<<16)+(g<<8)+(b)+0xFF000000;
+#endif
+#ifdef __3DS__
 	long i = (y+x*graph.render_h)*3;
 	graph.pixels[i++]=b;
 	graph.pixels[i++]=g;
 	graph.pixels[i]=r;
+#endif
 }
 
 void graph_putpixel(int x,int y,uint32_t rgba)
 {
-	//graph.pixels[x+y*graph.render_w]=rgba;
+#ifdef __PC__
+	graph.pixels[x+y*graph.render_w]=rgba;
+#endif
+#ifdef __3DS__
 	long i = (y+x*graph.render_h)*3;
 	graph.pixels[i++]=rgba;
 	graph.pixels[i++]=rgba>>8;
 	graph.pixels[i]=rgba>>16;
+#endif
 }
 
 void graph_vline(int x,int y1,int y2,uint32_t rgba)
@@ -98,6 +181,15 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 	}
 	if (ymin<0) ymin=0;
 	if (ymax>=graph.render_h) ymax=graph.render_h-1;
+#ifdef __PC__
+	i=x+ymin*graph.render_w;
+	for (int y=ymin+1;y<=ymax;y++)
+	{
+		graph.pixels[i]=rgba;
+		i+=graph.render_w;
+	}
+#endif
+#ifdef __3DS__
 	i = (graph.render_h-ymin+x*graph.render_h)*3;
 	for (int y=ymin+1;y<=ymax;y++)
 	{
@@ -106,6 +198,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 	  graph.pixels[i]=rgba>>16;
 		i++;
 	}
+#endif
 }
 
 void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba,uint16_t z)
@@ -147,6 +240,16 @@ void graph_clear_threadCol(int thread,uint16_t z)
 
 void graph_write_threadCol(int thread, int x)
 {
+#ifdef __PC__
+	unsigned int i=x;
+	for (int y=0;y<graph.render_h;y++)
+	{
+		graph.pixels[i]=graph.threadColPixels[thread][y];
+		graph.zbuf[i]=graph.threadColzbuf[thread][y];
+		i+=graph.render_w;
+	}
+#endif
+#ifdef __3DS__
 	unsigned long i_zb=x;
 	unsigned long i_fb=(x*graph.render_h)*3;
 	uint32_t rgba;
@@ -159,12 +262,36 @@ void graph_write_threadCol(int thread, int x)
 		graph.zbuf[i_zb]=graph.threadColzbuf[thread][y];
 		i_zb+=graph.render_w;
 	}
+#endif
 }
 
 
 void graph_close()
 {
-  gfxExit();
+#ifdef __PC__
+#ifdef OPENGL3	
+	SDL_GL_DeleteContext(graph.context);
+#endif
+	SDL_DestroyTexture(graph.texture);
+	SDL_FreeSurface(graph.surface);
+	SDL_DestroyRenderer(graph.renderer);
+	SDL_DestroyWindow(graph.window);
+	for (int i=0;i<nb_threads;i++)
+	{
+		free(graph.threadColPixels[i]);
+		free(graph.threadColzbuf[i]);
+	}
+	free(graph.threadColPixels);  
+	free(graph.threadColzbuf);  
+	free(graph.pixels);  
+	free(graph.zbuf);  
+	raster_unloadall();
+	IMG_Quit();
+	SDL_Quit();
+#endif
+#ifdef __3DS__
+	gfxExit();
+#endif
 }
 
 
@@ -202,7 +329,7 @@ uint32_t color_alpha(uint32_t color,float factor)
 	return (a<<24)+(r<<16)+(g<<8)+b;
 }
 
-/*
+#ifdef __PC__
 void ScreenshotBMP(const char * filename)
 {
     SDL_Surface * surf = SDL_CreateRGBSurfaceFrom(graph.pixels,
@@ -210,4 +337,5 @@ void ScreenshotBMP(const char * filename)
     SDL_SaveBMP(surf, filename);
 
     SDL_FreeSurface(surf);
-}*/
+}
+#endif

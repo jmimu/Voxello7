@@ -1,9 +1,16 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <3ds.h>
+#ifdef __PC__
+  #include <SDL2/SDL.h>
+#endif
+#ifdef __3DS__
+  #include <3ds.h>
+#endif
+
+#include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
+
 //zbuf in fix point
 #define ZBUF_FACTOR 8
 
@@ -27,8 +34,17 @@
 struct Graph{
 		int window_w,window_h;
 		int render_w,render_h;
-
+	#ifdef __PC__
+		SDL_Window* window;
+		SDL_Renderer *renderer; //screen
+		SDL_Surface *surface; //pixels texture (only kept for its format)
+		SDL_Texture *texture; //pixels texture
+		SDL_GLContext context;
+		uint32_t *pixels; //where voxrender writes
+	#endif
+	#ifdef __3DS__
 		uint8_t *pixels; //where voxrender writes
+	#endif
 		
 		uint16_t *zbuf; //zbuffer unit: voxel side*8
 		uint32_t **threadColPixels;//one column for one thread
@@ -52,7 +68,9 @@ void graph_write_threadCol(int thread, int x);
 void graph_close();
 void graph_start_frame();
 void graph_end_frame();
-//void ScreenshotBMP(const char * filename);
+#ifdef __PC__
+  void ScreenshotBMP(const char * filename);
+#endif
 
 void graph_test();
 

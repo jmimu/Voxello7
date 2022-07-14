@@ -28,9 +28,9 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	src
+SOURCES		:=	src src/3ds
 DATA		:=
-INCLUDES	:=	include src/3ds
+INCLUDES	:=	include src src/3ds
 GRAPHICS	:=	gfx
 
 #---------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ CFLAGS	:=	-g -Wall -O2 -mword-relocations \
 
 CFLAGS	+=	$(INCLUDE) -D__3DS__
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+CXXFLAGS	:= $(CFLAGS)  -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
@@ -133,7 +133,7 @@ all:	$(BUILD)
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile_3ds
 
 #---------------------------------------------------------------------------------
 clean:

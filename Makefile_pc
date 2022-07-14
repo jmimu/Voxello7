@@ -1,9 +1,9 @@
-CFLAGS= -g -O3 -std=c99 -Wall -Wextra -fopenmp -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
+CFLAGS= -g -O3 -std=c99 -Wall -Wextra -fopenmp -Isrc -rdynamic -DNDEBUG  -D__PC__ -DWITH_OMP $(OPTFLAGS)
 #-Wpadded
 LIBS=-lm -lSDL2 -lSDL2_image -pthread $(OPTLIBS)
 PREFIX?=/usr/local
 
-SOURCES=$(wildcard src/**/*.c src/*.c)
+SOURCES=$(wildcard src/formats/*.c src/pc/*.c src/*.c)
 OBJECTS_TMP=$(patsubst %.c,%.o,$(SOURCES))
 OBJECTS=$(OBJECTS_TMP:src/%=build/%)
 
