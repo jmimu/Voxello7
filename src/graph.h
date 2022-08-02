@@ -39,10 +39,10 @@ struct Graph{
     #ifdef __PC__
         SDL_Window* window;
         //SDL_Renderer *renderer; //screen
-        //SDL_Surface *surface; //pixels texture (only kept for its format)
+        SDL_Surface *surface; //pixels surface (for bg blit)
         //SDL_Texture *texture; //pixels texture
         SDL_GLContext context;
-        uint32_t *pixels; //where voxrender writes
+        uint32_t *pixels; //surface data, where voxrender writes
         struct Shader* shader;
         unsigned int EBO, VBO, VAO, textureId;
     #endif

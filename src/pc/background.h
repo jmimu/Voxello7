@@ -5,7 +5,7 @@
 
 struct Background
 {
-	SDL_Texture *background;
+	SDL_Surface *background;
 	int w,h;
 };
 

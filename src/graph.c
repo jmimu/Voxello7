@@ -95,7 +95,8 @@ bool graph_init(int _window_w,int _window_h,
     //graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
     //graph.texture = SDL_CreateTextureFromSurface(graph.renderer,graph.surface);
 
-    graph.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+    graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+    graph.pixels = graph.surface->pixels;//(uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
 #endif
 #ifdef __3DS__
     gfxInitDefault();
@@ -162,6 +163,7 @@ void graph_start_frame()
     //for (int i=0;i<graph.render_w*graph.render_h;i++)
     //	graph.pixels[i]=0xFF582012; //a bit slow ??
     memset(graph.pixels, 30, graph.render_w*graph.render_h*3);
+    glClear( GL_COLOR_BUFFER_BIT );
 #endif
 
 #ifdef DBG_GRAPH
@@ -177,7 +179,6 @@ void graph_end_frame()
     //SDL_RenderPresent(graph.renderer);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, graph.pixels);
-    glClear( GL_COLOR_BUFFER_BIT );
 
     glUseProgram(graph.shader->shaderProgram);
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureVox"), 0);
@@ -342,9 +343,9 @@ void graph_close()
         free(graph.threadColPixels[i]);
         free(graph.threadColzbuf[i]);
     }
+    SDL_FreeSurface(graph.surface);
     free(graph.threadColPixels);
     free(graph.threadColzbuf);
-    free(graph.pixels);
     free(graph.zbuf);
     raster_unloadall();
     IMG_Quit();

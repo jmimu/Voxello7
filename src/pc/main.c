@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 	int frame_couter=0;
 
 	bool trace=false;
-	
+
 	struct VoxWorld * world=0;
 	struct VoxRender * render=0;
 	struct Background * background=0;
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
-	
+
 	if (argc>1)
 	{
 		world = VoxWorld_create_from_txt(argv[1]);
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 	cam.x=world->szX/3+0.001;
 	//cam.y=world->szY/2+0.001;
 	cam.z=1.5*world->szZ/2+0.001;
-	
+
 	//for cave
 	angleZ = PI/2;
 	cam.x=-world->szZ/2+0.001;
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 	last_time = SDL_GetTicks();
 	current_time = last_time;
 	previous_fps_time=SDL_GetTicks()/1000;
-	
+
 	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
     /*struct Anim* anim1=anim_create(1);
@@ -165,9 +165,9 @@ int main(int argc, char *argv[])
 	struct Sprite* sprite_bullet = NULL;
 	sprite_bullet=sprite_create("Bullet",10,10,10,1,1,anim_bullet);
 	struct Mob* mob_bullet = NULL;
-
+*/
 	background=background_create("data/back1.jpg");
-    */
+
 
 	//voxworld_init_land2(world);
 	{//separate thread part
