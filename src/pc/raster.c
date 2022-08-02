@@ -19,7 +19,7 @@ struct Raster* raster_load(const char* filename)
 
 	surf=IMG_Load(filename);
 	check(surf!=0,"Impossible to read image file \"%s\"",filename);
-	surf_conv=SDL_ConvertSurface(surf,graph.surface->format,0);
+//	surf_conv=SDL_ConvertSurface(surf,graph.surface->format,0);
 	printf("Opened image file \"%s\"\n",filename);
 	//printf("File format: %d\n",surf->format->format);
 	check(surf_conv->format->format==SDL_PIXELFORMAT_ARGB8888,"Bad format for image file \"%s\", must be ARGB8888",filename);
@@ -166,6 +166,8 @@ struct Anim* anim_create(float _time_factor)
 
 int anim_add_raster(struct Anim* anim,struct Raster* raster)
 {
+    if (!raster)
+        return 0;
 	check(anim->len<MAXANIMLEN,
 		"ERROR, can't have animation with more than %d steps!\n",MAXANIMLEN);
 	anim->rasters[anim->len]=raster;

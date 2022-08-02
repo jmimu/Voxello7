@@ -3,6 +3,8 @@
 
 #ifdef __PC__
   #include <SDL2/SDL.h>
+  #include <SDL2/SDL_opengl.h>
+  #include "pc/shader.h"
 #endif
 #ifdef __3DS__
   #include <3ds.h>
@@ -24,41 +26,43 @@
 #endif
 
 /***
-	Generic functions to handle :
-	 - window opening
-	 - primitive drawing
-	 - FPS calculating & managing (later...)
-	 - TODO: zbuffer
+    Generic functions to handle :
+     - window opening
+     - primitive drawing
+     - FPS calculating & managing (later...)
+     - TODO: zbuffer
 */
 
 struct Graph{
-		int window_w,window_h;
-		int render_w,render_h;
-	#ifdef __PC__
-		SDL_Window* window;
-		SDL_Renderer *renderer; //screen
-		SDL_Surface *surface; //pixels texture (only kept for its format)
-		SDL_Texture *texture; //pixels texture
-		SDL_GLContext context;
-		uint32_t *pixels; //where voxrender writes
-	#endif
-	#ifdef __3DS__
-		uint8_t *pixels; //where voxrender writes
-	#endif
-		
-		uint16_t *zbuf; //zbuffer unit: voxel side*8
-		uint32_t **threadColPixels;//one column for one thread
-		uint16_t **threadColzbuf;//one column for one thread
+        int window_w,window_h;
+        int render_w,render_h;
+    #ifdef __PC__
+        SDL_Window* window;
+        //SDL_Renderer *renderer; //screen
+        //SDL_Surface *surface; //pixels texture (only kept for its format)
+        //SDL_Texture *texture; //pixels texture
+        SDL_GLContext context;
+        uint32_t *pixels; //where voxrender writes
+        struct Shader* shader;
+        unsigned int EBO, VBO, VAO, textureId;
+    #endif
+    #ifdef __3DS__
+        uint8_t *pixels; //where voxrender writes
+    #endif
 
-		double render2ScreenFactor;
+        uint16_t *zbuf; //zbuffer unit: voxel side*8
+        uint32_t **threadColPixels;//one column for one thread
+        uint16_t **threadColzbuf;//one column for one thread
+
+        double render2ScreenFactor;
 };
 
 extern struct Graph graph;
 extern int nb_threads;
 
 bool graph_init(int _window_w,int _window_h,
-				int _render_w,int _render_h,const char* title);
-
+                int _render_w,int _render_h,const char* title);
+void graph_create_quad();
 void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b);//todo: add z!
 void graph_putpixel(int x,int y,uint32_t rgba);//todo: add z!
 void graph_vline(int x,int y1,int y2,uint32_t rgba);
