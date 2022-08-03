@@ -58,8 +58,8 @@ void raster_draw(struct Raster* raster, int x, int y,uint16_t z)
 	{
 		for (int c=0;c<raster->w;c++)
 		{
-			if (graph.zbuf[j]>z)
-				graph.pixels[j]=raster->pix[i];
+			if (graph.rasterData.zbuf[j]>z)
+				graph.rasterData.pixels[j]=raster->pix[i];
 			i++;
 			j++;
 		}
@@ -111,16 +111,17 @@ void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, in
 		i=raster_y*raster->w;
 		for (int c=c_start;c<c_end;c++)
 		{
-			if (graph.zbuf[j]>z)
+			if (graph.rasterData.zbuf[j]>z)
 			{
 				raster_x=(c*raster->w)/w;
 				color=raster->pix[i+raster_x];
 				if ((color&0xFF000000)==0xFF000000)
 				{
 					if (color_factor<1)
-						graph.pixels[j]=color_bright(raster->pix[i+raster_x],color_factor);
+						graph.rasterData.pixels[j]=color_bright(raster->pix[i+raster_x],color_factor);
 					else
-						graph.pixels[j]=raster->pix[i+raster_x];
+						graph.rasterData.pixels[j]=raster->pix[i+raster_x];
+					graph.rasterData.zbuf[j]=z;
 				}
 			}
 			j++;

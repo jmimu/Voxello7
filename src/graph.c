@@ -96,7 +96,8 @@ bool graph_init(int _window_w,int _window_h,
     //graph.texture = SDL_CreateTextureFromSurface(graph.renderer,graph.surface);
 
     graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
-    graph.pixels = graph.surface->pixels;//(uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+    //graph.pixels = graph.surface->pixels;//(uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+    graph_create_data();
 #endif
 #ifdef __3DS__
     gfxInitDefault();
@@ -105,14 +106,14 @@ bool graph_init(int _window_w,int _window_h,
     gfxSetDoubleBuffering(GFX_BOTTOM, false);
     graph.pixels = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
 #endif
-    graph.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
-    graph.threadColPixels = (uint32_t**) malloc (nb_threads*sizeof(uint32_t*));
-    graph.threadColzbuf = (uint16_t**) malloc (nb_threads*sizeof(uint16_t*));
-    for (int i=0;i<nb_threads;i++)
+    //graph.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
+    //graph.threadColPixels = (uint32_t**) malloc (nb_threads*sizeof(uint32_t*));
+    //graph.threadColzbuf = (uint16_t**) malloc (nb_threads*sizeof(uint16_t*));
+    /*for (int i=0;i<nb_threads;i++)
     {
         graph.threadColPixels[i]=(uint32_t*) malloc (graph.render_h*sizeof(uint32_t));
         graph.threadColzbuf[i]=(uint16_t*) malloc (graph.render_h*sizeof(uint16_t));
-    }
+    }*/
     return true;
 error:
     return false;
@@ -155,14 +156,38 @@ void graph_create_quad()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+}
+
+void graph_create_data()
+{
+    graph.rasterData.pixels = graph.surface->pixels;
+    graph.rasterData.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
+    graph.rasterData.normale = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+
+    nb_threads=omp_get_max_threads();
+    graph.threadsData = malloc(nb_threads*sizeof(struct GraphData));
+    for (int i=0;i<nb_threads;i++)
+    {
+        graph.threadsData[i].pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+        graph.threadsData[i].zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
+        graph.threadsData[i].normale = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+    }
 }
 
 void graph_start_frame()
 {
 #ifdef __PC__
-    //for (int i=0;i<graph.render_w*graph.render_h;i++)
-    //	graph.pixels[i]=0xFF582012; //a bit slow ??
-    memset(graph.pixels, 30, graph.render_w*graph.render_h*3);
+    memset(graph.rasterData.pixels, 0x00, graph.render_w*graph.render_h*4);
+    memset(graph.rasterData.zbuf, 0xFF, graph.render_w*graph.render_h*2);
+    memset(graph.rasterData.normale, 0x80, graph.render_w*graph.render_h*4);
+    nb_threads=omp_get_max_threads();
+    for (int i=0;i<nb_threads;i++)
+    {
+        memset(graph.threadsData[i].pixels, 0x00, graph.render_w*graph.render_h*4);
+        memset(graph.threadsData[i].zbuf, 0xFF, graph.render_w*graph.render_h*2);
+        memset(graph.threadsData[i].normale, 0x80, graph.render_w*graph.render_h*4);
+    }
     glClear( GL_COLOR_BUFFER_BIT );
 #endif
 
@@ -174,11 +199,24 @@ void graph_start_frame()
 void graph_end_frame()
 {
 #ifdef __PC__
-    //SDL_UpdateTexture(graph.texture, NULL, graph.pixels, graph.render_w * sizeof (uint32_t));
-    //SDL_RenderCopy(graph.renderer, graph.texture, NULL, NULL);
-    //SDL_RenderPresent(graph.renderer);
+    //merge all threads' pixels
+    nb_threads=omp_get_max_threads();
+#ifdef WITH_OMP
+	#pragma omp parallel for schedule(guided)
+#endif
+    for (int p=1;p<graph.render_w*graph.render_h;p++)
+    {
+        for (int i=1;i<nb_threads;i++)
+        {
+            graph.threadsData[0].pixels[p]+=graph.threadsData[i].pixels[p];
+            graph.threadsData[0].zbuf[p]+=graph.threadsData[i].zbuf[p];
+            graph.threadsData[0].normale[p]+=graph.threadsData[i].normale[p];
+        }
+        graph.threadsData[0].zbuf[p]+=nb_threads-1;//because we add -1/0xFFFF for each unused threads
+    }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, graph.pixels);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, graph.rasterData.pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
 
     glUseProgram(graph.shader->shaderProgram);
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureVox"), 0);
@@ -204,7 +242,7 @@ void graph_end_frame()
 void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b)
 {
 #ifdef __PC__
-    graph.pixels[x+y*graph.render_w]=(r<<16)+(g<<8)+(b)+0xFF000000;
+    graph.rasterData.pixels[x+y*graph.render_w]=(r<<16)+(g<<8)+(b)+0xFF000000;
 #endif
 #ifdef __3DS__
     long i = (y+x*graph.render_h)*3;
@@ -217,7 +255,7 @@ void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b)
 void graph_putpixel(int x,int y,uint32_t rgba)
 {
 #ifdef __PC__
-    graph.pixels[x+y*graph.render_w]=rgba;
+    graph.rasterData.pixels[x+y*graph.render_w]=rgba;
 #endif
 #ifdef __3DS__
     long i = (y+x*graph.render_h)*3;
@@ -246,7 +284,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
     i=x+ymin*graph.render_w;
     for (int y=ymin+1;y<=ymax;y++)
     {
-        graph.pixels[i]=rgba;
+        graph.rasterData.pixels[i]=rgba;
         i+=graph.render_w;
     }
 #endif
@@ -262,7 +300,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 #endif
 }
 
-void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba,uint16_t z)
+void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_t z)
 {
     int ymin;
     int ymax;
@@ -277,16 +315,18 @@ void graph_vline_threadCol(int thread,int y1,int y2,uint32_t rgba,uint16_t z)
     if (ymin<0) ymin=0;
     if (ymax>=graph.render_h) ymax=graph.render_h-1;
 
+    long i = x + (ymin+1)*graph.render_w;
     for (int y=ymin+1;y<=ymax;y++)
     {
-        if (graph.threadColzbuf[thread][y]>z)
+        if (graph.threadsData[thread].zbuf[i]>z)
         {
-            graph.threadColPixels[thread][y]=rgba;
-            graph.threadColzbuf[thread][y]=z;
+            graph.threadsData[thread].pixels[i]=rgba;
+            graph.threadsData[thread].zbuf[i]=z;
         }
+        i += graph.render_w;
     }
 }
-
+/*
 void graph_clear_threadCol(int thread,uint16_t z)
 {
     //TODO: optimization : have a clean column, and copy it here
@@ -298,8 +338,8 @@ void graph_clear_threadCol(int thread,uint16_t z)
     }
 
 }
-
-void graph_write_threadCol(int thread, int x)
+*/
+/*void graph_write_threadCol(int thread, int x)
 {
 #ifdef __PC__
     unsigned int i=x;
@@ -324,7 +364,7 @@ void graph_write_threadCol(int thread, int x)
         i_zb+=graph.render_w;
     }
 #endif
-}
+}*/
 
 
 void graph_close()
@@ -338,15 +378,17 @@ void graph_close()
     SDL_GL_DeleteContext(graph.context);
 
     SDL_DestroyWindow(graph.window);
+
     for (int i=0;i<nb_threads;i++)
     {
-        free(graph.threadColPixels[i]);
-        free(graph.threadColzbuf[i]);
+        free(graph.threadsData[i].pixels);
+        free(graph.threadsData[i].zbuf);
+        free(graph.threadsData[i].normale);
     }
     SDL_FreeSurface(graph.surface);
-    free(graph.threadColPixels);
-    free(graph.threadColzbuf);
-    free(graph.zbuf);
+    free(graph.threadsData);
+    free(graph.rasterData.zbuf);
+    free(graph.rasterData.normale);
     raster_unloadall();
     IMG_Quit();
     SDL_Quit();
@@ -392,12 +434,12 @@ uint32_t color_alpha(uint32_t color,float factor)
 }
 
 #ifdef __PC__
-void ScreenshotBMP(const char * filename)
+/*void ScreenshotBMP(const char * filename)
 {
     SDL_Surface * surf = SDL_CreateRGBSurfaceFrom(graph.pixels,
             graph.render_w, graph.render_h, 8*4, graph.render_w*4, 0,0,0,0);
     SDL_SaveBMP(surf, filename);
 
     SDL_FreeSurface(surf);
-}
+}*/
 #endif

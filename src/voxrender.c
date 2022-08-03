@@ -164,10 +164,10 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	VOX_TYPE v;
 	uint32_t color;
 	int total_intervals=0;
-	graph_clear_threadCol(ray->thread,ray->render->clip_max*ZBUF_FACTOR);
+	//graph_clear_threadCol(ray->thread,ray->render->clip_max*ZBUF_FACTOR);
 	//graph_clear_threadColZ(ray->thread);
-	if ((screen_col==graph.render_w/2))
-		graph_vline_threadCol(ray->thread,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1);
+	if (screen_col==graph.render_w/2)
+		graph_vline_threadCol(ray->thread,screen_col,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1);
 	unsigned short current_VInterval_i=0;
 	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))
 	{
@@ -344,7 +344,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 									color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
 										(ray->render->clip_max-ray->render->clip_alpha));//clipping
 								//TODO: suspicious l_tmp, have to use zbuffer, why?
-								graph_vline_threadCol(ray->thread,l0,l_tmp,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
+								graph_vline_threadCol(ray->thread,screen_col,l0,l_tmp,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
 								if (trace)
 									printf("draw top %d %d : %x\n",l0,l_tmp,color);
 								l0=l_tmp;
@@ -387,7 +387,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								if (ray->currentLambda>ray->render->clip_alpha)
 									color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
 										(ray->render->clip_max-ray->render->clip_alpha));//clipping
-								graph_vline_threadCol(ray->thread,l_tmp,l0,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
+								graph_vline_threadCol(ray->thread,screen_col,l_tmp,l0,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
 								if (trace)
 									printf("draw bottom %d %d : %x\n",l_tmp,l0,color);
 								//remove this interval to last next_current_VInterval:
@@ -406,7 +406,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						if (ray->currentLambda>ray->render->clip_alpha)
 							color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
 								(ray->render->clip_max-ray->render->clip_alpha));//clipping
-						graph_vline_threadCol(ray->thread,l0,l1,color,ray->currentLambda*ZBUF_FACTOR);
+						graph_vline_threadCol(ray->thread,screen_col,l0,l1,color,ray->currentLambda*ZBUF_FACTOR);
 						if (trace)
 							printf("draw %d %d : %x\n",l0,l1,color);
 
@@ -429,7 +429,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	
 	//#pragma omp critical //not necessary and slowing down
 	{
-		graph_write_threadCol(ray->thread,screen_col);
+		//graph_write_threadCol(ray->thread,screen_col);
 		//graph_write_threadColZ(ray->thread,screen_col);
 	}
 	

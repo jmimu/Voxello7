@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	struct VoxRender * render=0;
 	struct Background * background=0;
 
-    result=graph_init(1920,1080,1920/4,1080/4,"Voxello");
+    result=graph_init(1920,1080,1920/1,1080/1,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 	current_time = last_time;
 	previous_fps_time=SDL_GetTicks()/1000;
 
-	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
+	//SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
     struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
@@ -313,8 +313,8 @@ int main(int argc, char *argv[])
 
 		t++;
 
-		//graph_start_frame();
-        background_draw(background,angleZ-0.54,angleZ+0.54);
+		graph_start_frame();
+        //background_draw(background,angleZ-0.54,angleZ+0.54);
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
 		//struct Pt3d proj=voxrender_proj(render,raster1p);
@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
 		if (trace)
 		{
 			printf("Cam: %f %f %f %f\n",cam.x,cam.y,cam.z,angleZ);
-			ScreenshotBMP("out.bmp");
+			//ScreenshotBMP("out.bmp");
 			trace=false;
 		}
 
