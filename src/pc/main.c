@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 
 	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
-    /*struct Anim* anim1=anim_create(1);
+    struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
 	anim_add_raster(anim1,raster_load("data/run2.png"));
 	anim_add_raster(anim1,raster_load("data/run3.png"));
@@ -165,8 +165,8 @@ int main(int argc, char *argv[])
 	struct Sprite* sprite_bullet = NULL;
 	sprite_bullet=sprite_create("Bullet",10,10,10,1,1,anim_bullet);
 	struct Mob* mob_bullet = NULL;
-*/
-	background=background_create("data/back1.jpg");
+
+	background=background_create("data/back2.jpg");
 
 
 	//voxworld_init_land2(world);
@@ -266,10 +266,10 @@ int main(int argc, char *argv[])
 					if (event.wheel.y<0) focale/=1.1;
 					//std::cout<<"Dist: "<<distance<<std::endl;
 				break;
-/*				case SDL_MOUSEBUTTONDOWN:
+				case SDL_MOUSEBUTTONDOWN:
 					if (mob_bullet) free(mob_bullet);
 					mob_bullet=mob_create(sprite_bullet,100*_sin(angleZ),100*_cos(angleZ),0);
-                    mob_bullet->spr->pos=cam;*/
+                    mob_bullet->spr->pos=cam;
 				break;
 
 			}
@@ -314,17 +314,17 @@ int main(int argc, char *argv[])
 		t++;
 
 		//graph_start_frame();
+        background_draw(background,angleZ-0.54,angleZ+0.54);
 		voxrender_setCam(render,cam,angleZ);
 		voxrender_render(render,trace);
 		//struct Pt3d proj=voxrender_proj(render,raster1p);
 		//raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
 
-/*		if (sprite1) sprite_draw(render,sprite1);
+		if (sprite1) sprite_draw(render,sprite1);
 		if (mob_bullet) mob_draw(render,mob_bullet);
-*/
+
 		//graph_test();
 
-		background_draw(background,angleZ-0.54,angleZ+0.54);
 		graph_end_frame();
 		//run=false;
 
@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
 		speed=ellapsed_time/20.0;
 		last_time = current_time;
 		ellapsed_time = SDL_GetTicks() - start_time;
-/*		anim_frame(anim1,ellapsed_time);
+		anim_frame(anim1,ellapsed_time);
 		if (mob_bullet)
 		{
 			mob_update(world,mob_bullet,ellapsed_time/1000.0);
@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
 				printf("Bullet destroyed\n");
 			}
 		}
-*/
+
 		if (ellapsed_time < 20)
 		{
 			//SDL_Delay(20 - ellapsed_time);
@@ -369,8 +369,8 @@ int main(int argc, char *argv[])
 
 error:
 	//raster_unloadall();//TODO
-//	free(anim1);
-//	if (sprite1) free(sprite1);
+	free(anim1);
+	if (sprite1) free(sprite1);
 	if (render) voxrender_delete(render);
 	if (world) voxworld_delete(world);
 	if (background) background_delete(background);

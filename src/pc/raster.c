@@ -19,7 +19,7 @@ struct Raster* raster_load(const char* filename)
 
 	surf=IMG_Load(filename);
 	check(surf!=0,"Impossible to read image file \"%s\"",filename);
-//	surf_conv=SDL_ConvertSurface(surf,graph.surface->format,0);
+	surf_conv=SDL_ConvertSurface(surf,graph.surface->format,0);
 	printf("Opened image file \"%s\"\n",filename);
 	//printf("File format: %d\n",surf->format->format);
 	check(surf_conv->format->format==SDL_PIXELFORMAT_ARGB8888,"Bad format for image file \"%s\", must be ARGB8888",filename);

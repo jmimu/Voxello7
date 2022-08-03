@@ -35,7 +35,7 @@ void background_draw(struct Background * bg, double ang_l, double ang_r)
 	SrcR.h = bg->h;
 
     //SDL_RenderCopy(graph.renderer, bg->background, &SrcR, NULL);
-    SDL_BlitSurface(&bg->background, &SrcR, &graph.surface, NULL);
+    SDL_BlitSurface(bg->background, &SrcR, graph.surface, NULL);
 
 }
 

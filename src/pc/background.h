@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 
+//TODO: render as skybox https://learnopengl.com/Advanced-OpenGL/Cubemaps
 struct Background
 {
 	SDL_Surface *background;
