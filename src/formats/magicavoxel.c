@@ -288,9 +288,13 @@ bool VoxWorld_add_MV_Model(struct VoxWorld * world,
     for (x=0;x<model->sizex;x++)
     {
         xw=x+posx;
+        if ((xw<0)||(xw>=model->sizex))
+            continue;
         for (y=0;y<model->sizey;y++)
         {
             yw=y+posy;
+            if ((yw<0)||(yw>=model->sizey))
+                continue;
             voxworld_expand_col(world,xw,yw);
             j=x*sizeyz+y*model->sizez;
             for (z=0;z<model->sizez;z++)
