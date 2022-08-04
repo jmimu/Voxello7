@@ -82,7 +82,7 @@ void graph_create_data();
 void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b);//todo: add z!
 void graph_putpixel(int x,int y,uint32_t rgba);//todo: add z!
 void graph_vline(int x,int y1,int y2,uint32_t rgba);
-void graph_vline_threadCol(int thread, int x, int y1, int y2, uint32_t rgba, uint16_t z);
+void graph_vline_threadCol(int thread, int x, int y1, int y2, uint32_t rgba, uint16_t z, uint32_t normale);
 //void graph_clear_threadCol(int thread, uint16_t z);
 //void graph_write_threadCol(int thread, int x);
 void graph_close();

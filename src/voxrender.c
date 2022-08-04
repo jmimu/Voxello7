@@ -10,6 +10,10 @@
   #include <omp.h>
 #endif
 
+uint32_t normales_xy[9] = {
+    NORMALE_Y_POS,NORMALE_NEUTR,NORMALE_Y_NEG, NORMALE_NEUTR, //is Y
+    NORMALE_X_POS,NORMALE_NEUTR,NORMALE_X_NEG, NORMALE_NEUTR, //is X
+}; //i = isX (1bit) dirx/y+1 (2 bits) = isX*(dirx+1)+(1-isX)*(diry+1)
 
 //TODO: work in center-relative coords and transform only before drawing?
 int z_to_l(int z, double cam_z, double lambda, double fc);
@@ -167,7 +171,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	//graph_clear_threadCol(ray->thread,ray->render->clip_max*ZBUF_FACTOR);
 	//graph_clear_threadColZ(ray->thread);
 	if (screen_col==graph.render_w/2)
-		graph_vline_threadCol(ray->thread,screen_col,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1);
+		graph_vline_threadCol(ray->thread,screen_col,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1, NORMALE_NEUTR);
 	unsigned short current_VInterval_i=0;
 	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))
 	{
@@ -336,15 +340,15 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 							{
 								if (l_tmp>l1) l_tmp=l1;
                                 color=color_15to24(previous_v);
-                                color=color_bright(color,1.4);
+                                /*color=color_bright(color,1.1);
 								if (ray->currentLambda>ray->render->clip_dark)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
 								if (ray->currentLambda>ray->render->clip_alpha)
 									color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
-										(ray->render->clip_max-ray->render->clip_alpha));//clipping
+										(ray->render->clip_max-ray->render->clip_alpha));//clipping*/
 								//TODO: suspicious l_tmp, have to use zbuffer, why?
-								graph_vline_threadCol(ray->thread,screen_col,l0,l_tmp,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
+								graph_vline_threadCol(ray->thread,screen_col,l0,l_tmp,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2,NORMALE_Z_POS);
 								if (trace)
 									printf("draw top %d %d : %x\n",l0,l_tmp,color);
 								l0=l_tmp;
@@ -380,14 +384,14 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 									printf("prepare to draw bottom %d %d (%d)\n",l_tmp,l0,l0_previous);
 								if (l_tmp<l0_previous) l_tmp=l0_previous;
 								color=color_15to24(v);
-								color=color_bright(color,FACTOR_DARK);
+								/*color=color_bright(color,FACTOR_DARK);
 								if (ray->currentLambda>ray->render->clip_dark)
 									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 										(ray->render->clip_max-ray->render->clip_dark));//clipping
 								if (ray->currentLambda>ray->render->clip_alpha)
 									color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
-										(ray->render->clip_max-ray->render->clip_alpha));//clipping
-								graph_vline_threadCol(ray->thread,screen_col,l_tmp,l0,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2);
+										(ray->render->clip_max-ray->render->clip_alpha));//clipping*/
+								graph_vline_threadCol(ray->thread,screen_col,l_tmp,l0,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2,NORMALE_Z_NEG);
 								if (trace)
 									printf("draw bottom %d %d : %x\n",l_tmp,l0,color);
 								//remove this interval to last next_current_VInterval:
@@ -398,15 +402,16 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						}
 
 						color=color_15to24(v);
-						if (ray->lastIntersectionWasX)
+                        uint32_t normale = normales_xy[ray->lastIntersectionWasX*(ray->dirX+1)+(1-ray->lastIntersectionWasX)*(ray->dirY+1)];
+						/*if (ray->lastIntersectionWasX)
 							color=color_bright(color,FACTOR_BRIGHT);
 						if (ray->currentLambda>ray->render->clip_dark)
 							color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
 								(ray->render->clip_max-ray->render->clip_dark));//clipping
 						if (ray->currentLambda>ray->render->clip_alpha)
 							color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
-								(ray->render->clip_max-ray->render->clip_alpha));//clipping
-						graph_vline_threadCol(ray->thread,screen_col,l0,l1,color,ray->currentLambda*ZBUF_FACTOR);
+								(ray->render->clip_max-ray->render->clip_alpha));//clipping*/
+						graph_vline_threadCol(ray->thread,screen_col,l0,l1,color,ray->currentLambda*ZBUF_FACTOR,normale);
 						if (trace)
 							printf("draw %d %d : %x\n",l0,l1,color);
 

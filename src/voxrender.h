@@ -7,6 +7,15 @@
 
 #define FACTOR_DARK 0.6
 #define FACTOR_BRIGHT 1.5
+#define NORMALE_NEUTR 0x80808000
+#define NORMALE_X_POS 0x81808000
+#define NORMALE_X_NEG 0x79808000
+#define NORMALE_Y_POS 0x80818000
+#define NORMALE_Y_NEG 0x80798000
+#define NORMALE_Z_POS 0x80808100
+#define NORMALE_Z_NEG 0x80807900
+
+uint32_t normales_xy[9];
 
 /*****************
  * One ray of raycasting

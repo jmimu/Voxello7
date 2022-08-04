@@ -312,7 +312,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 #endif
 }
 
-void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_t z)
+void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_t z, uint32_t normale)
 {
     int ymin;
     int ymax;
@@ -333,6 +333,7 @@ void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_
         if (graph.threadsData[thread].zbuf[i]>z)
         {
             graph.threadsData[thread].pixels[i]=rgba;
+            graph.threadsData[thread].normale[i]=normale;
             graph.threadsData[thread].zbuf[i]=z;
         }
         i += graph.render_w;
