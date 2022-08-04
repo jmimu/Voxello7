@@ -52,9 +52,10 @@ error:
     return id;
 }
 
-struct Shader* createShader(const char* path_vert, const char* path_frag)
+struct Shader* createShader(struct Shader* shader, const char* path_vert, const char* path_frag)
 {
-    struct Shader* shader = malloc(sizeof(struct Shader));
+    if (!shader)
+        shader = malloc(sizeof(struct Shader));
 
     shader->vertexShader = compileOneShader(path_vert, 1);
     shader->fragmentShader = compileOneShader(path_frag, 0);

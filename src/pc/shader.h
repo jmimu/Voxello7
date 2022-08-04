@@ -11,7 +11,7 @@ struct Shader
 };
 
 unsigned int compileOneShader(const char* path, int isVertex);
-struct Shader *createShader(const char* path_vert, const char* path_frag);
+struct Shader *createShader(struct Shader* shader, const char* path_vert, const char* path_frag);
 void deleteShader(struct Shader * s);
 
 extern float verticesData[28];
