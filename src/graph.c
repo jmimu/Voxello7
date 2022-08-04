@@ -192,7 +192,7 @@ void graph_start_frame()
 #endif
 
 #ifdef DBG_GRAPH
-    graph_vline(graph.render_w/2,0,graph.render_h,0x40B000);//0xFF00B040
+    graph_vline(graph.render_w/2,0,graph.render_h,0x40B0FF);
 #endif
 }
 
@@ -215,8 +215,20 @@ void graph_end_frame()
         graph.threadsData[0].zbuf[p]+=nb_threads-1;//because we add -1/0xFFFF for each unused threads
     }
 
+    /*long p=0;
+    for (int y=1;y<graph.render_h;y++)
+    {
+        for (int x=1;x<graph.render_w;x++)
+        {
+            printf("%x ",graph.threadsData[0].pixels[p]);
+            ++p;
+        }
+        printf("\n");
+    }
+    printf("\n");*/
+
     //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, graph.rasterData.pixels);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
 
     glUseProgram(graph.shader->shaderProgram);
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureVox"), 0);
@@ -242,7 +254,7 @@ void graph_end_frame()
 void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b)
 {
 #ifdef __PC__
-    graph.rasterData.pixels[x+y*graph.render_w]=(r<<16)+(g<<8)+(b)+0xFF000000;
+    graph.rasterData.pixels[x+y*graph.render_w]=(r<<24)+(g<<16)+(b<<8)+0xFF;
 #endif
 #ifdef __3DS__
     long i = (y+x*graph.render_h)*3;
@@ -409,28 +421,28 @@ void graph_test()
 
 uint32_t color_bright(uint32_t color, float factor)
 {
-    int r=(color&0xFF0000)>>16;
-    int g=(color&0xFF00)>>8;
-    int b=color&0xFF;
-    int a=(color&0xFF000000)>>24;
+    int r=(color&0xFF000000)>>24;
+    int g=(color&0xFF0000)>>16;
+    int b=(color&0xFF00)>>8;
+    int a=(color&0xFF)>>0;
     r*=factor;
     g*=factor;
     b*=factor;
     if (r>255) r=255;
     if (g>255) g=255;
     if (b>255) b=255;
-    return (a<<24)+(r<<16)+(g<<8)+b;
+    return (r<<24)+(g<<16)+(b<<8)+a;
 }
 
 uint32_t color_alpha(uint32_t color,float factor)
 {
-    int r=(color&0xFF0000)>>16;
-    int g=(color&0xFF00)>>8;
-    int b=color&0xFF;
-    int a=(color&0xFF000000)>>24;
+    int r=(color&0xFF000000)>>24;
+    int g=(color&0xFF0000)>>16;
+    int b=(color&0xFF00)>>8;
+    int a=(color&0xFF)>>0;
     a*=factor;
     if (a>255) a=255;
-    return (a<<24)+(r<<16)+(g<<8)+b;
+    return (r<<24)+(g<<16)+(b<<8)+a;
 }
 
 #ifdef __PC__

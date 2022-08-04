@@ -512,8 +512,8 @@ void voxworld_init_rand(struct VoxWorld * world)
 void voxworld_init_land(struct VoxWorld * world)
 {
 	long z_start;
-	int SNOW_START=28;
-	int SNOW_END=32;
+	int SNOW_START=22;
+	int SNOW_END=31;
 	printf("Filling world...\n");
 		
 	for (long x=0;x<world->szX;x++)
@@ -527,7 +527,7 @@ void voxworld_init_land(struct VoxWorld * world)
 			for (long z=0;z<world->szZ;z++)
 			{
 				if (z<z_start)
-					world->curr_exp_col[z]=z_start/2;//0x50;
+					world->curr_exp_col[z]=(((uint16_t)((2*31.0*z_start)/world->szZ))<<5)+0x1f;
 				else if (z<z_start+1)//for snow
 					world->curr_exp_col[z]=rand()%(SNOW_END-SNOW_START)+SNOW_START;//0x50;
 				else
@@ -622,17 +622,18 @@ error:
 
 uint32_t color_15to24(VOX_TYPE v)
 {
-    int r=((v>>10)&0x1F)*0xff/0x1f;
-    int g=((v>>5)&0x1F)*0xff/0x1f;
-    int b=((v>>0)&0x1F)*0xff/0x1f;
-    int a=0xff;
-    return (a<<24)+(r<<16)+(g<<8)+b;
+    uint32_t r=((v>>10)&0x1F);
+    uint32_t g=((v>>5)&0x1F);
+    uint32_t b=((v>>0)&0x1F);
+    uint32_t a=0xff;
+    //return (r<<24)+(g<<16)+(b<<8)+a;
+    return (r<<27)+(g<<19)+(b<<11)+(a<<3);
 }
 
 VOX_TYPE color_24to15(uint32_t c)
 {
-    int r=((c>>19)&0x1F);
-    int g=((c>>11)&0x1F);
-    int b=((c>> 3)&0x1F);
+    int r=((c>>27)&0x1F);
+    int g=((c>>19)&0x1F);
+    int b=((c>>11)&0x1F);
     return (r<<10)+(g<<5)+b;
 }
