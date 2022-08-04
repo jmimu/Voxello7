@@ -251,16 +251,16 @@ void graph_end_frame()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureNorm"), 1);
 
-    /*glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_R16, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
-    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureZbuf"), 2);*/
+    glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
+    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureZbuf"), 2);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
-    /*glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);*/
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
 
     glBindVertexArray( graph.VAO );
     glDrawElements( GL_TRIANGLES, sizeof(indicesData)/sizeof(indicesData[0]), GL_UNSIGNED_INT, 0);

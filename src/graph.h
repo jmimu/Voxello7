@@ -14,7 +14,7 @@
 #include <stdbool.h>
 
 //zbuf in fix point
-#define ZBUF_FACTOR 8
+#define ZBUF_FACTOR 32
 
 #define DBG_GRAPH
 
