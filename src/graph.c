@@ -243,17 +243,18 @@ void graph_end_frame()
 
     glUseProgram(graph.shader->shaderProgram); //before setting uniforms
 
+    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureCol"), 0);
+    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureNorm"), 1);
+    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureZbuf"), 2);
+
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
-    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureVox"), 0);
 
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
-    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureNorm"), 1);
 
     glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
-    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureZbuf"), 2);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);

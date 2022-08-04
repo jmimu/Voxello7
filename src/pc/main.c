@@ -13,6 +13,7 @@
 #include "sprite.h"
 #include "raster.h"
 #include "background.h"
+#include "sky.h"
 #include "formats/magicavoxel.h"
 #include "formats/voxtxt.h"
 
@@ -58,6 +59,10 @@ int main(int argc, char *argv[])
 	bool key_g=false;
 	bool key_e=false;
 	bool key_t=false;
+	bool key_o=false;
+	bool key_k=false;
+	bool key_l=false;
+	bool key_m=false;
 
 	//----- events -----
 	SDL_Event event;
@@ -86,8 +91,9 @@ int main(int argc, char *argv[])
 	struct VoxWorld * world=0;
 	struct VoxRender * render=0;
 	struct Background * background=0;
+    struct Sky * sky = createSky();
 
-    result=graph_init(1920,1080,1920/2,1080/1,"Voxello");
+    result=graph_init(1920,1080,1920/2,1080,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
@@ -226,6 +232,18 @@ int main(int argc, char *argv[])
 						case SDLK_t:
 							key_t=true;
 							break;
+						case SDLK_o:
+							key_o=true;
+							break;
+						case SDLK_k:
+							key_k=true;
+							break;
+						case SDLK_l:
+							key_l=true;
+							break;
+						case SDLK_m:
+							key_m=true;
+							break;
 						case SDLK_s: //recompile shader
 							createShader(graph.shader, "src/shaders/vertex.shader", "src/shaders/fragment.shader");
 							break;
@@ -253,6 +271,18 @@ int main(int argc, char *argv[])
 							break;
 						case SDLK_t:
 							key_t=false;
+							break;
+						case SDLK_o:
+							key_o=false;
+							break;
+						case SDLK_k:
+							key_k=false;
+							break;
+						case SDLK_l:
+							key_l=false;
+							break;
+						case SDLK_m:
+							key_m=false;
 							break;
 						default:
 							break;
@@ -311,6 +341,28 @@ int main(int argc, char *argv[])
 			add(&cam,(struct Pt3d){0,0,-speed});
 		}
 
+		if (key_o)
+		{
+			sky->sunSite += 0.01;
+			upSunVect(sky);
+		}
+		if (key_k)
+		{
+			sky->sunAzimuth -= 0.01;
+			upSunVect(sky);
+		}
+		if (key_l)
+		{
+			sky->sunSite -= 0.01;
+			upSunVect(sky);
+		}
+		if (key_m)
+		{
+			sky->sunAzimuth += 0.01;
+			upSunVect(sky);
+		}
+
+
 		if (cam.z<0) cam.z=0;
 		if (cam.z>world->szZ) cam.z=world->szZ;
 
@@ -327,7 +379,8 @@ int main(int argc, char *argv[])
 		if (mob_bullet) mob_draw(render,mob_bullet);
 
 		//graph_test();
-
+		glUseProgram(graph.shader->shaderProgram); //before setting uniforms
+		glUniform3fv(glGetUniformLocation(graph.shader->shaderProgram, "sunDir"), 1, sky->sunVect); //impossible to make glUniform3f work??
 		graph_end_frame();
 		//run=false;
 
@@ -372,6 +425,7 @@ int main(int argc, char *argv[])
 
 error:
 	//raster_unloadall();//TODO
+	free(sky);
 	free(anim1);
 	if (sprite1) free(sprite1);
 	if (render) voxrender_delete(render);
