@@ -10,7 +10,7 @@
   #include <omp.h>
 #endif
 
-uint32_t normales_xy[9] = {
+uint32_t normales_xy[8] = {
     NORMALE_Y_POS,NORMALE_NEUTR,NORMALE_Y_NEG, NORMALE_NEUTR, //is Y
     NORMALE_X_POS,NORMALE_NEUTR,NORMALE_X_NEG, NORMALE_NEUTR, //is X
 }; //i = isX (1bit) dirx/y+1 (2 bits) = isX*(dirx+1)+(1-isX)*(diry+1)
@@ -402,7 +402,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						}
 
 						color=color_15to24(v);
-                        uint32_t normale = normales_xy[ray->lastIntersectionWasX*(ray->dirX+1)+(1-ray->lastIntersectionWasX)*(ray->dirY+1)];
+                        uint32_t normale = normales_xy[(ray->lastIntersectionWasX<<2)+ray->lastIntersectionWasX*(ray->dirX+1)+(1-ray->lastIntersectionWasX)*(ray->dirY+1)];
 						/*if (ray->lastIntersectionWasX)
 							color=color_bright(color,FACTOR_BRIGHT);
 						if (ray->currentLambda>ray->render->clip_dark)

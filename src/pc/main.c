@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 	current_time = last_time;
 	previous_fps_time=SDL_GetTicks()/1000;
 
-	//SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
+	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
     struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));

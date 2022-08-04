@@ -150,8 +150,22 @@ void graph_create_quad()
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 
-    glGenTextures(1, &graph.textureId);
-    glBindTexture(GL_TEXTURE_2D, graph.textureId);
+    glGenTextures(1, &graph.textureColId);
+    glBindTexture(GL_TEXTURE_2D, graph.textureColId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glGenTextures(1, &graph.textureNormId);
+    glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glGenTextures(1, &graph.textureZbufId);
+    glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -186,7 +200,7 @@ void graph_start_frame()
     {
         memset(graph.threadsData[i].pixels, 0x00, graph.render_w*graph.render_h*4);
         memset(graph.threadsData[i].zbuf, 0xFF, graph.render_w*graph.render_h*2);
-        memset(graph.threadsData[i].normale, 0x80, graph.render_w*graph.render_h*4);
+        memset(graph.threadsData[i].normale, 0x00, graph.render_w*graph.render_h*4);
     }
     glClear( GL_COLOR_BUFFER_BIT );
 #endif
@@ -227,13 +241,26 @@ void graph_end_frame()
     }
     printf("\n");*/
 
-    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, graph.rasterData.pixels);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
+    glUseProgram(graph.shader->shaderProgram); //before setting uniforms
 
-    glUseProgram(graph.shader->shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, graph.textureColId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureVox"), 0);
+
+    glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
+    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureNorm"), 1);
+
+    /*glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_R16, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
+    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureZbuf"), 2);*/
+
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, graph.textureId);
+    glBindTexture(GL_TEXTURE_2D, graph.textureColId);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
+    /*glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);*/
 
     glBindVertexArray( graph.VAO );
     glDrawElements( GL_TRIANGLES, sizeof(indicesData)/sizeof(indicesData[0]), GL_UNSIGNED_INT, 0);
@@ -383,7 +410,9 @@ void graph_clear_threadCol(int thread,uint16_t z)
 void graph_close()
 {
 #ifdef __PC__
-    glDeleteTextures(1, &graph.textureId);
+    glDeleteTextures(1, &graph.textureColId);
+    glDeleteTextures(1, &graph.textureZbufId);
+    glDeleteTextures(1, &graph.textureNormId);
     deleteShader(graph.shader);
     glDeleteVertexArrays(1, &graph.VAO);
     glDeleteBuffers(1, &graph.VBO);

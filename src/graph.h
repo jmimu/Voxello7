@@ -56,7 +56,7 @@ struct Graph{
         //SDL_Texture *texture; //pixels texture
         SDL_GLContext context;
         struct Shader* shader;
-        unsigned int EBO, VBO, VAO, textureId;
+        unsigned int EBO, VBO, VAO, textureColId, textureZbufId, textureNormId;
         //uint32_t *pixels; //surface data, where voxrender writes
     #endif
     #ifdef __3DS__
