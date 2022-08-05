@@ -517,8 +517,9 @@ void voxworld_init_land(struct VoxWorld * world)
 	long z_ground;
 	long z_water = world->szZ/10;
 	long z_snow = world->szZ*0.4;
-	int COLOR_START=15;
-	int COLOR_END=28;
+	int COLOR_START=12;
+	int COLOR_END=23;
+	int z_noise;
 	VOX_TYPE color;
 	VOX_TYPE underground_color;
 	printf("Filling world...\n");
@@ -528,6 +529,7 @@ void voxworld_init_land(struct VoxWorld * world)
 		{
 			z_ground=_cos(x/(world->szX/(PI*3)+1))*world->szZ/4+_sin(y/(world->szY/(PI*5)+1)+1)*world->szZ/5+world->szZ/2;
 			z_ground/=2;
+			z_noise = rand()%5-2;
 			color = (rand()%(COLOR_END-COLOR_START)+COLOR_START)>>1;
 			underground_color = (color<<10)|(color<<5)|(color>>1);
 			//z_start=x+y-1;
@@ -538,12 +540,12 @@ void voxworld_init_land(struct VoxWorld * world)
 				color = (rand()%(COLOR_END-COLOR_START)+COLOR_START);
 				if (z<z_ground) //underground
 					world->curr_exp_col[z]=underground_color;
-				else if ((z<z_water)&&((z<z_ground+1))) //underwater ground
+				else if ((z<z_water+z_noise)&&((z<z_ground+1))) //underwater ground
 					world->curr_exp_col[z]=(color<<10)|(color<<5)|(color>>1);
 				else if ((z>=z_ground+1)&&((z<z_water))) //water
 					world->curr_exp_col[z]=WATER;
-				else if ((z<z_snow)&&(z<z_ground+1))//grass ground
-					world->curr_exp_col[z]=color<<5;
+				else if ((z<z_snow+z_noise)&&(z<z_ground+1))//grass ground
+					world->curr_exp_col[z]=((color>>1)<<10)|(color<<5)|(color>>2);
 				else if (z<z_ground+1)//snow ground
 					world->curr_exp_col[z]=(color<<10)|(color<<5)|(color<<0);
 				else //air
