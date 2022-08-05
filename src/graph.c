@@ -248,13 +248,13 @@ void graph_end_frame()
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureZbuf"), 2);
 
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
 
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
 
     glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_w,  graph.render_h, 0, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
@@ -282,10 +282,10 @@ void graph_end_frame()
 void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b)
 {
 #ifdef __PC__
-    graph.rasterData.pixels[x+y*graph.render_w]=(r<<24)+(g<<16)+(b<<8)+0xFF;
+    graph.rasterData.pixels[x*graph.render_h+y]=(r<<24)+(g<<16)+(b<<8)+0xFF;
 #endif
 #ifdef __3DS__
-    long i = (y+x*graph.render_h)*3;
+    long i = (x*graph.render_h+y)*3;
     graph.pixels[i++]=b;
     graph.pixels[i++]=g;
     graph.pixels[i]=r;
@@ -295,10 +295,10 @@ void graph_putpixel_rgb(int x,int y,uint8_t r,uint8_t g,uint8_t b)
 void graph_putpixel(int x,int y,uint32_t rgba)
 {
 #ifdef __PC__
-    graph.rasterData.pixels[x+y*graph.render_w]=rgba;
+    graph.rasterData.pixels[x*graph.render_h+y]=rgba;
 #endif
 #ifdef __3DS__
-    long i = (y+x*graph.render_h)*3;
+    long i = (x*graph.render_h+y)*3;
     graph.pixels[i++]=rgba;
     graph.pixels[i++]=rgba>>8;
     graph.pixels[i]=rgba>>16;
@@ -321,15 +321,15 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
     if (ymin<0) ymin=0;
     if (ymax>=graph.render_h) ymax=graph.render_h-1;
 #ifdef __PC__
-    i=x+ymin*graph.render_w;
+    i=x*graph.render_h+ymin;
     for (int y=ymin+1;y<=ymax;y++)
     {
         graph.rasterData.pixels[i]=rgba;
-        i+=graph.render_w;
+        ++i;
     }
 #endif
 #ifdef __3DS__
-    i = (graph.render_h-ymin+x*graph.render_h)*3;
+    i = (x*graph.render_h+ymin)*3;
     for (int y=ymin+1;y<=ymax;y++)
     {
       graph.pixels[i++]=rgba;
@@ -355,7 +355,7 @@ void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_
     if (ymin<0) ymin=0;
     if (ymax>=graph.render_h) ymax=graph.render_h-1;
 
-    long i = x + (ymin+1)*graph.render_w;
+    long i = x*graph.render_h+ymin+1;
     for (int y=ymin+1;y<=ymax;y++)
     {
         if (graph.threadsData[thread].zbuf[i]>z)
@@ -364,49 +364,9 @@ void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_
             graph.threadsData[thread].normale[i]=normale;
             graph.threadsData[thread].zbuf[i]=z;
         }
-        i += graph.render_w;
+        ++i;
     }
 }
-/*
-void graph_clear_threadCol(int thread,uint16_t z)
-{
-    //TODO: optimization : have a clean column, and copy it here
-    //memset (graph.threadColPixels[thread], v, graph.render_h*4 );
-    for (int y=0;y<graph.render_h;y++)
-    {
-        graph.threadColPixels[thread][y]=0;//0xFF402010;
-        graph.threadColzbuf[thread][y]=z;
-    }
-
-}
-*/
-/*void graph_write_threadCol(int thread, int x)
-{
-#ifdef __PC__
-    unsigned int i=x;
-    for (int y=0;y<graph.render_h;y++)
-    {
-        graph.pixels[i]=graph.threadColPixels[thread][y];
-        graph.zbuf[i]=graph.threadColzbuf[thread][y];
-        i+=graph.render_w;
-    }
-#endif
-#ifdef __3DS__
-    unsigned long i_zb=x;
-    unsigned long i_fb=(x*graph.render_h)*3;
-    uint32_t rgba;
-    for (int y=graph.render_h-1;y>=0;y--)
-    {
-      rgba = graph.threadColPixels[thread][y];
-        graph.pixels[i_fb++]=rgba;
-        graph.pixels[i_fb++]=rgba>>8;
-        graph.pixels[i_fb++]=rgba>>16;
-        graph.zbuf[i_zb]=graph.threadColzbuf[thread][y];
-        i_zb+=graph.render_w;
-    }
-#endif
-}*/
-
 
 void graph_close()
 {
@@ -440,7 +400,6 @@ void graph_close()
     gfxExit();
 #endif
 }
-
 
 void graph_test()
 {

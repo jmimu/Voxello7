@@ -33,7 +33,7 @@
      - TODO: zbuffer
 */
 
-  //each Thread has a full image, they will be merged with a shader
+  //each Thread has a full image (column-first), they will be merged with a shader
 struct GraphData
 {
 #ifdef __PC__
