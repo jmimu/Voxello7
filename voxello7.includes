@@ -3,3 +3,4 @@ src/formats
 .
 src/pc
 src/shaders
+src/OpenSimplexNoiseC

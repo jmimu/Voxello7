@@ -1,5 +1,7 @@
 Makefile
 Makefile_pc
+src/OpenSimplexNoiseC/OpenSimplexNoise.c
+src/OpenSimplexNoiseC/OpenSimplexNoise.h
 src/background.c
 src/background.h
 src/dbg.h

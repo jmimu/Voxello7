@@ -5,6 +5,8 @@ dbg.h from c.learncodethehardway.org
 
 magicavoxel format from ephtracy.github.io
 
+OpenSimplexNoiseC derived from https://github.com/deerel/OpenSimplexNoise
+
 Dependencies
 ------------
 

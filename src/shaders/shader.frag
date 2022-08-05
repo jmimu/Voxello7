@@ -13,7 +13,7 @@ const float ambiant = 0.2;
 
 void main() {
 	vec4 col = texture(textureCol, texCoord);
-	float z = 1/(10*(texture(textureZbuf, texCoord).r));
+	float z = 2/(10*(texture(textureZbuf, texCoord).r));
 	z = clamp(z,0,1);
 	vec4 n = 2*texture(textureNorm, texCoord)-1;
 

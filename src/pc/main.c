@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		world = voxworld_create(1000,1000,400);
+		world = voxworld_create(1000,1000,200);
 		voxworld_init_land(world);
 	}
 	if (!world) //in case of wrong filename

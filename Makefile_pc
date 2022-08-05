@@ -3,7 +3,7 @@ CFLAGS= -O3 -std=c99 -Wall -Wextra -fopenmp -Isrc -rdynamic -DNDEBUG  -D__PC__ -
 LIBS=-lm -lSDL2 -lSDL2_image -pthread $(OPTLIBS) -lGL
 PREFIX?=/usr/local
 
-SOURCES=$(wildcard src/formats/*.c src/pc/*.c src/*.c)
+SOURCES=$(wildcard src/formats/*.c src/OpenSimplexNoiseC/*.c src/pc/*.c src/*.c)
 OBJECTS_TMP=$(patsubst %.c,%.o,$(SOURCES))
 OBJECTS=$(OBJECTS_TMP:src/%=build/%)
 

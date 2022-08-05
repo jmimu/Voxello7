@@ -4,6 +4,7 @@
 #include <math.h>
 #include "dbg.h"
 #include "trigo.h"
+#include "OpenSimplexNoiseC/OpenSimplexNoise.h"
 
 const VOX_TYPE EMPTY=0xffff;
 const VOX_TYPE SPECIAL_MASK=0x8000;
@@ -517,19 +518,25 @@ void voxworld_init_land(struct VoxWorld * world)
 	long z_ground;
 	long z_water = world->szZ/10;
 	long z_snow = world->szZ*0.4;
-	int COLOR_START=12;
+	int COLOR_START=16;
 	int COLOR_END=23;
 	int z_noise;
 	VOX_TYPE color;
 	VOX_TYPE underground_color;
+	struct Noise * noise = createNoise();
 	printf("Filling world...\n");
 		
 	for (long x=0;x<world->szX;x++)
 		for (long y=0;y<world->szY;y++)
 		{
-			z_ground=_cos(x/(world->szX/(PI*3)+1))*world->szZ/4+_sin(y/(world->szY/(PI*5)+1)+1)*world->szZ/5+world->szZ/2;
-			z_ground/=2;
-			z_noise = rand()%5-2;
+			//z_ground=_cos(x/(world->szX/(PI*3)+1))*world->szZ/4+_sin(y/(world->szY/(PI*5)+1)+1)*world->szZ/5+world->szZ/2;
+			//z_ground/=2;
+			z_ground =  (eval2d(noise,  2*((float)x)/world->szX,  2*((float)y)/world->szY))*world->szZ/2;
+			z_ground += (eval2d(noise,  4*((float)x)/world->szX,  4*((float)y)/world->szY))*world->szZ/4;
+			z_ground += (eval2d(noise,  8*((float)x)/world->szX,  8*((float)y)/world->szY))*world->szZ/8;
+			z_ground += (eval2d(noise, 16*((float)x)/world->szX, 16*((float)y)/world->szY))*world->szZ/16;
+			z_ground += world->szZ/4;
+			z_noise = rand()%3-1;
 			color = (rand()%(COLOR_END-COLOR_START)+COLOR_START)>>1;
 			underground_color = (color<<10)|(color<<5)|(color>>1);
 			//z_start=x+y-1;
@@ -554,6 +561,7 @@ void voxworld_init_land(struct VoxWorld * world)
 			voxworld_compr_col(world);
 			voxworld_write_compr_col(world,x,y);
 		}
+	free(noise);
 	//add a wall
 	
 	//colors: 20 and 150
