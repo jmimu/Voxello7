@@ -75,7 +75,7 @@ void mob_update(struct VoxWorld * world, struct Mob* mob, double_t dt)
 							+(z-mob->spr->pos.z)*(z-mob->spr->pos.z)<explode_size*explode_size)
 						{
 							//TODO: add particle
-							world->curr_exp_col[z]=EMPTY;
+							if (!(world->curr_exp_col[z]&SPECIAL_MASK)) world->curr_exp_col[z]=EMPTY;
 						}
 					}
 					voxworld_compr_col(world);

@@ -6,6 +6,9 @@
 #include "trigo.h"
 
 const VOX_TYPE EMPTY=0xffff;
+const VOX_TYPE SPECIAL_MASK=0x8000;
+const VOX_TYPE WATER=0x8011;
+
 const int UNINIT=-1;
 
 
@@ -58,7 +61,7 @@ struct VoxWorld * voxworld_create(int _szX,int _szY,int _szZ)
 	}
 
 	//create working colums memory space
-    world->curr_exp_col=(VOX_TYPE *) malloc(world->szZ*sizeof(VOX_TYPE));
+	world->curr_exp_col=(VOX_TYPE *) malloc(world->szZ*sizeof(VOX_TYPE));
 	voxworld_empty_curr_exp_col(world);
 	world->curr_compr_col=(struct RLE_block *) malloc(world->szZ*sizeof(struct RLE_block));
 	world->curr_compr_col_size=0;
@@ -236,10 +239,10 @@ error:
 
 int voxworld_get_ground_z(struct VoxWorld * world, int x, int y)
 {
-    if ((x>=0)&&(x<world->szX)&&(y>=0)&&(y<world->szY))
-        return world->col_full_end[x][y];
-    else
-        return 0;
+	if ((x>=0)&&(x<world->szX)&&(y>=0)&&(y<world->szY))
+		return world->col_full_end[x][y];
+	else
+		return 0;
 }
 
 
@@ -423,7 +426,7 @@ void voxworld_init_land2(struct VoxWorld * world)
 					world->curr_exp_col[z]=EMPTY;
 			}
 			voxworld_compr_col(world);
-    		#ifdef WITH_OMP			
+			#ifdef WITH_OMP
 			#pragma omp critical
 		#endif
 			{
@@ -511,26 +514,39 @@ void voxworld_init_rand(struct VoxWorld * world)
 
 void voxworld_init_land(struct VoxWorld * world)
 {
-	long z_start;
-	int SNOW_START=22;
-	int SNOW_END=31;
+	long z_ground;
+	long z_water = world->szZ/10;
+	long z_snow = world->szZ*0.4;
+	int COLOR_START=15;
+	int COLOR_END=28;
+	VOX_TYPE color;
+	VOX_TYPE underground_color;
 	printf("Filling world...\n");
 		
 	for (long x=0;x<world->szX;x++)
 		for (long y=0;y<world->szY;y++)
 		{
-			z_start=_cos(x/(world->szX/(PI*3)+1))*world->szZ/4+_sin(y/(world->szY/(PI*5)+1)+1)*world->szZ/5+world->szZ/2;
-			z_start/=5;
+			z_ground=_cos(x/(world->szX/(PI*3)+1))*world->szZ/4+_sin(y/(world->szY/(PI*5)+1)+1)*world->szZ/5+world->szZ/2;
+			z_ground/=2;
+			color = (rand()%(COLOR_END-COLOR_START)+COLOR_START)>>1;
+			underground_color = (color<<10)|(color<<5)|(color>>1);
 			//z_start=x+y-1;
-			if (z_start<=0) z_start=1; 
+			if (z_ground<=0) z_ground=1;
 			voxworld_empty_curr_exp_col(world);
 			for (long z=0;z<world->szZ;z++)
 			{
-				if (z<z_start)
-					world->curr_exp_col[z]=(((uint16_t)((2*31.0*z_start)/world->szZ))<<5)+0x1f;
-				else if (z<z_start+1)//for snow
-					world->curr_exp_col[z]=rand()%(SNOW_END-SNOW_START)+SNOW_START;//0x50;
-				else
+				color = (rand()%(COLOR_END-COLOR_START)+COLOR_START);
+				if (z<z_ground) //underground
+					world->curr_exp_col[z]=underground_color;
+				else if ((z<z_water)&&((z<z_ground+1))) //underwater ground
+					world->curr_exp_col[z]=(color<<10)|(color<<5)|(color>>1);
+				else if ((z>=z_ground+1)&&((z<z_water))) //water
+					world->curr_exp_col[z]=WATER;
+				else if ((z<z_snow)&&(z<z_ground+1))//grass ground
+					world->curr_exp_col[z]=color<<5;
+				else if (z<z_ground+1)//snow ground
+					world->curr_exp_col[z]=(color<<10)|(color<<5)|(color<<0);
+				else //air
 					world->curr_exp_col[z]=EMPTY;
 			}
 			voxworld_compr_col(world);

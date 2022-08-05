@@ -6,6 +6,8 @@
 
 #define VOX_TYPE uint16_t
 extern const VOX_TYPE EMPTY;
+extern const VOX_TYPE SPECIAL_MASK;
+extern const VOX_TYPE WATER;
 extern const int UNINIT;
 
 
