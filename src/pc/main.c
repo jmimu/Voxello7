@@ -381,6 +381,8 @@ int main(int argc, char *argv[])
 		//graph_test();
 		glUseProgram(graph.shader->shaderProgram); //before setting uniforms
 		glUniform3fv(glGetUniformLocation(graph.shader->shaderProgram, "sunDir"), 1, sky->sunVect); //impossible to make glUniform3f work??
+		float sun[3] = {sky->sunSite, sky->sunAzimuth-angleZ, 0};
+		glUniform3fv(glGetUniformLocation(graph.shader->shaderProgram, "sunAng"), 1, sun); //TODO: convert to px with focale etc.
 		graph_end_frame();
 		//run=false;
 
