@@ -80,7 +80,7 @@ bool graph_init(int _window_w,int _window_h,
 
     check(graph.context,"SDL_GL_CreateContext error: %s\n",SDL_GetError());
 
-    graph.shader = createShader(NULL, "src/shaders/vertex.shader", "src/shaders/fragment.shader");
+    graph.shader = createShader(NULL, "src/shaders/shader.vert", "src/shaders/shader.frag");
     graph_create_quad();
 
     //if SDL_WINDOW_FULLSCREEN_DESKTOP

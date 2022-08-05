@@ -28,8 +28,8 @@ src/pt3d.c
 src/pt3d.h
 src/raster.c
 src/raster.h
-src/shaders/fragment.shader
-src/shaders/vertex.shader
+src/shaders/shader.frag
+src/shaders/shader.vert
 src/sky.c
 src/sky.h
 src/sprite.c

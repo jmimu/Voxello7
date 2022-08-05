@@ -244,8 +244,8 @@ int main(int argc, char *argv[])
 						case SDLK_m:
 							key_m=true;
 							break;
-						case SDLK_s: //recompile shader
-							createShader(graph.shader, "src/shaders/vertex.shader", "src/shaders/fragment.shader");
+						case SDLK_s: //recompile shaders
+							createShader(graph.shader, "src/shaders/shader.vert", "src/shaders/shader.frag");
 							break;
 						default:
 							break;
