@@ -5,7 +5,8 @@ in vec2 texCoord;
 out vec4 FragColor;
 
 uniform vec3 sunDir;
-uniform vec3 sunAng;//site, az, 0.0
+uniform vec3 sunAng;//site, az, 0.
+uniform vec3 camera;//angleX, angleZ, render->f/w
 uniform float iTime;
 uniform sampler2D textureCol;
 uniform sampler2D textureZbuf;
@@ -13,7 +14,13 @@ uniform sampler2D textureNorm;
 
 const float ambiant = 0.2;
 
-
+/*
+  TODO:
+   - sky with correct proj
+   - add ang X
+   - special texture for sky/background/vox/water
+   - slowly changing normale for water
+  */
 
 
 
@@ -70,10 +77,26 @@ float distSpecial(vec2 uv, vec2 mouseuv)
     return sqrt( (uv.x-mouseuv.x)*(uv.x-mouseuv.x)*(1.01+mouseuv.y) + (uv.y-mouseuv.y)*(uv.y-mouseuv.y) );
 }
 
+vec2 site_az2uv( vec2 angs )
+{
+	if (dot(-sunDir,vec3(sin(camera.y),cos(camera.y),0))<0) return vec2(-100,-100);
+	vec2 uv = vec2(-sunAng.x, -sunAng.y+camera.y);
+	uv = -camera.z * tan(uv) + 0.5;
+	return uv;
+}
+
+vec4 skyImage2( vec2 fragCoord )
+{
+    vec2 uv = screen2uv(fragCoord);
+    vec2 mouseuv = site_az2uv(sunAng.xy);
+    float d = 0.1/distance(uv, mouseuv);
+    return vec4(d,d,0.5+d/2.,1);
+}
+
 vec4 skyImage( vec2 fragCoord )
 {
     vec2 uv = screen2uv(fragCoord);
-    vec2 mouseuv = screen2uv(sunAng.xy);
+    vec2 mouseuv = site_az2uv(sunAng.xy);
     //float sunDist = 0.02/(distance(uv,mouseuv)+0.01);
     float sunDist = 0.02/(distSpecial(uv,mouseuv)+0.01);
     vec3 sunCol = vec3(sunDist*(1.-uv.y/3.0)*abs(2.+uv.y),sunDist*0.5*abs(2.+uv.y),0.0);
@@ -96,7 +119,7 @@ void main() {
 	vec4 n = texture(textureNorm, texCoord);
 	if (n.w==0.)
 	{
-		FragColor = skyImage(texCoord);
+		FragColor = skyImage2(texCoord);
 		return;
 	}
 	n = 2*n-1;
@@ -109,7 +132,7 @@ void main() {
 	//vec4 zbuf = texture(textureZbuf, texCoord);
 	//float z = 1/(10*sqrt(texture(textureZbuf, texCoord).r));
 	//vec4 n = texture(textureNorm, texCoord);
-	float light = clamp(dot(vec3(n),sunDir)*2,0.5,2);
+	float light = clamp(dot(vec3(n),-sunDir)*2,0.5,2);
 	FragColor = vec4(col.rgb*z,1.0)*light;
 	//FragColor = col+sunDir+n+z;
 	//FragColor = n;

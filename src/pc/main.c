@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 	struct Background * background=0;
     struct Sky * sky = createSky();
 
-    result=graph_init(1920,1080,1920/2,1080,"Voxello");
+    result=graph_init(1920/2,1080,1920/2,1080,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
@@ -343,22 +343,26 @@ int main(int argc, char *argv[])
 
 		if (key_o)
 		{
-			sky->sunSite += 0.01;
+			sky->sunSite += 0.02;
+			if (sky->sunSite>M_PI) sky->sunSite -= 2*M_PI;
 			upSunVect(sky);
 		}
 		if (key_k)
 		{
-			sky->sunAzimuth -= 0.01;
+			sky->sunAzimuth -= 0.02;
+			if (sky->sunAzimuth<-M_PI) sky->sunAzimuth += 2*M_PI;
 			upSunVect(sky);
 		}
 		if (key_l)
 		{
-			sky->sunSite -= 0.01;
+			sky->sunSite -= 0.02;
+			if (sky->sunSite<-M_PI) sky->sunSite += 2*M_PI;
 			upSunVect(sky);
 		}
 		if (key_m)
 		{
-			sky->sunAzimuth += 0.01;
+			sky->sunAzimuth += 0.02;
+			if (sky->sunAzimuth>M_PI) sky->sunAzimuth -= 2*M_PI;
 			upSunVect(sky);
 		}
 
@@ -381,8 +385,10 @@ int main(int argc, char *argv[])
 		//graph_test();
 		glUseProgram(graph.shader->shaderProgram); //before setting uniforms
 		glUniform3fv(glGetUniformLocation(graph.shader->shaderProgram, "sunDir"), 1, sky->sunVect); //impossible to make glUniform3f work??
-		float sun[3] = {sky->sunSite, sky->sunAzimuth-angleZ, 0};
-		glUniform3fv(glGetUniformLocation(graph.shader->shaderProgram, "sunAng"), 1, sun); //TODO: convert to px with focale etc.
+		float sunUni[3] = {sky->sunSite, sky->sunAzimuth, 0};
+		glUniform3fv(glGetUniformLocation(graph.shader->shaderProgram, "sunAng"), 1, sunUni); //TODO: convert to px with focale etc.
+		float camUni[3] = {angleX, angleZ, render->f / graph.render_w};
+		glUniform3fv(glGetUniformLocation(graph.shader->shaderProgram, "camera"), 1, camUni); //TODO: convert to px with focale etc.
 		graph_end_frame();
 		//run=false;
 
