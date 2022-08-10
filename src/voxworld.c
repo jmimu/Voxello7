@@ -8,8 +8,8 @@
 
 const VOX_TYPE EMPTY=0xffff;
 const VOX_TYPE SPECIAL_MASK=0x8000;
-const VOX_TYPE WATER=0x8011;
-
+const VOX_TYPE WATER=0x8002;
+const uint8_t NORMAL_MASK=0x01;
 const int UNINIT=-1;
 
 

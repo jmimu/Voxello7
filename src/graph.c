@@ -161,14 +161,21 @@ void graph_create_quad()
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //no interpolation
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     glGenTextures(1, &graph.textureZbufId);
     glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glGenTextures(1, &graph.textureNatureId);
+    glBindTexture(GL_TEXTURE_2D, graph.textureNatureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 }
@@ -178,6 +185,7 @@ void graph_create_data()
     graph.rasterData.pixels = graph.surface->pixels;
     graph.rasterData.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
     graph.rasterData.normale = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+    graph.rasterData.nature = (uint8_t*) malloc(graph.render_w*graph.render_h);
 
     nb_threads=omp_get_max_threads();
     graph.threadsData = malloc(nb_threads*sizeof(struct GraphData));
@@ -186,6 +194,7 @@ void graph_create_data()
         graph.threadsData[i].pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
         graph.threadsData[i].zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
         graph.threadsData[i].normale = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+        graph.threadsData[i].nature = (uint8_t*) malloc(graph.render_w*graph.render_h);
     }
 }
 
@@ -195,19 +204,21 @@ void graph_start_frame()
     memset(graph.rasterData.pixels, 0x00, graph.render_w*graph.render_h*4);
     memset(graph.rasterData.zbuf, 0xFF, graph.render_w*graph.render_h*2);
     memset(graph.rasterData.normale, 0x80, graph.render_w*graph.render_h*4);
+    memset(graph.rasterData.nature, 0x00, graph.render_w*graph.render_h);
     nb_threads=omp_get_max_threads();
     for (int i=0;i<nb_threads;i++)
     {
         memset(graph.threadsData[i].pixels, 0x00, graph.render_w*graph.render_h*4);
         memset(graph.threadsData[i].zbuf, 0xFF, graph.render_w*graph.render_h*2);
         memset(graph.threadsData[i].normale, 0x00, graph.render_w*graph.render_h*4);
+        memset(graph.threadsData[i].nature, 0x00, graph.render_w*graph.render_h);
     }
     glClear( GL_COLOR_BUFFER_BIT );
 #endif
 
-#ifdef DBG_GRAPH
-    graph_vline(graph.render_w/2,0,graph.render_h,0x40B0FF);
-#endif
+//#ifdef DBG_GRAPH
+//    graph_vline(graph.render_w/2,0,graph.render_h,0x40B0FF);
+//#endif
 }
 
 void graph_end_frame()
@@ -225,6 +236,7 @@ void graph_end_frame()
             graph.threadsData[0].pixels[p]+=graph.threadsData[i].pixels[p];
             graph.threadsData[0].zbuf[p]+=graph.threadsData[i].zbuf[p];
             graph.threadsData[0].normale[p]+=graph.threadsData[i].normale[p];
+            graph.threadsData[0].nature[p]|=graph.threadsData[i].nature[p];
         }
         graph.threadsData[0].zbuf[p]+=nb_threads-1;//because we add -1/0xFFFF for each unused threads
     }
@@ -246,6 +258,7 @@ void graph_end_frame()
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureCol"), 0);
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureNorm"), 1);
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureZbuf"), 2);
+    glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureNature"), 3);
 
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
@@ -256,12 +269,17 @@ void graph_end_frame()
     glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
 
+    glBindTexture(GL_TEXTURE_2D, graph.textureNatureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,  graph.render_h,  graph.render_w, 0, GL_RED, GL_UNSIGNED_BYTE, graph.threadsData[0].nature);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, graph.textureNatureId);
 
     glBindVertexArray( graph.VAO );
     glDrawElements( GL_TRIANGLES, sizeof(indicesData)/sizeof(indicesData[0]), GL_UNSIGNED_INT, 0);
@@ -340,7 +358,7 @@ void graph_vline(int x,int y1,int y2,uint32_t rgba)
 #endif
 }
 
-void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_t z, uint32_t normale)
+void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_t z, uint32_t normale, uint8_t nature)
 {
     int ymin;
     int ymax;
@@ -363,7 +381,31 @@ void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_
             graph.threadsData[thread].pixels[i]=rgba;
             graph.threadsData[thread].normale[i]=normale;
             graph.threadsData[thread].zbuf[i]=z;
+            graph.threadsData[thread].nature[i]|=nature;
         }
+        ++i;
+    }
+}
+
+void graph_vline_threadCol_nature(int thread,int x, int y1,int y2, uint8_t nature)
+{
+    int ymin;
+    int ymax;
+    if (y1>y2)
+    {
+        ymin=graph.render_h-1-y1;
+        ymax=graph.render_h-1-y2;
+    }else{
+        ymin=graph.render_h-1-y2;
+        ymax=graph.render_h-1-y1;
+    }
+    if (ymin<0) ymin=0;
+    if (ymax>=graph.render_h) ymax=graph.render_h-1;
+
+    long i = x*graph.render_h+ymin+1;
+    for (int y=ymin+1;y<=ymax;y++)
+    {
+        graph.threadsData[thread].nature[i]|=nature;
         ++i;
     }
 }
@@ -374,6 +416,7 @@ void graph_close()
     glDeleteTextures(1, &graph.textureColId);
     glDeleteTextures(1, &graph.textureZbufId);
     glDeleteTextures(1, &graph.textureNormId);
+    glDeleteTextures(1, &graph.textureNatureId);
     deleteShader(graph.shader);
     glDeleteVertexArrays(1, &graph.VAO);
     glDeleteBuffers(1, &graph.VBO);
@@ -401,13 +444,13 @@ void graph_close()
 #endif
 }
 
-void graph_test()
+/*void graph_test()
 {
     for (int x=0;x<graph.render_w;x++)
     {
         graph_vline(x,0,graph.render_h,x);
     }
-}
+}*/
 
 uint32_t color_bright(uint32_t color, float factor)
 {

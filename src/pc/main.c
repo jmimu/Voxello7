@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 	struct Background * background=0;
     struct Sky * sky = createSky();
 
-    result=graph_init(1920/2,1080,1920/2,1080,"Voxello");
+    result=graph_init(1920,1080,1920/4,1080,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
@@ -186,6 +186,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	cam.x=-26.472362;cam.y=618.663497;cam.z=0;angleZ=M_PI/2; //debug water
 
 	while (run)
 	{
@@ -213,6 +214,7 @@ int main(int argc, char *argv[])
 							break;
 						case SDLK_w:
 							trace=true;
+							printf("Cam: %f %f %f, ang %f\n", cam.x, cam.y, cam.z, angleZ);
 							break;
 						case SDLK_r:
 							key_r=true;

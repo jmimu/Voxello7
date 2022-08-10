@@ -11,6 +11,7 @@ uniform float iTime;
 uniform sampler2D textureCol;
 uniform sampler2D textureZbuf;
 uniform sampler2D textureNorm;
+uniform sampler2D textureNature;
 
 const float ambiant = 0.2;
 
@@ -20,6 +21,8 @@ const float ambiant = 0.2;
    - add ang X
    - special texture for sky/background/vox/water
    - slowly changing normale for water
+   - add rasters
+   - nature texture as bitfield: 0=sky, 1=vox, 2=water
   */
 
 
@@ -123,10 +126,20 @@ void main() {
 		return;
 	}
 	n = 2*n-1;
+	vec4 nat = texture(textureNature, texCoord);
+
 	vec4 col = texture(textureCol, texCoord);
+	if (nat.r>0.01) //water
+	{
+		col = col * vec4(0.6,0.6,0.8,1.) + vec4(0.,0.,0.5,1.);
+		vec2 reflex_texCoord;
+		reflex_texCoord.y = texCoord.y + 0.01*sin(texCoord.x*100.);
+		reflex_texCoord.x = 1.-texCoord.x;
+		col = mix(col, texture(textureCol, reflex_texCoord), 0.3);
+	}
+
 	float z = 2/(10*(texture(textureZbuf, texCoord).r));
 	z = clamp(z,0,1);
-
 	//FragColor = vec4(ourColor,1.0);
 	//FragColor = vec4(0.0,1.0,0.0,1.0);
 	//vec4 zbuf = texture(textureZbuf, texCoord);
@@ -138,4 +151,5 @@ void main() {
 	//FragColor = n;
 	//FragColor = vec4(sunDir,1,1,1);
 	//FragColor = vec4(sunDir.b,0.0,texCoord.x,1.0);
+	//FragColor = vec4(vec3((float(nat.r))*100.), 1);
 };

@@ -6,7 +6,7 @@
 struct Sky * createSky()
 {
     struct Sky * sky = malloc(sizeof(struct Sky));
-    sky->sunSite = 0.5;
+    sky->sunSite = -0.5;
     sky->sunAzimuth = 0;
     upSunVect(sky);
     return sky;

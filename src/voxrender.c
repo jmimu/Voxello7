@@ -11,8 +11,8 @@
 #endif
 
 uint32_t normales_xy[8] = {
-    NORMALE_Y_POS,NORMALE_NEUTR,NORMALE_Y_NEG, NORMALE_NEUTR, //is Y
-    NORMALE_X_POS,NORMALE_NEUTR,NORMALE_X_NEG, NORMALE_NEUTR, //is X
+	NORMALE_Y_POS,NORMALE_NEUTR,NORMALE_Y_NEG, NORMALE_NEUTR, //is Y
+	NORMALE_X_POS,NORMALE_NEUTR,NORMALE_X_NEG, NORMALE_NEUTR, //is X
 }; //i = isX (1bit) dirx/y+1 (2 bits) = isX*(dirx+1)+(1-isX)*(diry+1)
 
 //TODO: work in center-relative coords and transform only before drawing?
@@ -170,8 +170,8 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 	int total_intervals=0;
 	//graph_clear_threadCol(ray->thread,ray->render->clip_max*ZBUF_FACTOR);
 	//graph_clear_threadColZ(ray->thread);
-	if (screen_col==graph.render_w/2)
-		graph_vline_threadCol(ray->thread,screen_col,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1, NORMALE_NEUTR);
+	//if (screen_col==graph.render_w/2)
+	//	graph_vline_threadCol(ray->thread,screen_col,0,graph.render_h-1,0xFF808080,ray->render->clip_max*ZBUF_FACTOR-1, NORMALE_NEUTR, NORMAL_MASK);
 	unsigned short current_VInterval_i=0;
 	while ((ray->current_VIntervals_num>0)&&(voxray_findNextIntersection(ray,trace)))
 	{
@@ -328,27 +328,20 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						previous_v=v;
 						continue;
 					}*/
-
-					if (v==EMPTY)
+					if (v==WATER) graph_vline_threadCol_nature(ray->thread,screen_col,l0,l1,WATER);
+					if (v&SPECIAL_MASK) //TODO: very slow with water!
 					{
 						//test if need to draw top of vox below
-						if ((previous_v!=EMPTY)&&(previous_v!=UNINIT)&&(l0-graph.render_h/2<0))
+						if (( !(previous_v&SPECIAL_MASK) )&&(previous_v!=UNINIT)&&(l0-graph.render_h/2<0))
 						{
 							double next_lambda=voxray_lambdaNextIntersection(ray);
 							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
 							if (l_tmp>l0)//TODO: how l_tmp<l0 is possible?
 							{
 								if (l_tmp>l1) l_tmp=l1;
-                                color=color_15to24(previous_v);
-                                /*color=color_bright(color,1.1);
-								if (ray->currentLambda>ray->render->clip_dark)
-									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
-										(ray->render->clip_max-ray->render->clip_dark));//clipping
-								if (ray->currentLambda>ray->render->clip_alpha)
-									color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
-										(ray->render->clip_max-ray->render->clip_alpha));//clipping*/
+								color=color_15to24(previous_v);
 								//TODO: suspicious l_tmp, have to use zbuffer, why?
-								graph_vline_threadCol(ray->thread,screen_col,l0,l_tmp,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2,NORMALE_Z_POS);
+								graph_vline_threadCol(ray->thread,screen_col,l0,l_tmp,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2,NORMALE_Z_POS,NORMAL_MASK);
 								if (trace)
 									printf("draw top %d %d : %x\n",l0,l_tmp,color);
 								l0=l_tmp;
@@ -363,8 +356,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 								(*ray->next_VIntervals)[ray->next_VIntervals_num].l_min=l0;
 								(*ray->next_VIntervals)[ray->next_VIntervals_num].l_max=l1;
 								ray->next_VIntervals_num++;
-								if (trace)
-									if (ray->next_VIntervals_num>total_intervals) total_intervals=ray->next_VIntervals_num;
+								if (ray->next_VIntervals_num>total_intervals) total_intervals=ray->next_VIntervals_num;
 							}else{
 								printf("Error, too many VIntervals\n");
 							}
@@ -374,7 +366,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 						
 					}else{
 						//test if need to draw bottom of vox
-						if ((previous_v==EMPTY)&&(l0-graph.render_h/2>0))
+						if ((previous_v&SPECIAL_MASK)&&(l0-graph.render_h/2>0))
 						{
 							double next_lambda=voxray_lambdaNextIntersection(ray);
 							int l_tmp=z_to_l(previous_voxZ, ray->cam->z, next_lambda, fc);
@@ -384,14 +376,7 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 									printf("prepare to draw bottom %d %d (%d)\n",l_tmp,l0,l0_previous);
 								if (l_tmp<l0_previous) l_tmp=l0_previous;
 								color=color_15to24(v);
-								/*color=color_bright(color,FACTOR_DARK);
-								if (ray->currentLambda>ray->render->clip_dark)
-									color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
-										(ray->render->clip_max-ray->render->clip_dark));//clipping
-								if (ray->currentLambda>ray->render->clip_alpha)
-									color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
-										(ray->render->clip_max-ray->render->clip_alpha));//clipping*/
-								graph_vline_threadCol(ray->thread,screen_col,l_tmp,l0,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2,NORMALE_Z_NEG);
+								graph_vline_threadCol(ray->thread,screen_col,l_tmp,l0,color,(ray->currentLambda+next_lambda)*ZBUF_FACTOR/2,NORMALE_Z_NEG,NORMAL_MASK);
 								if (trace)
 									printf("draw bottom %d %d : %x\n",l_tmp,l0,color);
 								//remove this interval to last next_current_VInterval:
@@ -400,21 +385,11 @@ void voxray_draw(struct VoxRay * ray,int screen_col,bool trace)
 										(*ray->next_VIntervals)[ray->next_VIntervals_num-1].l_max=l_tmp;
 							}
 						}
-
 						color=color_15to24(v);
-                        uint32_t normale = normales_xy[(ray->lastIntersectionWasX<<2)+ray->lastIntersectionWasX*(ray->dirX+1)+(1-ray->lastIntersectionWasX)*(ray->dirY+1)];
-						/*if (ray->lastIntersectionWasX)
-							color=color_bright(color,FACTOR_BRIGHT);
-						if (ray->currentLambda>ray->render->clip_dark)
-							color=color_bright(color,1-(ray->currentLambda-ray->render->clip_dark)/
-								(ray->render->clip_max-ray->render->clip_dark));//clipping
-						if (ray->currentLambda>ray->render->clip_alpha)
-							color=color_alpha(color,1-(ray->currentLambda-ray->render->clip_alpha)/
-								(ray->render->clip_max-ray->render->clip_alpha));//clipping*/
-						graph_vline_threadCol(ray->thread,screen_col,l0,l1,color,ray->currentLambda*ZBUF_FACTOR,normale);
+						uint32_t normale = normales_xy[(ray->lastIntersectionWasX<<2)+ray->lastIntersectionWasX*(ray->dirX+1)+(1-ray->lastIntersectionWasX)*(ray->dirY+1)];
+						graph_vline_threadCol(ray->thread,screen_col,l0,l1,color,ray->currentLambda*ZBUF_FACTOR,normale,NORMAL_MASK);
 						if (trace)
 							printf("draw %d %d : %x\n",l0,l1,color);
-
 					}
 					if (trace)
 						printf("l0_previous=l0 %d %d\n",l0_previous,l0);
@@ -500,15 +475,15 @@ struct VoxRender * voxrender_create(struct VoxWorld *_world,double f_eq35mm)
 
 	render->clip_min=1;
 	render->clip_dark=400;
-	render->clip_alpha=400;
-	render->clip_max=500;
+	render->clip_alpha=600;
+	render->clip_max=600;
 	
-	//render->clip_sub1=render->clip_max;//(render->clip_dark*1+render->clip_max*1)/2;
-	//render->clip_sub2=render->clip_max;//(render->clip_dark*1+render->clip_max*2)/3;
-	//render->clip_sub3=render->clip_max;//(render->clip_dark*1+render->clip_max*4)/5;
-	render->clip_sub1=(render->clip_dark*1+render->clip_max*0)/1;
-	render->clip_sub2=(render->clip_dark*1+render->clip_max*1)/2;
-	render->clip_sub3=(render->clip_dark*1+render->clip_max*2)/3;
+	render->clip_sub1=render->clip_max;//(render->clip_dark*1+render->clip_max*1)/2;
+	render->clip_sub2=render->clip_max;//(render->clip_dark*1+render->clip_max*2)/3;
+	render->clip_sub3=render->clip_max;//(render->clip_dark*1+render->clip_max*4)/5;
+	//render->clip_sub1=(render->clip_dark*1+render->clip_max*0)/1;
+	//render->clip_sub2=(render->clip_dark*1+render->clip_max*1)/2;
+	//render->clip_sub3=(render->clip_dark*1+render->clip_max*2)/3;
 	return render;
 }
 

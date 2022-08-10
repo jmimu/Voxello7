@@ -8,6 +8,8 @@
 extern const VOX_TYPE EMPTY;
 extern const VOX_TYPE SPECIAL_MASK;
 extern const VOX_TYPE WATER;
+
+extern const uint8_t NORMAL_MASK;
 extern const int UNINIT;
 
 
