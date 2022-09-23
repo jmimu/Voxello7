@@ -1,6 +1,6 @@
 CFLAGS= -O3 -g -std=c99 -Wall -Wextra -fopenmp -Isrc -rdynamic -DNDEBUG  -D__PC__ -DWITH_OMP $(OPTFLAGS)
 #-Wpadded
-LIBS=-lm -lSDL2 -lSDL2_image -pthread $(OPTLIBS) -lGL
+LIBS=-lm -lSDL2 -lSDL2_image -pthread $(OPTLIBS) -lGL -ltiff
 PREFIX?=/usr/local
 
 SOURCES=$(wildcard src/formats/*.c src/OpenSimplexNoiseC/*.c src/pc/*.c src/*.c)

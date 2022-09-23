@@ -16,6 +16,7 @@
 #include "sky.h"
 #include "formats/magicavoxel.h"
 #include "formats/voxtxt.h"
+#include "formats/voxtif.h"
 
 void *filling(void* arg)
 {
@@ -93,14 +94,23 @@ int main(int argc, char *argv[])
 	struct Background * background=0;
     struct Sky * sky = createSky();
 
-    result=graph_init(1920,1080,1920/4,1080,"Voxello");
+    result=graph_init(1920,1080,1920,1080,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
 
 	if (argc>1)
 	{
-		world = VoxWorld_create_from_txt(argv[1]);
+	    if (strcmp(argv[1]+(strlen(argv[1])-4),".tif")==0)
+	    {
+	        printf("Tif file: %s\n", argv[1]);
+	        if (argc>2)
+        	    world = VoxWorld_create_from_tif(argv[1], argv[2], 0.5);
+        	else
+            	world = VoxWorld_create_from_tif(argv[1], 0, 0.5);
+    	} else {
+		    world = VoxWorld_create_from_txt(argv[1]);
+		}
 		//return 0;
 	}
 	else
@@ -108,6 +118,8 @@ int main(int argc, char *argv[])
 		world = voxworld_create(1000,1000,200);
 		voxworld_init_land(world);
 	}
+    printf("...\n");
+
 	if (!world) //in case of wrong filename
 	{
 		world = voxworld_create(400,400,200);
@@ -176,7 +188,7 @@ int main(int argc, char *argv[])
 
 
 	//voxworld_init_land2(world);
-	{//separate thread part
+	/*{//separate thread part
 		int res;
 		pthread_t a_thread;
 		res = pthread_create(&a_thread, NULL, filling, (void*)world);
@@ -184,7 +196,7 @@ int main(int argc, char *argv[])
 		{
 			perror("Thread creation failed!\n");
 		}
-	}
+	}*/
 
 	cam.x=-26.472362;cam.y=618.663497;cam.z=0;angleZ=M_PI/2; //debug water
 

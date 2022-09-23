@@ -9,6 +9,8 @@ src/formats/blender2vox.py
 src/formats/blender2voxtex.py
 src/formats/magicavoxel.c
 src/formats/magicavoxel.h
+src/formats/voxtif.c
+src/formats/voxtif.h
 src/formats/voxtxt.c
 src/formats/voxtxt.h
 src/graph.c
