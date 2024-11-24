@@ -10,7 +10,7 @@ OpenSimplexNoiseC derived from https://github.com/deerel/OpenSimplexNoise
 Dependencies
 ------------
 
-PC: libSDL2 libSDL2image
+PC: libglew libSDL2 libSDL2image
 3DS: devkitarm
 
 Compilation
