@@ -16,7 +16,7 @@
 #define NORMALE_Z_POS 0x8080FF80
 #define NORMALE_Z_NEG 0x80800080
 
-uint32_t normales_xy[8];
+extern uint32_t normales_xy[8];
 
 /*****************
  * One ray of raycasting
