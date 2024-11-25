@@ -1,6 +1,6 @@
 #include "voxtif.h"
 #include "../dbg.h"
-#include "tiffio.h"
+#include <tiffio.h>
 
 /*void add_vox(struct VoxWorld * world, int x, int y, int z, int v)
 {

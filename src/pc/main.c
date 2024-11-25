@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	struct Background * background=0;
     struct Sky * sky = createSky();
 
-    result=graph_init(1920,1080,1920,1080,"Voxello");
+    result=graph_init(1920,1080,1920/8,1080,"Voxello");
 	//result=graph_init(640,480,640/2,480/2,"Voxello");
 	//result=graph_init(800,600,800/1,600/1,"Voxello");
 	check_debug(result,"Unable to open window...");
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 	current_time = last_time;
 	previous_fps_time=SDL_GetTicks()/1000;
 
-	//SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
+	SDL_SetRelativeMouseMode(SDL_TRUE); //desactivate for debug
 
     struct Anim* anim1=anim_create(1);
 	anim_add_raster(anim1,raster_load("data/run1.png"));
