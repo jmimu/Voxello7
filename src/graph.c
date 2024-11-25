@@ -58,7 +58,7 @@ bool graph_init(int _window_w,int _window_h,
     // You may need to change this to 16 or 32 for your system
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     // This makes our buffer swap syncronized with the monitor's vertical refresh
-    SDL_GL_SetSwapInterval(1);
+    //SDL_GL_SetSwapInterval(1);
     //test GL context:
     int value = 0;
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &value);
@@ -81,7 +81,6 @@ bool graph_init(int _window_w,int _window_h,
     check(graph.context,"SDL_GL_CreateContext error: %s\n",SDL_GetError());
 
     graph.shader = createShader(NULL, "src/shaders/shader.vert", "src/shaders/shader.frag");
-    graph_create_quad();
 
     //if SDL_WINDOW_FULLSCREEN_DESKTOP
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");  // make the scaled rendering look smoother.
@@ -98,6 +97,7 @@ bool graph_init(int _window_w,int _window_h,
     graph.surface = SDL_CreateRGBSurface(0,graph.render_w,graph.render_h,32,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
     //graph.pixels = graph.surface->pixels;//(uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
     graph_create_data();
+    graph_create_quad();
 #endif
 #ifdef __3DS__
     gfxInitDefault();
@@ -149,9 +149,10 @@ void graph_create_quad()
     // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-
+    // create textures
     glGenTextures(1, &graph.textureColId);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -159,6 +160,7 @@ void graph_create_quad()
 
     glGenTextures(1, &graph.textureNormId);
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -166,6 +168,7 @@ void graph_create_quad()
 
     glGenTextures(1, &graph.textureZbufId);
     glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -202,7 +205,7 @@ void graph_start_frame()
         memset(graph.threadsData[i].zbuf, 0xFF, graph.render_w*graph.render_h*2);
         memset(graph.threadsData[i].normale, 0x00, graph.render_w*graph.render_h*4);
     }
-    glClear( GL_COLOR_BUFFER_BIT );
+    //glClear( GL_COLOR_BUFFER_BIT );
 #endif
 
 #ifdef DBG_GRAPH
@@ -241,31 +244,31 @@ void graph_end_frame()
     }
     printf("\n");*/
 
+
     glUseProgram(graph.shader->shaderProgram); //before setting uniforms
 
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureCol"), 0);
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureNorm"), 1);
     glUniform1i(glGetUniformLocation(graph.shader->shaderProgram, "textureZbuf"), 2);
 
-    glBindTexture(GL_TEXTURE_2D, graph.textureColId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
-
-    glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
-
-    glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
-
+    // update textures
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h, graph.render_w, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
+
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h,  graph.render_w, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
+
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h,  graph.render_w, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
+
 
     glBindVertexArray( graph.VAO );
     glDrawElements( GL_TRIANGLES, sizeof(indicesData)/sizeof(indicesData[0]), GL_UNSIGNED_INT, 0);
 
+    glFinish();
     SDL_GL_SwapWindow( graph.window );
 #endif
 #ifdef __3DS__

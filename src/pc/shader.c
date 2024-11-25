@@ -29,7 +29,7 @@ unsigned int compileOneShader(const char* path, int isVertex)
     fclose(fp);
     src[sz] = 0;
 
-    printf("shader source: \n%s", src);
+    //printf("shader source: \n%s", src);
     if (isVertex)
         id = glCreateShader( GL_VERTEX_SHADER );
     else

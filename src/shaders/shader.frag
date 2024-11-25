@@ -116,6 +116,16 @@ vec4 skyImage( vec2 fragCoord )
 
 
 void main() {
+/*    vec4 col = texture(textureCol, texCoord);
+    float z = 1/(10*sqrt(texture(textureZbuf, texCoord).r));
+    vec4 n = texture(textureNorm, texCoord);
+    //FragColor = vec4(0.,0.,z,1.0);
+    //FragColor = vec4(texCoord.x*col.g,texCoord.y,0.,1.0);
+    //FragColor = vec4(0.,0.,col.b,1.0);
+    //FragColor = vec4((col.rgb+0.5)*z,1.0);
+    FragColor = col;//vec4(col.rgb,1.0);*/
+
+
 	vec4 n = texture(textureNorm, texCoord);
 	if (n.w==0.)
 	{
@@ -138,4 +148,5 @@ void main() {
 	//FragColor = n;
 	//FragColor = vec4(sunDir,1,1,1);
 	//FragColor = vec4(sunDir.b,0.0,texCoord.x,1.0);
+	
 };
