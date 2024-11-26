@@ -182,7 +182,6 @@ void graph_create_data()
     graph.rasterData.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
     graph.rasterData.normale = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
 
-    nb_threads=omp_get_max_threads();
     graph.threadsData = malloc(nb_threads*sizeof(struct GraphData));
     for (int i=0;i<nb_threads;i++)
     {
@@ -195,10 +194,12 @@ void graph_create_data()
 void graph_start_frame()
 {
 #ifdef __PC__
-    memset(graph.rasterData.pixels, 0x00, graph.render_w*graph.render_h*4);
-    memset(graph.rasterData.zbuf, 0xFF, graph.render_w*graph.render_h*2);
-    memset(graph.rasterData.normale, 0x80, graph.render_w*graph.render_h*4);
-    nb_threads=omp_get_max_threads();
+    //memset(graph.rasterData.pixels, 0x00, graph.render_w*graph.render_h*4);
+    //memset(graph.rasterData.zbuf, 0xFF, graph.render_w*graph.render_h*2);
+    //memset(graph.rasterData.normale, 0x80, graph.render_w*graph.render_h*4);
+#ifdef WITH_OMP
+	#pragma omp parallel for schedule(guided)
+#endif
     for (int i=0;i<nb_threads;i++)
     {
         memset(graph.threadsData[i].pixels, 0x00, graph.render_w*graph.render_h*4);
@@ -217,15 +218,15 @@ void graph_end_frame()
 {
 #ifdef __PC__
     //merge all threads' pixels
-    nb_threads=omp_get_max_threads();
 #ifdef WITH_OMP
 	#pragma omp parallel for schedule(guided)
 #endif
+    // TODO: very slow!!
     for (int p=1;p<graph.render_w*graph.render_h;p++)
     {
         for (int i=1;i<nb_threads;i++)
         {
-            graph.threadsData[0].pixels[p]+=graph.threadsData[i].pixels[p];
+            graph.threadsData[0].pixels[p]|=graph.threadsData[i].pixels[p];
             graph.threadsData[0].zbuf[p]+=graph.threadsData[i].zbuf[p];
             graph.threadsData[0].normale[p]+=graph.threadsData[i].normale[p];
         }
@@ -268,7 +269,7 @@ void graph_end_frame()
     glBindVertexArray( graph.VAO );
     glDrawElements( GL_TRIANGLES, sizeof(indicesData)/sizeof(indicesData[0]), GL_UNSIGNED_INT, 0);
 
-    glFinish();
+    //glFinish();
     SDL_GL_SwapWindow( graph.window );
 #endif
 #ifdef __3DS__
