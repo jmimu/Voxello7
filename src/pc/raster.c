@@ -69,10 +69,6 @@ void raster_draw(struct Raster* raster, int x, int y,uint16_t z)
 
 void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, int h,float color_factor)
 {
-/*	if ((x<0)||(x>graph.render_w-w)||
-	    (y<0)||(y>graph.render_h-h))
-		return; //out of screen
-*/
 	int c_start=MAX(0,-x);
 	int c_end=MIN(w,graph.render_w-x);
 	int l_start=MAX(0,-y);

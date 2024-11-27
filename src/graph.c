@@ -190,7 +190,8 @@ void graph_create_quad()
 
 void graph_create_data()
 {
-    graph.rasterData.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
+    graph.rasterData.pixels = graph.surface->pixels;
+    //graph.rasterData.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
     graph.rasterData.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
     graph.rasterData.normale = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
 
@@ -208,9 +209,9 @@ void graph_create_data()
 void graph_start_frame()
 {
 #ifdef __PC__
-    memset(graph.rasterData.pixels, 0x00, graph.render_w*graph.render_h*4);
+    //memset(graph.rasterData.pixels, 0x00, graph.render_w*graph.render_h*4);
     memset(graph.rasterData.zbuf, 0xFF, graph.render_w*graph.render_h*2);
-    memset(graph.rasterData.normale, 0x80, graph.render_w*graph.render_h*4);
+    memset(graph.rasterData.normale, 0x00, graph.render_w*graph.render_h*4);
   #ifdef MULTI_RASTER
    #ifdef WITH_OMP
      #pragma omp parallel for schedule(guided)
@@ -432,7 +433,7 @@ void graph_close()
     }
     free(graph.threadsData);
   #else
-    free(graph.rasterData.pixels);
+    //free(graph.rasterData.pixels);
     free(graph.rasterData.zbuf);
     free(graph.rasterData.normale);
   #endif

@@ -64,9 +64,8 @@ struct Graph{
     #endif
     #ifdef MULTI_RASTER
         struct GraphData* threadsData;
-    #else
-        struct GraphData rasterData;
     #endif
+        struct GraphData rasterData;
 
         //uint16_t *zbuf; //zbuffer unit: voxel side*8
         //uint32_t **threadColPixels;//one column for one thread
