@@ -152,7 +152,11 @@ void graph_create_quad()
     // create textures
     glGenTextures(1, &graph.textureColId);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
+  #ifdef MULTI_RASTER
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
+  #else
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.rasterData.pixels);
+  #endif
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -160,7 +164,11 @@ void graph_create_quad()
 
     glGenTextures(1, &graph.textureNormId);
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
+  #ifdef MULTI_RASTER
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
+  #else
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.rasterData.normale);
+  #endif
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -168,7 +176,11 @@ void graph_create_quad()
 
     glGenTextures(1, &graph.textureZbufId);
     glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
+  #ifdef MULTI_RASTER
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
+  #else
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_RED, GL_UNSIGNED_SHORT, graph.rasterData.zbuf);
+  #endif
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -178,10 +190,11 @@ void graph_create_quad()
 
 void graph_create_data()
 {
-    graph.rasterData.pixels = graph.surface->pixels;
+    graph.rasterData.pixels = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
     graph.rasterData.zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
     graph.rasterData.normale = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
 
+  #ifdef MULTI_RASTER
     graph.threadsData = malloc(nb_threads*sizeof(struct GraphData));
     for (int i=0;i<nb_threads;i++)
     {
@@ -189,23 +202,26 @@ void graph_create_data()
         graph.threadsData[i].zbuf = (uint16_t*) malloc(graph.render_w*graph.render_h*sizeof(uint16_t));
         graph.threadsData[i].normale = (uint32_t*) malloc(graph.render_w*graph.render_h*sizeof(uint32_t));
     }
+  #endif
 }
 
 void graph_start_frame()
 {
 #ifdef __PC__
-    //memset(graph.rasterData.pixels, 0x00, graph.render_w*graph.render_h*4);
-    //memset(graph.rasterData.zbuf, 0xFF, graph.render_w*graph.render_h*2);
-    //memset(graph.rasterData.normale, 0x80, graph.render_w*graph.render_h*4);
-#ifdef WITH_OMP
-	#pragma omp parallel for schedule(guided)
-#endif
+    memset(graph.rasterData.pixels, 0x00, graph.render_w*graph.render_h*4);
+    memset(graph.rasterData.zbuf, 0xFF, graph.render_w*graph.render_h*2);
+    memset(graph.rasterData.normale, 0x80, graph.render_w*graph.render_h*4);
+  #ifdef MULTI_RASTER
+   #ifdef WITH_OMP
+     #pragma omp parallel for schedule(guided)
+   #endif
     for (int i=0;i<nb_threads;i++)
     {
         memset(graph.threadsData[i].pixels, 0x00, graph.render_w*graph.render_h*4);
         memset(graph.threadsData[i].zbuf, 0xFF, graph.render_w*graph.render_h*2);
         memset(graph.threadsData[i].normale, 0x00, graph.render_w*graph.render_h*4);
     }
+  #endif
     //glClear( GL_COLOR_BUFFER_BIT );
 #endif
 
@@ -218,10 +234,11 @@ void graph_end_frame()
 {
 #ifdef __PC__
     //merge all threads' pixels
-#ifdef WITH_OMP
-	#pragma omp parallel for schedule(guided)
-#endif
+  #ifdef MULTI_RASTER
     // TODO: very slow!!
+   #ifdef WITH_OMP
+    #pragma omp parallel for schedule(guided)
+   #endif
     for (int p=1;p<graph.render_w*graph.render_h;p++)
     {
         for (int i=1;i<nb_threads;i++)
@@ -244,7 +261,7 @@ void graph_end_frame()
         printf("\n");
     }
     printf("\n");*/
-
+  #endif
 
     glUseProgram(graph.shader->shaderProgram); //before setting uniforms
 
@@ -255,15 +272,26 @@ void graph_end_frame()
     // update textures
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
+  #ifdef MULTI_RASTER
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h, graph.render_w, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
-
+  #else
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h, graph.render_w, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.rasterData.pixels);
+  #endif
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);
+#ifdef MULTI_RASTER
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h,  graph.render_w, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].normale);
+#else
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h,  graph.render_w, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.rasterData.normale);
+#endif
 
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, graph.textureZbufId);
+#ifdef MULTI_RASTER
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h,  graph.render_w, GL_RED, GL_UNSIGNED_SHORT, graph.threadsData[0].zbuf);
+#else
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h,  graph.render_w, GL_RED, GL_UNSIGNED_SHORT, graph.rasterData.zbuf);
+#endif
 
 
     glBindVertexArray( graph.VAO );
@@ -362,12 +390,21 @@ void graph_vline_threadCol(int thread,int x, int y1,int y2,uint32_t rgba,uint16_
     long i = x*graph.render_h+ymin+1;
     for (int y=ymin+1;y<=ymax;y++)
     {
-        if (graph.threadsData[thread].zbuf[i]>z)
+    #ifdef MULTI_RASTER
+        if (graph.threadsData[thread].zbuf[i]>z) // if thread data
         {
             graph.threadsData[thread].pixels[i]=rgba;
             graph.threadsData[thread].normale[i]=normale;
             graph.threadsData[thread].zbuf[i]=z;
         }
+    #else
+        if (graph.rasterData.zbuf[i]>z) // if uni data
+        {
+            graph.rasterData.pixels[i]=rgba;
+            graph.rasterData.normale[i]=normale;
+            graph.rasterData.zbuf[i]=z;
+        }
+    #endif
         ++i;
     }
 }
@@ -386,16 +423,20 @@ void graph_close()
 
     SDL_DestroyWindow(graph.window);
 
+  #ifdef MULTI_RASTER
     for (int i=0;i<nb_threads;i++)
     {
         free(graph.threadsData[i].pixels);
         free(graph.threadsData[i].zbuf);
         free(graph.threadsData[i].normale);
     }
-    SDL_FreeSurface(graph.surface);
     free(graph.threadsData);
+  #else
+    free(graph.rasterData.pixels);
     free(graph.rasterData.zbuf);
     free(graph.rasterData.normale);
+  #endif
+    SDL_FreeSurface(graph.surface);
     raster_unloadall();
     IMG_Quit();
     SDL_Quit();

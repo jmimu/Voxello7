@@ -52,7 +52,7 @@ struct Graph{
     #ifdef __PC__
         SDL_Window* window;
         //SDL_Renderer *renderer; //screen
-        SDL_Surface *surface; //pixels surface (for bg blit)
+        SDL_Surface *surface; //pixels surface (for bg blit and conversions)
         //SDL_Texture *texture; //pixels texture
         SDL_GLContext context;
         struct Shader* shader;
@@ -62,8 +62,11 @@ struct Graph{
     #ifdef __3DS__
         //uint8_t *pixels; //where voxrender writes
     #endif
-        struct GraphData rasterData;
+    #ifdef MULTI_RASTER
         struct GraphData* threadsData;
+    #else
+        struct GraphData rasterData;
+    #endif
 
         //uint16_t *zbuf; //zbuffer unit: voxel side*8
         //uint32_t **threadColPixels;//one column for one thread
