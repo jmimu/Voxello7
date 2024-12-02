@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "voxrender.h"
 #ifdef __PC__
   #include <omp.h>
   #include <SDL2/SDL_image.h>
@@ -211,7 +211,7 @@ void graph_start_frame()
 #ifdef __PC__
     //memset(graph.rasterData.pixels, 0x00, graph.render_w*graph.render_h*4);
     memset(graph.rasterData.zbuf, 0xFF, graph.render_w*graph.render_h*2);
-    memset(graph.rasterData.normale, 0x00, graph.render_w*graph.render_h*4);
+    memset(graph.rasterData.normale, NORMALE_NEUTR, graph.render_w*graph.render_h*4);
   #ifdef MULTI_RASTER
    #ifdef WITH_OMP
      #pragma omp parallel for schedule(guided)
@@ -227,7 +227,7 @@ void graph_start_frame()
 #endif
 
 #ifdef DBG_GRAPH
-    graph_vline(graph.render_w/2,0,graph.render_h,0x40B0FF);
+    //graph_vline(graph.render_w/2,0,graph.render_h,0x40B0FF);
 #endif
 }
 

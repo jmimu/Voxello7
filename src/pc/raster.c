@@ -4,6 +4,7 @@
 
 #include "dbg.h"
 #include "raster.h"
+#include "voxrender.h"
 #include <SDL2/SDL_image.h>
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -96,10 +97,9 @@ void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, in
 		l_end=graph.render_h-y;
 	}
 
-
 	long i=0;//raster index
 	int raster_x,raster_y;
-	long j=x+y*graph.render_w;//graph index
+
 	uint32_t color;
 	for (int l=l_start;l<l_end;l++)
 	{
@@ -107,6 +107,7 @@ void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, in
 		i=raster_y*raster->w;
 		for (int c=c_start;c<c_end;c++)
 		{
+			long j=y+l+(x+c)*graph.render_h;//graph index // TODO: optimize
 			if (graph.rasterData.zbuf[j]>z)
 			{
 				raster_x=(c*raster->w)/w;
@@ -118,11 +119,10 @@ void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, in
 					else
 						graph.rasterData.pixels[j]=raster->pix[i+raster_x];
 					graph.rasterData.zbuf[j]=z;
+					graph.rasterData.normale[j]=NORMALE_Z_POS;
 				}
 			}
-			j++;
 		}
-		j+=graph.render_w-(c_end-c_start);
 	}
 }
 
