@@ -68,7 +68,7 @@ void raster_draw(struct Raster* raster, int x, int y,uint16_t z)
 	}
 }
 
-void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, int h,float color_factor)
+void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, int h,float color_factor, uint32_t normale)
 {
 	int c_start=MAX(0,-x);
 	int c_end=MIN(w,graph.render_w-x);
@@ -121,7 +121,7 @@ void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, in
 					else
 						graph.rasterData.pixels[j]=raster->pix[i+raster_x];
 					graph.rasterData.zbuf[j]=z;
-					graph.rasterData.normale[j]=NORMALE_Z_POS;
+					graph.rasterData.normale[j]=normale;
 				}
 			}
 		}

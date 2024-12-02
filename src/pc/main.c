@@ -379,8 +379,16 @@ int main(int argc, char *argv[])
 		//struct Pt3d proj=voxrender_proj(render,raster1p);
 		//raster_draw(raster1,proj.x-(raster1->w>>2),proj.z-(raster1->h),proj.y*8);
 
-		if (sprite1) sprite_draw(render,sprite1);
-		if (mob_bullet) mob_draw(render,mob_bullet);
+        uint32_t cam_dir_normal = NORMALE_NEUTR;
+        if (angleZ<=M_PI/4) cam_dir_normal = NORMALE_Y_NEG;
+        if ((angleZ>M_PI/4) && (angleZ<=3*M_PI/4)) cam_dir_normal = NORMALE_X_NEG;
+        if ((angleZ>3*M_PI/4) && (angleZ<=5*M_PI/4)) cam_dir_normal = NORMALE_Y_POS;
+        if ((angleZ>5*M_PI/4) && (angleZ<=7*M_PI/4)) cam_dir_normal = NORMALE_X_POS;
+        if (angleZ>7*M_PI/4) cam_dir_normal = NORMALE_Y_NEG;
+
+
+		if (sprite1) sprite_draw(render,sprite1,cam_dir_normal);
+		if (mob_bullet) mob_draw(render,mob_bullet,cam_dir_normal);
 
 		//graph_test();
 		glUseProgram(graph.shader->shaderProgram); //before setting uniforms

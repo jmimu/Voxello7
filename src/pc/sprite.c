@@ -20,7 +20,7 @@ struct Sprite* sprite_create(const char* _name,
 	return spr;
 }
 
-void sprite_draw(struct VoxRender * render,struct Sprite* spr)
+void sprite_draw(struct VoxRender * render,struct Sprite* spr, uint32_t normale)
 {
 	float color_factor=1;
 	struct Raster* raster=anim_get_raster(spr->anim);
@@ -36,6 +36,6 @@ void sprite_draw(struct VoxRender * render,struct Sprite* spr)
 	int show_h=render->f*spr->real_h/proj.y;
 	//raster_draw(spr->raster,proj.x-(spr->raster->w>>2),proj.z-(spr->raster->h),proj.y*ZBUF_FACTOR);
 	raster_draw_zoom(raster,proj.x-(show_w>>1),
-		proj.z-show_h,proj.y*ZBUF_FACTOR,show_w,show_h,color_factor);
+		proj.z-show_h,proj.y*ZBUF_FACTOR,show_w,show_h,color_factor, normale);
 }
 

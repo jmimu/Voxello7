@@ -21,7 +21,7 @@ struct Sprite{
 
 struct Sprite* sprite_create(const char* _name,
 	float _x, float _y, float _z, float _w, float _h, struct Anim* _anim);
-void sprite_draw(struct VoxRender * render, struct Sprite* spr);
+void sprite_draw(struct VoxRender * render, struct Sprite* spr, uint32_t normale);
 
 
 #endif // SPRITE_H

@@ -18,9 +18,9 @@ struct Mob* mob_create(struct Sprite* _spr, float _vx, float _vy, float _vz)
 	return mob;
 }
 
-void mob_draw(struct VoxRender * render, struct Mob* mob)
+void mob_draw(struct VoxRender * render, struct Mob* mob, uint32_t normale)
 {
-	sprite_draw(render,mob->spr);
+	sprite_draw(render,mob->spr,normale);
 }
 
 void mob_update(struct VoxWorld * world, struct Mob* mob, double_t dt)

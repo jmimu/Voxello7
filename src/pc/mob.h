@@ -18,7 +18,7 @@ struct Mob{
 
 
 struct Mob* mob_create(struct Sprite* _spr, float _vx, float _vy, float _vz);
-void mob_draw(struct VoxRender * render, struct Mob* mob);
+void mob_draw(struct VoxRender * render, struct Mob* mob, uint32_t normale);
 void mob_update(struct VoxWorld * world, struct Mob* mob, double_t dt);
 
 
