@@ -107,6 +107,8 @@ void raster_draw_zoom(struct Raster* raster, int x, int y, uint16_t z, int w, in
 		i=raster_y*raster->w;
 		for (int c=c_start;c<c_end;c++)
 		{
+			if ((x+c<0)||(x+c>=graph.render_w)||(y+l<0)||(y+l>=graph.render_h))
+				continue;
 			long j=y+l+(x+c)*graph.render_h;//graph index // TODO: optimize
 			if (graph.rasterData.zbuf[j]>z)
 			{

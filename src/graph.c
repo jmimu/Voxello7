@@ -153,9 +153,9 @@ void graph_create_quad()
     glGenTextures(1, &graph.textureColId);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
   #ifdef MULTI_RASTER
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_RGBA, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
   #else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.rasterData.pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  graph.render_h,  graph.render_w, 0, GL_RGBA, GL_UNSIGNED_BYTE, graph.rasterData.pixels);
   #endif
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -274,9 +274,9 @@ void graph_end_frame()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, graph.textureColId);
   #ifdef MULTI_RASTER
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h, graph.render_w, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h, graph.render_w, GL_RGBA, GL_UNSIGNED_BYTE, graph.threadsData[0].pixels);
   #else
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h, graph.render_w, GL_ABGR_EXT, GL_UNSIGNED_BYTE, graph.rasterData.pixels);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, graph.render_h, graph.render_w, GL_BGRA, GL_UNSIGNED_BYTE, graph.rasterData.pixels);
   #endif
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, graph.textureNormId);

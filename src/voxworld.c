@@ -652,14 +652,15 @@ uint32_t color_15to24(VOX_TYPE v)
     uint32_t g=((v>>5)&0x1F);
     uint32_t b=((v>>0)&0x1F);
     uint32_t a=0xff;
-    //return (r<<24)+(g<<16)+(b<<8)+a;
-    return (r<<27)+(g<<19)+(b<<11)+(a<<3);
+    //return (r<<27)+(g<<19)+(b<<11)+(a<<3);
+    //return (r<<3)+(g<<11)+(b<<19)+(a<<27);
+    return (r<<19)+(g<<11)+(b<<3)+(a<<27);
 }
 
 VOX_TYPE color_24to15(uint32_t c)
 {
-    int r=((c>>27)&0x1F);
-    int g=((c>>19)&0x1F);
-    int b=((c>>11)&0x1F);
+    int r=((c>>19)&0x1F);
+    int g=((c>>11)&0x1F);
+    int b=((c>>3)&0x1F);
     return (r<<10)+(g<<5)+b;
 }
